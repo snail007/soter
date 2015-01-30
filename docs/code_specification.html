@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Soter代码规范</title>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script src="js/inc.js"></script>
+	</head>
+	<body>
+		<fieldset>
+			<legend>Soter代码规范</legend>
+			<ol>
+				<li>变量名，方法名，函数名，参数名，采取驼峰命名方式。比如userID</li>
+				<li>命名采用英文完整单词不能缩写，取最接近功能的单词。比如：userScoreLevel</li>
+				<li>常量名，静态变量名，采取全部大写加下划线分割多个单词的命名方式。比如：MAX_ID</li>
+				<li>classes类目录下的类名和它的文件的位置是对应的。<br>
+					比如有文件：classes/Controller/User.php<br>
+					那么User.php文件里面的类名就应该是：Controller_User<br>
+					比如有文件：classes/Controller/Vip/User.php<br>
+					那么User.php文件里面的类名就应该是：Controller_Vip_User,也就是下划线代表着文件夹的分隔符。<br>
+					比如有文件：classes/Model/User.php<br>
+					那么User.php文件里面的类名就应该是：Model_User<br>
+					比如有文件：classes/MyLib/User.php<br>
+					那么User.php文件里面的类名就应该是：MyLib_User<br>
+				</li>
+			</ol>
+		</fieldset>
+		<script src="js/inc.foot.js"></script>
+	</body>
+</html>
