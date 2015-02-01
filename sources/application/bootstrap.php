@@ -2,8 +2,9 @@
 
 defined('IN_SOTER') or die();
 
-$config = Soter::getConfig();
-//配置 项目目录
-$config->setApplicationPath(SOTER_APP_DIR);
-//配置时区
-$config->setTimeZone('PRC');
+Soter::getConfig()
+        //自定义配置
+        //->addLoggerWriter(new Logger_MyWriter())
+        //->setExceptionHandle(new Exception_Handle())
+        //->addLoggerWriter(new Soter_Logger_FileWriter())
+        ;

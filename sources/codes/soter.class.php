@@ -1,8 +1,21 @@
 <?php
 
+/**
+ * @property Soter_Config $soterConfig
+ */
 class Soter {
 
     private static $soterConfig;
+
+    public static function classAutoloader($className) {
+        $config = self::$soterConfig;
+        $className = str_replace('_', '/', $className);
+        foreach (self::$soterConfig->getPackages() as $path) {
+            if (file_exists($filePath = $path . $config->getClassesName() . '/' . $className . '.php')) {
+                Sr::includeOnce($filePath);
+            }
+        }
+    }
 
     /**
      * 
@@ -11,6 +24,10 @@ class Soter {
     public static function initialize() {
         self::$soterConfig = new Soter_Config();
         Soter_Logger_Writer_Dispatcher::initialize();
+        if (function_exists('__autoload')) {
+            spl_autoload_register('__autoload');
+        }
+        spl_autoload_register(array('Soter', 'classAutoloader'));
         return self::$soterConfig;
     }
 
@@ -23,14 +40,21 @@ class Soter {
     }
 
     public static function run() {
-        $config=self::getConfig();
+        $config = self::getConfig();
         foreach (array_reverse($config->getRouters()) as $router) {
-            $route =$router->find($config->getRequest());
+            $route = $router->find($config->getRequest());
             if ($route->found()) {
                 $route = $router->route();
                 $class = $route->getController();
+                if (!class_exists($class)) {
+                    throw new Soter_Exception_404('Controller [ ' . $class . ' ] not found');
+                }
+                $controllerObject = new $class();
                 $method = $route->getMethod();
-                $response = call_user_func_array(array($class, $method),$route->getArgs());
+                if (!method_exists($controllerObject, $method)) {
+                    throw new Soter_Exception_404('Method [ ' . $class . '->' . $method . '() ] not found');
+                }
+                $response = call_user_func_array(array($controllerObject, $method), $route->getArgs());
                 if ($response instanceof Soter_Response) {
                     $response->output();
                 } else {
@@ -48,12 +72,56 @@ class Soter {
 
 class Sr {
 
+    private static $includeFiles = array();
+
     static function arrayGet($array, $key, $default = null) {
         return isset($array[$key]) ? $array[$key] : $default;
     }
 
     static function dump() {
         call_user_func_array('var_dump', func_get_args());
+    }
+
+    public static function includeOnce($filePath) {
+        $key = self::realPath($filePath);
+        if (!isset(self::$includeFiles[$key])) {
+            include $filePath;
+            self::$includeFiles[$key] = 1;
+        }
+    }
+
+    static function realPath($path) {
+        //是linux系统么？
+        $unipath = PATH_SEPARATOR == ':';
+        //检测一下是否是相对路径，windows下面没有:,linux下面没有/开头
+        //如果是相对路径就加上当前工作目录前缀
+        if (strpos($path, ':') === false && strlen($path) && $path{0} != '/') {
+            $path = realpath('.') . DIRECTORY_SEPARATOR . $path;
+        }
+        // resolve path parts (single dot, double dot and double delimiters)
+        $path = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $path);
+        $parts = array_filter(explode(DIRECTORY_SEPARATOR, $path), 'strlen');
+        $absolutes = array();
+        foreach ($parts as $part) {
+            if ('.' == $part)
+                continue;
+            if ('..' == $part) {
+                array_pop($absolutes);
+            } else {
+                $absolutes[] = $part;
+            }
+        }
+        //如果是linux这里会导致linux开头的/丢失
+        $path = implode(DIRECTORY_SEPARATOR, $absolutes);
+        //如果是linux，修复系统前缀
+        $path = $unipath ? (strlen($path) && $path{0} != '/' ? '/' . $path : $path) : $path;
+        //最后统一分隔符为/，windows兼容/
+        $path = str_replace(array('/', '\\'), '/', $path);
+        return $path;
+    }
+
+    static function isCli() {
+        return PHP_SAPI == 'cli';
     }
 
 }

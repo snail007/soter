@@ -19,7 +19,7 @@ class Soter_Request {
      * 获取url中的访问路径,域名后面的部分，/开头
      */
     public function getUri() {
-        
+        return $this->uri;
     }
 
 }
@@ -31,6 +31,7 @@ class Soter_Response {
 class Soter_Route {
 
     private $found = false;
+    private $controller, $method, $args, $filePath;
 
     public function found() {
         return $this->found;
@@ -38,9 +39,8 @@ class Soter_Route {
 
     public function setFound($found) {
         $this->found = $found;
+        return $this;
     }
-
-    private $controller, $method, $args, $filePath;
 
     public function getController() {
         return $this->controller;
@@ -58,38 +58,65 @@ class Soter_Route {
         return $this->filePath;
     }
 
-    public function __construct($controller, $method, $args = array(), $filePath = '') {
+    public function __construct() {
+        $this->args = array();
+    }
+
+    public function setController($controller) {
         $this->controller = $controller;
+        return $this;
+    }
+
+    public function setMethod($method) {
         $this->method = $method;
+        return $this;
+    }
+
+    public function setArgs($args) {
         $this->args = $args;
+        return $this;
+    }
+
+    public function setFilePath($filePath) {
         $this->filePath = $filePath;
+        return $this;
     }
 
 }
 
-class Soter_Router {
-
-    private $route;
+class Soter_Default_Router extends Soter_Router {
 
     /**
      * 
-     * @param Soter_Request $Soter_Request
      * @return \Soter_Route
      */
-    public function find(Soter_Request $Soter_Request) {
-
-        $uri = $Soter_Request->getUri();
+    public function find() {
+        $config = Soter::getConfig();
+        $uri = $config->getRequest()->getUri();
+        $controller = $config->getDefaultController();
+        $prefix = $config->getMethodPrefix();
+        $method = $config->getDefaultMethod();
+        $subfix = $config->getMethodUriSubfix();
+        $indexName = $config->getIndexName();
         //解析uri
-        //xx
-
-        $route = new Soter_Route('Controller_Welcome', 'do_index');
-        $this->route = $route;
-        //$this->route->setFound(true);
-        return $this->route;
-    }
-
-    public function route() {
-        return $this->route;
+        if (($pos = stripos($uri, '/' . $indexName)) !== FALSE) {
+            $uri = ltrim(substr($uri, $pos + strlen('/' . $indexName)), '/');
+            $_uriarr = explode('?', $uri);
+            $path = trim(current($_uriarr), '/');
+            $methodPathArr = explode($subfix, $path);
+            if (count($methodPathArr) == 2 && empty($methodPathArr[1])) {
+                $controller = str_replace('/', '_', dirname($path));
+                $method = basename(current($_uriarr), $subfix);
+            } else {
+                $controller = str_replace('/', '_', $path);
+            }
+        }
+        $controller = 'Controller_' . $controller;
+        $method = $prefix . $method;
+        return $this->route
+                        ->setController($controller)
+                        ->setMethod($method)
+                        ->setFound(TRUE);
     }
 
 }
@@ -102,11 +129,21 @@ class Soter_Tools {
 
 }
 
+/**
+ * @property Soter_Exception_Handle $exceptionHandle
+ */
 class Soter_Config {
 
-    private $timeZone = 'PRC',
+    private $applicationDir = '', //项目目录
+            $indexDir = '', //入口文件目录
+            $indexName = '', //入口文件名称
+            $timeZone = 'PRC',
+            $classesName = 'classes',
+            $defaultController = 'Controller_Welcome',
+            $defaultMethod = 'index',
+            $methodPrefix = 'do_',
+            $methodUriSubfix = '.do',
             $isRewrite = FALSE,
-            $applicationPath,
             $request, $showError = true,
             $excptionErrorJsonMessageName = 'errorMessage',
             $excptionErrorJsonFileName = 'errorFile',
@@ -114,7 +151,126 @@ class Soter_Config {
             $excptionErrorJsonTypeName = 'errorType',
             $excptionErrorJsonCodeName = 'errorCode',
             $routersContainer = array(),
-            $loggerWriterContainer = array();
+            $packageContainer = array(),
+            $loggerWriterContainer = array(),
+            $exceptionHandle;
+
+    public function getExceptionHandle() {
+        return $this->exceptionHandle;
+    }
+
+    public function setExceptionHandle($exceptionHandle) {
+        //Soter::getConfig()->setShowError(FALSE);
+        $this->exceptionHandle = $exceptionHandle;
+        return $this;
+    }
+
+    public function getApplicationDir() {
+        return $this->applicationDir;
+    }
+
+    public function getIndexDir() {
+        return $this->indexDir;
+    }
+
+    public function getIndexName() {
+        return $this->indexName;
+    }
+
+    public function getPackageContainer() {
+        return $this->packageContainer;
+    }
+
+    public function getLoggerWriterContainer() {
+        return $this->loggerWriterContainer;
+    }
+
+    public function setApplicationDir($applicationDir) {
+        $this->applicationDir = Sr::realPath($applicationDir) . '/';
+        if (!in_array($applicationDir, $this->packageContainer)) {
+            $this->addPackage($applicationDir);
+        }
+        return $this;
+    }
+
+    public function setIndexDir($indexDir) {
+        $this->indexDir = Sr::realPath($indexDir) . '/';
+        ;
+        return $this;
+    }
+
+    public function setIndexName($indexName) {
+        $this->indexName = $indexName;
+        return $this;
+    }
+
+    public function setPackageContainer($packageContainer) {
+        $this->packageContainer = $packageContainer;
+        return $this;
+    }
+
+    public function setLoggerWriterContainer($loggerWriterContainer) {
+        $this->loggerWriterContainer = $loggerWriterContainer;
+        return $this;
+    }
+
+    public function getMethodPrefix() {
+        return $this->methodPrefix;
+    }
+
+    public function getMethodUriSubfix() {
+        return $this->methodUriSubfix;
+    }
+
+    public function setMethodPrefix($methodPrefix) {
+        $this->methodPrefix = $methodPrefix;
+        return $this;
+    }
+
+    public function setMethodUriSubfix($methodUriSubfix) {
+        $this->methodUriSubfix = $methodUriSubfix;
+        return $this;
+    }
+
+    public function getDefaultController() {
+        return $this->defaultController;
+    }
+
+    public function getDefaultMethod() {
+        return $this->defaultMethod;
+    }
+
+    public function setDefaultController($defaultController) {
+        $this->defaultController = $defaultController;
+        return $this;
+    }
+
+    public function setDefaultMethod($defaultMethod) {
+        $this->defaultMethod = $defaultMethod;
+        return $this;
+    }
+
+    public function getClassesName() {
+        return $this->classesName;
+    }
+
+    public function setClassesName($classesName) {
+        $this->classesName = $classesName;
+        return $this;
+    }
+
+    public function getPackages() {
+        return $this->packageContainer;
+    }
+
+    public function addPackage($packagePath) {
+        $packagePath = Sr::realPath($packagePath) . '/';
+        $this->packageContainer[] = $packagePath;
+        //引入配置
+        if (file_exists($bootstrap = $packagePath . 'bootstrap.php')) {
+            Sr::includeOnce($bootstrap);
+        }
+    }
 
     public function getShowError() {
         return $this->showError;
@@ -129,6 +285,10 @@ class Soter_Config {
         return $this;
     }
 
+    /**
+     * 
+     * @return Soter_Request
+     */
     public function getRequest() {
         return $this->request;
     }
@@ -201,15 +361,6 @@ class Soter_Config {
         return $this->loggerWriterContainer;
     }
 
-    public function getApplicationPath() {
-        return $this->applicationPath;
-    }
-
-    public function setApplicationPath($applicationPath) {
-        $this->applicationPath = $applicationPath;
-        return $this;
-    }
-
     public function getTimeZone() {
         return $this->timeZone;
     }
@@ -226,14 +377,6 @@ class Soter_Config {
     public function setIsRewrite($isRewrite) {
         $this->isRewrite = $isRewrite;
         return $this;
-    }
-
-}
-
-class Soter_Environment {
-
-    public static function isCli() {
-        return PHP_SAPI == 'cli';
     }
 
 }
@@ -258,7 +401,7 @@ class Soter_Logger_Writer_Dispatcher {
         if (is_subclass_of($exception, 'Soter_Exception')) {
             $this->dispatch($exception);
         } else {
-            $this->dispatch(new Soter_Exception($exception->getMessage(), $exception->getCode(), get_class($exception), $exception->getFile(), $exception->getLine()));
+            $this->dispatch(new Soter_Exception_500($exception->getMessage(), $exception->getCode(), get_class($exception), $exception->getFile(), $exception->getLine()));
         }
     }
 
@@ -266,7 +409,7 @@ class Soter_Logger_Writer_Dispatcher {
         if (0 == error_reporting()) {
             return;
         }
-        $this->dispatch(new Soter_Exception($message, $code, 'General Error', $file, $line));
+        $this->dispatch(new Soter_Exception_500($message, $code, 'General Error', $file, $line));
     }
 
     final public function handleFatal() {
@@ -275,16 +418,24 @@ class Soter_Logger_Writer_Dispatcher {
         }
         $lastError = error_get_last();
         $fatalError = array(1, 256, 64, 16, 4, 4096);
-        if (!isset($lastError["type"]) || !in_array($lastError["type"],$fatalError)) {
+        if (!isset($lastError["type"]) || !in_array($lastError["type"], $fatalError)) {
             return;
         }
-        $this->dispatch(new Soter_Exception($lastError['message'], $lastError['type'], 'Fatal Error', $lastError['file'], $lastError['line']));
+        $this->dispatch(new Soter_Exception_500($lastError['message'], $lastError['type'], 'Fatal Error', $lastError['file'], $lastError['line']));
     }
 
     final public function dispatch(Soter_Exception $exception) {
-        $loggerWriters = Soter::getConfig()->getLoggerWriters();
+        $config = Soter::getConfig();
+        ini_set('display_errors', TRUE);
+        $loggerWriters = $config->getLoggerWriters();
         foreach ($loggerWriters as $loggerWriter) {
             $loggerWriter->write($exception);
+        }
+        $handle = $config->getExceptionHandle();
+        if ($handle instanceof Soter_Exception_Handle) {
+            $handle->handle($exception);
+        } elseif ($config->getShowError()) {
+            $exception->render();
         }
         exit();
     }
@@ -295,14 +446,6 @@ class Soter_Logger_FileWriter implements Soter_Logger_Writer {
 
     public function write(Soter_Exception $exception) {
         
-    }
-
-}
-
-class Soter_Logger_PrinterWriter implements Soter_Logger_Writer {
-
-    public function write(Soter_Exception $exception) {
-        Sr::dump($exception->render());
     }
 
 }

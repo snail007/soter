@@ -2,26 +2,25 @@
 
 ##{copyright}##
 define("IN_SOTER", true);
-//入口文件所在目录
-define("SOTER_DIR", dirname(__FILE__) . '/');
-//项目目录
-define("SOTER_APP_DIR", SOTER_DIR . '/../application/');
 //引入核心
-require SOTER_DIR . 'soter.php';
+require dirname(__FILE__) . '/soter.php';
 
-//初始化
+//初始化系统配置
 Soter::initialize()
-        //获取配置程序目录
-        ->setApplicationPath(SOTER_APP_DIR)
+        //入口文件所在目录
+        ->setIndexDir(dirname(__FILE__) . '/')
+        //入口文件名称
+        ->setIndexName(pathinfo(__FILE__, PATHINFO_BASENAME))
+        //项目目录
+        ->setApplicationDir(dirname(__FILE__) . '/../application/')
         //初始化请求
         ->setRequest(new Soter_Request(Sr::arrayGet($_SERVER, 'REQUEST_URI')))
         //默认路由器
-        ->addRouter(new Soter_Router())
-        ->addLoggerWriter(new Soter_Logger_PrinterWriter())
-        ->addLoggerWriter(new Soter_Logger_FileWriter());
+        ->addRouter(new Soter_Default_Router());
+
 
 //运行
-if (Soter_Environment::isCli()) {
+if (Sr::isCli()) {
     
 } else {
     //启动，噪起来
