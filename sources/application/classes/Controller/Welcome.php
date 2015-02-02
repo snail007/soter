@@ -13,7 +13,7 @@
  */
 class Controller_Welcome {
     public function do_index(){
-        xx;
+        xx();
         Sr::dump(Soter::getConfig()->getRequest());
     }
 }

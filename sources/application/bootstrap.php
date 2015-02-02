@@ -7,4 +7,8 @@ Soter::getConfig()
         //->addLoggerWriter(new Logger_MyWriter())
         //->setExceptionHandle(new Exception_Handle())
         //->addLoggerWriter(new Soter_Logger_FileWriter())
+	->setDefaultController('Welcome')
+	->setDefaultMethod('index')
+	->setMethodPrefix('do_')
+	->setMethodUriSubfix('.do')
         ;
