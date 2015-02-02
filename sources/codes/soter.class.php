@@ -23,11 +23,21 @@ class Soter {
 	 */
 	public static function initialize() {
 		self::$soterConfig = new Soter_Config();
+		//注册错误处理
 		Soter_Logger_Writer_Dispatcher::initialize();
+		//注册类自动加载
 		if (function_exists('__autoload')) {
 			spl_autoload_register('__autoload');
 		}
 		spl_autoload_register(array('Soter', 'classAutoloader'));
+		//清理魔法转义
+		if (get_magic_quotes_gpc()) {
+			$stripList = array('_GET', '_POST', '_COOKIE');
+			foreach ($stripList as $val) {
+				global $$val;
+				$$val = Sr::stripSlashes($$val);
+			}
+		}
 		return self::$soterConfig;
 	}
 
@@ -82,7 +92,7 @@ class Sr {
 		echo!self::isCli() ? '<pre style="line-height:1.5em;font-size:14px;">' : "\n";
 		@ob_start();
 		call_user_func_array('var_dump', func_get_args());
-		$html=@ob_get_clean();
+		$html = @ob_get_clean();
 		echo htmlspecialchars($html);
 		echo!self::isCli() ? "</pre>" : "\n";
 	}
@@ -127,6 +137,24 @@ class Sr {
 
 	static function isCli() {
 		return PHP_SAPI == 'cli';
+	}
+
+	static function stripSlashes($var) {
+		if (!get_magic_quotes_gpc()) {
+			return $var;
+		}
+		if (is_array($var)) {
+			foreach ($var as $key => $val) {
+				if (is_array($val)) {
+					$var[$key] = self::stripSlashes($val);
+				} else {
+					$var[$key] = stripslashes($val);
+				}
+			}
+		} elseif (is_string($var)) {
+			$var = stripslashes($var);
+		}
+		return $var;
 	}
 
 }
