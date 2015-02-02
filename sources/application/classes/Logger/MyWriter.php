@@ -14,7 +14,8 @@
 class Logger_MyWriter implements Soter_Logger_Writer {
 
     public function write(Soter_Exception $exception) {
-        var_dump('from my writer');
+	
+        echo('<br/>my writer called :'.__FILE__.'<br/>');
     }
 
 //put your code here

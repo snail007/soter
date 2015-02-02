@@ -106,18 +106,18 @@ class Soter_Default_Router_PathInfo extends Soter_Router {
 	    $hmvcModules = $config->getHmvcModules();
 	    //hmvc检测
 	    if (isset($hmvcModules[$hmvcModule])) {
-		$hmvcDir = $config->getApplicationDir() . 'hmvc/' . $hmvcModules[$hmvcModule] . '/';
+		$hmvcDir = $config->getApplicationDir() . $config->getHmvcDirName() . '/' . $hmvcModules[$hmvcModule] . '/';
 		//删除hmvc头
 		array_shift($_info);
 		//留下真正的路径
 		$path = implode('/', $_info);
-		$config->addPackage($hmvcDir,true);
+		$config->addPackage($hmvcDir, true);
 	    }
 	    $methodPathArr = explode($subfix, $path);
 	    if (count($methodPathArr) == 2 && empty($methodPathArr[1])) {
 		$controller = str_replace('/', '_', dirname($path));
 		$method = basename($methodPathArr[0], $subfix);
-	    } elseif (count($methodPathArr)) {
+	    } elseif (!empty($methodPathArr[0])) {
 		$controller = str_replace('/', '_', $path);
 	    }
 	}
@@ -148,7 +148,8 @@ class Soter_Config {
 	    $indexDir = '', //入口文件目录
 	    $indexName = '', //入口文件名称
 	    $timeZone = 'PRC',
-	    $classesName = 'classes',
+	    $classesDirName = 'classes',
+	    $hmvcDirName = 'hmvc',
 	    $controllerDirName = 'Controller',
 	    $defaultController = 'Welcome',
 	    $defaultMethod = 'index',
@@ -168,6 +169,15 @@ class Soter_Config {
 	    $uriReWriterContainer = array(),
 	    $exceptionHandle,
 	    $hmvcModules = array();
+
+    public function getHmvcDirName() {
+	return $this->hmvcDirName;
+    }
+
+    public function setHmvcDirName($hmvcDirName) {
+	$this->hmvcDirName = $hmvcDirName;
+	return $this;
+    }
 
     public function getHmvcModules() {
 	return $this->hmvcModules;
@@ -284,12 +294,12 @@ class Soter_Config {
 	return $this;
     }
 
-    public function getClassesName() {
-	return $this->classesName;
+    public function getClassesDirName() {
+	return $this->classesDirName;
     }
 
-    public function setClassesName($classesName) {
-	$this->classesName = $classesName;
+    public function setClassesDirName($classesDirName) {
+	$this->classesDirName = $classesDirName;
 	return $this;
     }
 

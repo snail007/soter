@@ -11,7 +11,7 @@ class Soter {
 	$config = self::$soterConfig;
 	$className = str_replace('_', '/', $className);
 	foreach (self::$soterConfig->getPackages() as $path) {
-	    if (file_exists($filePath = $path . $config->getClassesName() . '/' . $className . '.php')) {
+	    if (file_exists($filePath = $path . $config->getClassesDirName() . '/' . $className . '.php')) {
 		Sr::includeOnce($filePath);
 		break;
 	    }

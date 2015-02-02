@@ -14,7 +14,11 @@
 class Controller_Welcome {
 
     public function do_index() {
-	xxx;
+	$this->index();
+    }
+
+    public function index() {
+	xxx();
 	Sr::dump(Soter::getConfig()->getRequest());
     }
 
