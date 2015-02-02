@@ -90,8 +90,21 @@ class Soter_Default_Router_PathInfo extends Soter_Router {
 	    $uri = ltrim(substr($uri, $pos + strlen('/' . $indexName)), '/');
 	    $_uriarr = explode('?', $uri);
 	    $uri = trim(current($_uriarr), '/');
+	    $_info = explode('/', $uri);
+	    $hmvcModule = current($_info);
+	    $hmvcModules = $config->getHmvcModules();
+	    //hmvc检测
+	    if (isset($hmvcModules[$hmvcModule])) {
+		$hmvcDir = $config->getApplicationDir() . $config->getHmvcDirName() . '/' . $hmvcModules[$hmvcModule] . '/';
+		//删除hmvc头
+		array_shift($_info);
+		//留下真正的路径
+		$uri = implode('/', $_info);
+		$config->addPackage($hmvcDir, true);
+	    }
 	} else {
-	    $uri = '';
+	    //不是pathinfo模式，返回没有找到
+	    return $this->route->setFound(FALSE);
 	}
 	//$path: Welcome/index.do , Welcome/User , Welcome
 	$path = $uri;
@@ -101,18 +114,7 @@ class Soter_Default_Router_PathInfo extends Soter_Router {
 	$subfix = $config->getMethodUriSubfix();
 	//解析路径
 	if ($path) {
-	    $_info = explode('/', $path);
-	    $hmvcModule = current($_info);
-	    $hmvcModules = $config->getHmvcModules();
-	    //hmvc检测
-	    if (isset($hmvcModules[$hmvcModule])) {
-		$hmvcDir = $config->getApplicationDir() . $config->getHmvcDirName() . '/' . $hmvcModules[$hmvcModule] . '/';
-		//删除hmvc头
-		array_shift($_info);
-		//留下真正的路径
-		$path = implode('/', $_info);
-		$config->addPackage($hmvcDir, true);
-	    }
+
 	    $methodPathArr = explode($subfix, $path);
 	    if (count($methodPathArr) == 2 && empty($methodPathArr[1])) {
 		$controller = str_replace('/', '_', dirname($path));

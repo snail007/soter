@@ -57,25 +57,25 @@ class Soter {
 	    if ($route->found()) {
 		$route = $router->route();
 		$class = $route->getController();
-		if (!class_exists($class)) {
-		    throw new Soter_Exception_404('Controller [ ' . $class . ' ] not found');
-		}
-		$controllerObject = new $class();
 		$method = $route->getMethod();
-		if (!method_exists($controllerObject, $method)) {
-		    throw new Soter_Exception_404('Method [ ' . $class . '->' . $method . '() ] not found');
-		}
-		$response = call_user_func_array(array($controllerObject, $method), $route->getArgs());
-		if ($response instanceof Soter_Response) {
-		    $response->output();
-		} else {
-		    echo $response;
-		}
-		exit();
 	    } else {
-		$exception = new Soter_Exception_404($route->getController());
-		throw $exception;
+		$class = $config->getControllerDirName() . '_' . $config->getDefaultController();
+		$method = $config->getMethodPrefix() . $config->getDefaultMethod();
 	    }
+	    if (!class_exists($class)) {
+		throw new Soter_Exception_404('Controller [ ' . $class . ' ] not found');
+	    }
+	    $controllerObject = new $class();
+	    if (!method_exists($controllerObject, $method)) {
+		throw new Soter_Exception_404('Method [ ' . $class . '->' . $method . '() ] not found');
+	    }
+	    $response = call_user_func_array(array($controllerObject, $method), $route->getArgs());
+	    if ($response instanceof Soter_Response) {
+		$response->output();
+	    } else {
+		echo $response;
+	    }
+	    exit();
 	}
     }
 
@@ -99,7 +99,7 @@ class Sr {
     }
 
     public static function includeOnce($filePath) {
-	
+
 	$key = self::realPath($filePath);
 	if (!isset(self::$includeFiles[$key])) {
 	    include $filePath;
