@@ -8,28 +8,11 @@ class Soter_Request {
 		$this->setUri($uri);
 	}
 
-	private function parseUri($uri) {
-		$uri = $uri ? $uri : Soter_Tools::issetGet($_SERVER, 'REQUEST_URI', '/');
-		//解析uri
-		$indexName = Soter::getConfig()->getIndexName();
-		if (($pos = stripos($uri, '/' . $indexName)) !== FALSE) {
-			$uri = ltrim(substr($uri, $pos + strlen('/' . $indexName)), '/');
-			$_uriarr = explode('?', $uri);
-			$uri = trim(current($_uriarr), '/');
-		} else {
-			$uri = '';
-		}
-		return $uri;
-	}
-
 	public function setUri($uri) {
-		$this->uri = $this->parseUri($uri);
+		$this->uri = $uri;
 		return $this;
 	}
 
-	/**
-	 * 获取url中的访问路径,域名后面的部分，/开头
-	 */
 	public function getUri() {
 		return $this->uri;
 	}
@@ -87,7 +70,7 @@ class Soter_Route {
 
 }
 
-class Soter_Default_Router extends Soter_Router {
+class Soter_Default_Router_PathInfo extends Soter_Router {
 
 	/**
 	 * 
@@ -95,13 +78,28 @@ class Soter_Default_Router extends Soter_Router {
 	 */
 	public function find() {
 		$config = Soter::getConfig();
+		/**
+		 * 解析uri解析url中的访问路径 
+		 * 比如：http://127.0.0.1/index.php/Welcome/index.do?id=11
+		 * 获取的是后面的(Welcome/index.do)部分，也就是index.php/和?之间的部分
+		 */
+		$uri=$config->getRequest()->getUri();
+		$uri = $uri ? $uri : Soter_Tools::issetGet($_SERVER, 'REQUEST_URI', '/');
+		$indexName = Soter::getConfig()->getIndexName();
+		if (($pos = stripos($uri, '/' . $indexName)) !== FALSE) {
+			$uri = ltrim(substr($uri, $pos + strlen('/' . $indexName)), '/');
+			$_uriarr = explode('?', $uri);
+			$uri = trim(current($_uriarr), '/');
+		} else {
+			$uri = '';
+		}
 		//$path: Welcome/index.do , Welcome/User
-		$path = $config->getRequest()->getUri();
+		$path = $uri;
 		$controller = $config->getDefaultController();
 		$prefix = $config->getMethodPrefix();
 		$method = $config->getDefaultMethod();
 		$subfix = $config->getMethodUriSubfix();
-		//解析uri
+		//解析路径
 		if ($path) {
 			$methodPathArr = explode($subfix, $path);
 			if (count($methodPathArr) == 2 && empty($methodPathArr[1])) {

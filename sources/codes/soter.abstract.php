@@ -112,11 +112,9 @@ abstract class Soter_Exception extends Exception {
 		if ($isJson) {
 			echo $this->renderJson();
 		} elseif (Sr::isCli()) {
-			echo $this->renderCli();
-			echo $this->getTraceString(TRUE);
+			echo $this->renderCli() . $this->getTraceString(TRUE);
 		} else {
-			echo $this->renderHtml();
-			echo $this->getTraceString(FALSE);
+			echo str_replace('</body>', $this->getTraceString(FALSE) . '</body>', $this->renderHtml());
 		}
 	}
 
@@ -139,7 +137,7 @@ abstract class Soter_Exception extends Exception {
 				break;
 			}
 		}
-		if(empty($trace)){
+		if (empty($trace)) {
 			return '';
 		}
 		foreach ($trace as $e) {

@@ -16,7 +16,7 @@ Soter::initialize()
         //初始化请求
         ->setRequest(new Soter_Request(Sr::arrayGet($_SERVER, 'REQUEST_URI')))
         //默认路由器
-        ->addRouter(new Soter_Default_Router());
+        ->addRouter(new Soter_Default_Router_PathInfo());
 
 
 //运行
