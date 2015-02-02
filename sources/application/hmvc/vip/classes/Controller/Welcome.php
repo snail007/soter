@@ -14,8 +14,7 @@
 class Controller_Welcome {
 
     public function do_index() {
-	xxx;
-	Sr::dump(Soter::getConfig()->getRequest());
+	return 'hmvc';
     }
 
 }

@@ -11,4 +11,5 @@ Soter::getConfig()
 	->setDefaultMethod('index')
 	->setMethodPrefix('do_')
 	->setMethodUriSubfix('.do')
+	->setHmvcModules(array('Vip'=>'vip'))
         ;
