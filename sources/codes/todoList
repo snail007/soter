@@ -1,5 +1,4 @@
 @todo
--> 自定义错误处理，显示自定义的错误页面
 -> 完成文件日志Writer：Soter_Logger_FileWriter
 -> 完成get模式路由器
 
@@ -8,5 +7,6 @@
 -> 异常接管
 -> 异常类的错误消息和掉用堆栈的各种模式（cli，html，json）格式化
 -> 自定义LoggerWriter
+-> 自定义错误处理，显示自定义的错误页面
 -> pathinfo模式路由器
 -> pathinfo路由器对hmvc的支持
