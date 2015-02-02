@@ -1,0 +1,9 @@
+@todo
+1.异常类的错误消息的各种模式（cli，html，json）格式化
+2.自定义错误处理，显示自定义的错误页面
+3.get参数路由器
+
+@done
+1.异常接管
+2.注册LoggerWriter
+3.注册pathinfo路由器

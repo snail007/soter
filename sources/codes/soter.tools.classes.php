@@ -196,7 +196,6 @@ class Soter_Config {
 
 	public function setIndexDir($indexDir) {
 		$this->indexDir = Sr::realPath($indexDir) . '/';
-		;
 		return $this;
 	}
 
