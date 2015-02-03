@@ -16,15 +16,24 @@ Soter::initialize()
 	//初始化请求
 	->setRequest(new Soter_Request(Sr::arrayGet($_SERVER, 'REQUEST_URI')))
 	//默认路由器
-	->addRouter(new Soter_Default_Router_PathInfo());
-
+	->addRouter(new Soter_Default_Router_PathInfo())
+        //自定义配置
+	//->addLoggerWriter(new Logger_MyWriter())
+	//->setExceptionHandle(new Exception_Handle())
+	//->addLoggerWriter(new Soter_Logger_FileWriter())
+	->setDefaultController('Welcome')
+	->setDefaultMethod('index')
+	->setMethodPrefix('do_')
+	->setMethodUriSubfix('.do')
+	->setHmvcModules(array('Vip' => 'vip'))
+        ;
 
 //运行
 if (Sr::isCli()) {
-    
+	
 } else {
-    //启动，噪起来
-    Soter::run();
+	//启动，噪起来
+	Soter::run();
 }
 
 

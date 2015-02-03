@@ -14,7 +14,8 @@
 class Controller_Welcome {
 
     public function do_index() {
-	$this->index();
+	//$this->index();
+	    Sr::dump(new MyClass());
     }
 
     public function index() {
