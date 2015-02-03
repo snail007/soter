@@ -15,12 +15,17 @@ Soter::initialize()
 	->setApplicationDir(SOTER_APP_PATH)
 	//注册拓展包
 	->addPackages(array(
-	    //SOTER_PACKAGES_PATH . 'misc',
+		//SOTER_PACKAGES_PATH . 'misc',
 	))
+	/**
+	 * 下面配置中可以使用：
+	 * 1.主项目的claseses目录，主项目类库目录，主项目拓展包里面的类
+	 * 2.这几个目录如果存在同名类，使用的优先级高到低是：拓展包->类库目录->claseses目录
+	 */
 	//入口文件所在目录
 	->setIndexDir(dirname(__FILE__) . '/')
 	//入口文件名称
-	->setIndexName(pathinfo(__FILE__, PATHINFO_BASENAME))	
+	->setIndexName(pathinfo(__FILE__, PATHINFO_BASENAME))
 	//初始化请求
 	->setRequest(new Soter_Request(Sr::arrayGet($_SERVER, 'REQUEST_URI')))
 	//默认路由器
@@ -36,9 +41,10 @@ Soter::initialize()
 	->setMethodPrefix('do_')
 	//方法url后缀
 	->setMethodUriSubfix('.do')
-	//hvmc模块，key是url里面的模块名称，值是模块目录名称
-	->setHmvcModules(array('Demo' => 'demo'))
-	
+	//注册hvmc模块，数组键是uri里面的hmvc模块名称，值是hmvc模块文件夹名称
+	->setHmvcModules(array(
+	    'Demo' => 'demo'
+	))
 ;
 
 //运行
