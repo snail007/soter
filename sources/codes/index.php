@@ -4,9 +4,9 @@
 define("IN_SOTER", true);
 //引入核心
 require dirname(__FILE__) . '/soter.php';
-
+//项目目录路径
 define('SOTER_APP_PATH', Sr::realPath(dirname(__FILE__) . '/../application') . '/');
-
+//项目拓展包路径
 define('SOTER_PACKAGES_PATH', SOTER_APP_PATH . 'packages/');
 
 //初始化系统配置

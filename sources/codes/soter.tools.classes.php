@@ -367,7 +367,7 @@ class Soter_Config {
 	public function addPackage($packagePath, $isHmvc = false) {
 		$packagePath = Sr::realPath($packagePath) . '/';
 		if (!in_array($packagePath, $this->packageContainer)) {
-			//注册hmvc模块到包容器中
+			//注册“包”到包容器中
 			array_unshift($this->packageContainer, $packagePath);
 			if (file_exists($library = $packagePath . $this->getLibraryDirName() . '/')) {
 				array_unshift($this->packageContainer, $library);
