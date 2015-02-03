@@ -119,8 +119,8 @@ class Soter_Default_Router_PathInfo extends Soter_Router {
 		$hmvcModuleDirName = (!empty($hmvcModules[$hmvcModule])) ? $hmvcModules[$hmvcModule] : '';
 		if ($hmvcModuleDirName) {
 			//找到hmvc模块,去除hmvc模块名称，得到真正的路径
-			$hmvcModules = $config->getHmvcModules();
 			$hmvcModulePath = $config->getApplicationDir() . $config->getHmvcDirName() . '/' . $hmvcModuleDirName . '/';
+			//设置hmvc模块目录为主目录，同时注册hmvc模块
 			$config->setApplicationDir($hmvcModulePath)->addPackage($hmvcModulePath, TRUE);
 			$uri = ltrim(substr($uri, strlen($hmvcModule)), '/');
 		}
