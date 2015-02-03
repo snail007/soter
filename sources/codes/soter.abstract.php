@@ -18,7 +18,7 @@ abstract class Soter_Router {
 	 */
 	public abstract function find();
 
-	public function route() {
+	public function &route() {
 		return $this->route;
 	}
 

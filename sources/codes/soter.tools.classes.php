@@ -195,8 +195,21 @@ class Soter_Config {
 		$packageContainer = array(),
 		$loggerWriterContainer = array(),
 		$uriReWriterContainer = array(),
-		$exceptionHandle,
+		$exceptionHandle, $route,
 		$hmvcModules = array();
+
+	/**
+	 * 
+	 * @return Soter_Route
+	 */
+	public function &getRoute() {
+		return $this->route;
+	}
+
+	public function setRoute(&$route) {
+		$this->route = $route;
+		return $this;
+	}
 
 	public function getLibraryDirName() {
 		return $this->libraryDirName;
