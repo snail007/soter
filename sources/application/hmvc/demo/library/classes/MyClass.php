@@ -7,14 +7,14 @@
  */
 
 /**
- * Description of Controller_Welcome
+ * 浪去Api接口类
  *
- * @author pm
+ * @author   pengmeng<pengmeng@staff.sina.com.cn>
+ * @date     2015-2-3
+ * @version  1.0
  */
-class Controller_Welcome {
-
-    public function do_index() {
-	return 'hmvc';
-    }
-
+class MyClass {
+	public function __construct() {
+		echo '<br>My Library:'.__FILE__.'<br>';
+	}
 }

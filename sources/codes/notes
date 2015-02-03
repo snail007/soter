@@ -1,9 +1,0 @@
-1.主项目，Hvmc子项目，拓展包，访问优先级由高->低的顺序是：入口->Hvmc子项目->主项目->拓展包
-  如果三者存在相同的类名,视图名,配置文件名等等，那么优先级最高的起作用。
-2.在hmvc模块中的bootstrap.php配置中下面的配置不再起作用，请勿使用：
-$config->setHmvcModules()
-       ->setIndexDir()
-       ->setIndexName()
-       ->setApplicationDir()
-       ->setRequest()
-       ->addRouter()

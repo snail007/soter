@@ -1,8 +1,9 @@
 @todo
 -> 完成文件日志Writer：Soter_Logger_FileWriter
+-> uri重写功能
 -> 完成get模式路由器
--> 类库自动加载
 -> 添加包功能
+-> 命令行支持
 
 @done
 -> 异常接管
@@ -11,3 +12,14 @@
 -> 自定义错误处理，显示自定义的错误页面
 -> pathinfo模式路由器
 -> pathinfo路由器对hmvc的支持
+-> 类库自动加载
+-> 主项目，Hvmc子项目，拓展包，类库，如果存在相同的类名,视图名,配置文件名等等，优先级最高的起作用。
+   优先级由高->低的顺序是：
+   入口->Hvmc子项目拓展包->Hvmc子项目类库->Hvmc子项目->主项目拓展包->主项目类库->主项目
+-> 在hmvc模块中的bootstrap.php配置中下面的配置不再起作用，请勿使用：
+   $config->setHmvcModules()
+          ->setIndexDir()
+          ->setIndexName()
+          ->setApplicationDir()
+          ->setRequest()
+          ->addRouter()

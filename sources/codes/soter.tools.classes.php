@@ -26,7 +26,16 @@ class Soter_Response {
 class Soter_Route {
 
 	private $found = false;
-	private $controller, $method, $args, $filePath;
+	private $controller, $method, $args, $hvmcModuleName;
+
+	public function getHvmcModuleName() {
+		return $this->hvmcModuleName;
+	}
+
+	public function setHvmcModuleName($hvmcModuleName) {
+		$this->hvmcModuleName = $hvmcModuleName;
+		return $this;
+	}
 
 	public function found() {
 		return $this->found;
@@ -73,59 +82,75 @@ class Soter_Route {
 class Soter_Default_Router_PathInfo extends Soter_Router {
 
 	/**
-	 * 
+	 * 只处理pathinfo模式的路由<br>
+	 * 比如：<br>
+	 * uri：/index.php/Vip uri至少有一个hmvc模块名称Vip，或者控制器名称Vip<br>
+	 * 如果没有就认为不是pathinfo模式的路由<br>
 	 * @return \Soter_Route
 	 */
 	public function find() {
 		$config = Soter::getConfig();
+		//获取uri
+		$uri = $config->getRequest()->getUri();
+		$uri = $uri ? $uri : Soter_Tools::issetGet($_SERVER, 'REQUEST_URI', '/');
+
 		/**
-		 * 解析uri解析url中的访问路径 
+		 * pathinfo模式路由判断以及解析uri中的访问路径 
 		 * 比如：http://127.0.0.1/index.php/Welcome/index.do?id=11
 		 * 获取的是后面的(Welcome/index.do)部分，也就是index.php/和?之间的部分
 		 */
-		$uri = $config->getRequest()->getUri();
-		$uri = $uri ? $uri : Soter_Tools::issetGet($_SERVER, 'REQUEST_URI', '/');
 		$indexName = Soter::getConfig()->getIndexName();
 		if (($pos = stripos($uri, '/' . $indexName)) !== FALSE) {
 			$uri = ltrim(substr($uri, $pos + strlen('/' . $indexName)), '/');
 			$_uriarr = explode('?', $uri);
 			$uri = trim(current($_uriarr), '/');
-			$_info = explode('/', $uri);
-			$hmvcModule = current($_info);
-			$hmvcModules = $config->getHmvcModules();
-			//hmvc检测
-			if (isset($hmvcModules[$hmvcModule])) {
-				$hmvcDir = $config->getApplicationDir() . $config->getHmvcDirName() . '/' . $hmvcModules[$hmvcModule] . '/';
-				//删除hmvc头
-				array_shift($_info);
-				//留下真正的路径
-				$uri = implode('/', $_info);
-				$config->addPackage($hmvcDir, true);
-			}
 		} else {
-			//不是pathinfo模式，返回没有找到
+			$uri = '';
+		}
+		if (empty($uri)) {
+			//没有找到hmvc模块名称，或者控制器名称
 			return $this->route->setFound(FALSE);
 		}
-		//$path: Welcome/index.do , Welcome/User , Welcome
-		$path = $uri;
-		$controller = $config->getDefaultController();
-		$prefix = $config->getMethodPrefix();
-		$method = $config->getDefaultMethod();
-		$subfix = $config->getMethodUriSubfix();
-		//解析路径
-		if ($path) {
+		//到此$uri形如：Welcome/index.do , Welcome/User , Welcome
+		//hmvc检测 
+		$_info = explode('/', $uri);
+		$hmvcModule = current($_info);
+		$hmvcModules = $config->getHmvcModules();
+		$hmvcModuleDirName = (!empty($hmvcModules[$hmvcModule])) ? $hmvcModules[$hmvcModule] : '';
+		if ($hmvcModuleDirName) {
+			//找到hmvc模块,去除hmvc模块名称，得到真正的路径
+			$hmvcModules = $config->getHmvcModules();
+			$hmvcModulePath = $config->getApplicationDir() . $config->getHmvcDirName() . '/' . $hmvcModuleDirName . '/';
+			$config->setApplicationDir($hmvcModulePath)->addPackage($hmvcModulePath, TRUE);
+			$uri = ltrim(substr($uri, strlen($hmvcModule)), '/');
+		}
 
-			$methodPathArr = explode($subfix, $path);
+		//首先控制器名和方法名初始化为默认
+		$controller = $config->getDefaultController();
+		$method = $config->getDefaultMethod();
+		/**
+		 * 到此，如果上面$uri被去除掉hvmc模块名称后，$uri有可能是空
+		 * 或者$uri有控制器名称或者方法名称
+		 * 形如：Welcome/index.do , Welcome/User , Welcome
+		 */
+		if ($uri) {
+			$subfix = $config->getMethodUriSubfix();
+			//解析路径
+			$methodPathArr = explode($subfix, $uri);
+			//找到了控制器名和方法名
 			if (count($methodPathArr) == 2 && empty($methodPathArr[1])) {
-				$controller = str_replace('/', '_', dirname($path));
+				//覆盖上面的默认控制器名和方法名
+				$controller = str_replace('/', '_', dirname($uri));
 				$method = basename($methodPathArr[0], $subfix);
 			} elseif (!empty($methodPathArr[0])) {
-				$controller = str_replace('/', '_', $path);
+				//只找到了控制器名，覆盖上面的默认控制器名
+				$controller = str_replace('/', '_', $uri);
 			}
 		}
 		$controller = $config->getControllerDirName() . '_' . $controller;
-		$method = $prefix . $method;
+		$method = $config->getMethodPrefix() . $method;
 		return $this->route
+				->setHvmcModuleName($hmvcModuleDirName)
 				->setController($controller)
 				->setMethod($method)
 				->setFound(TRUE);
@@ -319,19 +344,27 @@ class Soter_Config {
 		return $this->packageContainer;
 	}
 
+	public function addPackages(Array $packagesPath) {
+		foreach ($packagesPath as $packagePath) {
+			$this->addPackage($packagePath);
+		}
+		return $this;
+	}
+
 	public function addPackage($packagePath, $isHmvc = false) {
 		$packagePath = Sr::realPath($packagePath) . '/';
-		if ($isHmvc) {
+		if (!in_array($packagePath, $this->packageContainer)) {
+			//注册hmvc模块到包容器中
 			array_unshift($this->packageContainer, $packagePath);
-			//引入配置
+			if (file_exists($library = $packagePath . $this->getLibraryDirName() . '/')) {
+				array_unshift($this->packageContainer, $library);
+			}
+		}
+		if ($isHmvc) {
+			//引入hmvc模块配置
 			if (file_exists($bootstrap = $packagePath . 'bootstrap.php')) {
 				Sr::includeOnce($bootstrap);
 			}
-		} else {
-			array_push($this->packageContainer, $packagePath);
-		}
-		if (file_exists($library = $packagePath . $this->getLibraryDirName() . '/')) {
-			array_push($this->packageContainer, $library);
 		}
 	}
 
