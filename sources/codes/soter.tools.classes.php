@@ -253,7 +253,7 @@ class Soter_Config {
 	 * 获取当前运行环境下，配置文件目录路径
 	 * @return type
 	 */
-	public function getConfigDir() {
+	public function getConfigCurrentDirName() {
 		$name = $this->getConfigDevelopmentDirName();
 		switch ($this->environment) {
 			case Sr::ENV_DEVELOPMENT :
@@ -266,7 +266,7 @@ class Soter_Config {
 				$name = $this->getConfigProductionDirName();
 				break;
 		}
-		return Sr::realpath($this->getApplicationDir() . '/' . $this->configDirName . '/' . $name) . '/';
+		return $name;
 	}
 
 	public function getEnvironment() {

@@ -108,7 +108,7 @@ class Soter {
 	 * 命令行模式运行
 	 */
 	private static function runCli() {
-		echo Sr::config()->getConfigDir();
+		
 	}
 
 	/**
@@ -204,8 +204,8 @@ class Sr {
 
 	/**
 	 * 插件模式下的超级工厂类
-	 * @param type $className
-	 * @param type $hvmcModuleName
+	 * @param type $className      可以是控制器类名，模型类名，类库类名
+	 * @param type $hvmcModuleName hmvc模块名称，是配置里面的数组的键名
 	 * @return \className
 	 * @throws Soter_Exception_404
 	 */
@@ -236,6 +236,19 @@ class Sr {
 
 	static function &config() {
 		return Soter::getConfig();
+	}
+
+	static function loadConfig($configName) {
+		$config = Soter::getConfig();
+		$configFilename = $configName;
+		foreach ($config->getPackages() as $packagePath) {
+			$filePath = $packagePath . $config->getConfigDirName() . '/' . $config->getConfigCurrentDirName() . '/' . $configFilename . '.php';
+			if (file_exists($filePath)) {
+				$cfg = eval('?>'.file_get_contents($filePath));
+				return $cfg;
+			}
+		}
+		return null;
 	}
 
 }
