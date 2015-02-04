@@ -8,14 +8,15 @@ require dirname(__FILE__) . '/soter.php';
 define('SOTER_APP_PATH', Sr::realPath(dirname(__FILE__) . '/../application') . '/');
 //项目拓展包路径
 define('SOTER_PACKAGES_PATH', SOTER_APP_PATH . 'packages/');
-
 //初始化系统配置
 Soter::initialize()
+	//设置运行环境
+	->setEnvironment(($env = (($cliEnv = getopt('', array('env:'))) ? $cliEnv['env'] : Sr::arrayGet($_SERVER, 'ENVIRONMENT'))) ? Sr::config()->getServerEnvironment($env) : Sr::ENV_DEVELOPMENT)
 	//项目目录路径
 	->setApplicationDir(SOTER_APP_PATH)
 	//注册拓展包
 	->addPackages(array(
-		SOTER_PACKAGES_PATH . 'misc',
+	    SOTER_PACKAGES_PATH . 'misc',
 	))
 	/**
 	 * 下面配置中可以使用：

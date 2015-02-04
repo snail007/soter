@@ -122,6 +122,10 @@ class Soter {
 
 class Sr {
 
+	const ENV_TESTING = 1; //测试环境
+	const ENV_PRODUCTION = 2; //产品环境
+	const ENV_DEVELOPMENT = 3; //开发环境
+
 	private static $includeFiles = array();
 
 	static function arrayGet($array, $key, $default = null) {
@@ -228,6 +232,14 @@ class Sr {
 			}
 		}
 		return new $className();
+	}
+
+	static function &config() {
+		return Soter::getConfig();
+	}
+
+	static function arg($key) {
+		
 	}
 
 }

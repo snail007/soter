@@ -178,6 +178,10 @@ class Soter_Config {
 		$classesDirName = 'classes',
 		$hmvcDirName = 'hmvc',
 		$libraryDirName = 'library',
+		$configDirName = 'config',
+		$configTestingDirName = 'testing',
+		$configProductionDirName = 'production',
+		$configDevelopmentDirName = 'development',
 		$controllerDirName = 'Controller',
 		$defaultController = 'Welcome',
 		$defaultMethod = 'index',
@@ -196,8 +200,117 @@ class Soter_Config {
 		$packageContainer = array(),
 		$loggerWriterContainer = array(),
 		$uriReWriterContainer = array(),
-		$exceptionHandle, $route,
+		$exceptionHandle, $route, $environment = Sr::ENV_DEVELOPMENT,
+		$serverEnvironmentTestingValue = 'testing',
+		$serverEnvironmentDevelopmentValue = 'development',
+		$serverEnvironmentProductionValue = 'production',
 		$hmvcModules = array();
+
+	public function getServerEnvironment($environment) {
+		switch (strtoupper($environment)) {
+			case strtoupper($this->getServerEnvironmentDevelopmentValue()):
+				return Sr::ENV_DEVELOPMENT;
+			case strtoupper($this->getServerEnvironmentProductionValue()):
+				return Sr::ENV_PRODUCTION;
+			case strtoupper($this->getServerEnvironmentTestingValue()):
+				return Sr::ENV_TESTING;
+			default:
+				throw new Soter_Exception_500('wrong parameter value[' . $environment . '] of getServerEnvironment(), '
+				. 'should be one of [' . $this->getServerEnvironmentDevelopmentValue() . ',' .
+				$this->getServerEnvironmentTestingValue() . ',' .
+				$this->getServerEnvironmentProductionValue() . ']');
+		}
+	}
+
+	public function getServerEnvironmentTestingValue() {
+		return $this->serverEnvironmentTestingValue;
+	}
+
+	public function getServerEnvironmentProductionValue() {
+		return $this->serverEnvironmentProductionValue;
+	}
+
+	public function getServerEnvironmentDevelopmentValue() {
+		return $this->serverEnvironmentDevelopmentValue;
+	}
+
+	public function setServerEnvironmentDevelopmentValue($serverEnvironmentDevelopmentValue) {
+		$this->serverEnvironmentDevelopmentValue = $serverEnvironmentDevelopmentValue;
+		return $this;
+	}
+
+	public function setServerEnvironmentTestingValue($serverEnvironmentTestingValue) {
+		$this->serverEnvironmentTestingValue = $serverEnvironmentTestingValue;
+		return $this;
+	}
+
+	public function setServerEnvironmentProductionValue($serverEnvironmentProductionValue) {
+		$this->serverEnvironmentProductionValue = $serverEnvironmentProductionValue;
+		return $this;
+	}
+
+	public function getConfigDir() {
+		$name = $this->getConfigDevelopmentDirName();
+		switch ($this->environment) {
+			case Sr::ENV_DEVELOPMENT :
+				$name = $this->getConfigDevelopmentDirName();
+			case Sr::ENV_TESTING :
+				$name = $this->getConfigTestingDirName();
+				break;
+			case Sr::ENV_PRODUCTION :
+				$name = $this->getConfigProductionDirName();
+				break;
+		}
+		return $this->getApplicationDir() . '/' . $this->configDirName . $name;
+	}
+
+	public function getEnvironment() {
+		return $this->environment;
+	}
+
+	public function setEnvironment($environment) {
+		if (!in_array($environment, array(Sr::ENV_DEVELOPMENT, Sr::ENV_PRODUCTION, Sr::ENV_TESTING))) {
+			throw new Soter_Exception_500('wrong parameter value[' . $environment . '] of setEnvironment(), should be one of [Sr::ENV_DEVELOPMENT,Sr::ENV_PRODUCTION,Sr::ENV_TESTING]');
+		}
+		$this->environment = $environment;
+		return $this;
+	}
+
+	public function getConfigDirName() {
+		return $this->configDirName;
+	}
+
+	public function getConfigTestingDirName() {
+		return $this->configTestingDirName;
+	}
+
+	public function getConfigProductionDirName() {
+		return $this->configProductionDirName;
+	}
+
+	public function getConfigDevelopmentDirName() {
+		return $this->configDevelopmentDirName;
+	}
+
+	public function setConfigDirName($configDirName) {
+		$this->configDirName = $configDirName;
+		return $this;
+	}
+
+	public function setConfigTestingDirName($configTestingDirName) {
+		$this->configTestingDirName = $configTestingDirName;
+		return $this;
+	}
+
+	public function setConfigProductionDirName($configProductionDirName) {
+		$this->configProductionDirName = $configProductionDirName;
+		return $this;
+	}
+
+	public function setConfigDevelopmentDirName($configDevelopmentDirName) {
+		$this->configDevelopmentDirName = $configDevelopmentDirName;
+		return $this;
+	}
 
 	/**
 	 * 
