@@ -10,16 +10,16 @@ define('SOTER_APP_PATH', Sr::realPath(dirname(__FILE__) . '/../application') . '
 define('SOTER_PACKAGES_PATH', SOTER_APP_PATH . 'packages/');
 //初始化系统配置
 Soter::initialize()
-	//设置运行环境
-	->setEnvironment(($env = (($cliEnv = getopt('', array('env:'))) ? $cliEnv['env'] : Sr::arrayGet($_SERVER, 'ENVIRONMENT'))) ? Sr::config()->getServerEnvironment($env) : Sr::ENV_DEVELOPMENT)
-	//系统错误显示设置，非产品环境才显示
-	->setShowError(Sr::config()->getEnvironment() != Sr::ENV_PRODUCTION)
        //项目目录路径
 	->setApplicationDir(SOTER_APP_PATH)
 	//注册拓展包
 	->addPackages(array(
 	    SOTER_PACKAGES_PATH . 'misc',
 	))
+	//设置运行环境
+	->setEnvironment(($env = (($cliEnv = getopt('', array('env:'))) ? $cliEnv['env'] : Sr::arrayGet($_SERVER, 'ENVIRONMENT'))) ? Sr::config()->getServerEnvironment($env) : Sr::ENV_DEVELOPMENT)
+	//系统错误显示设置，非产品环境才显示
+	->setShowError(Sr::config()->getEnvironment() != Sr::ENV_PRODUCTION)
 	/**
 	 * 下面配置中可以使用：
 	 * 1.主项目的claseses目录，主项目类库目录，主项目拓展包里面的类
@@ -35,7 +35,7 @@ Soter::initialize()
 	->addRouter(new Soter_Default_Router_PathInfo())
 	//->addLoggerWriter(new Logger_MyWriter())
 	//设置自定义的错误显示控制处理类
-	->setExceptionHandle(new Exception_Handle())
+	//->setExceptionHandle(new Exception_Handle())
 	//->addLoggerWriter(new Soter_Logger_FileWriter())
 	//默认控制器
 	->setDefaultController('Welcome')
