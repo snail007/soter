@@ -1,5 +1,7 @@
 <?php
 
 class Misc {
-	//put your code here
+	public function __construct() {
+		echo 'Form  Package Misc :'.__FILE__.'<br>';
+	}
 }

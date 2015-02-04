@@ -238,8 +238,4 @@ class Sr {
 		return Soter::getConfig();
 	}
 
-	static function arg($key) {
-		
-	}
-
 }

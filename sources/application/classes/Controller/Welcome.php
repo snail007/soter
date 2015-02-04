@@ -3,7 +3,7 @@
 class Controller_Welcome {
 
 	public function do_index() {
-		echo Sr::config()->getConfigDir();
+
 		Sr::dump(new MyClass(), new Misc());
 	}
 
