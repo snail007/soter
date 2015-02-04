@@ -15,7 +15,7 @@ Soter::initialize()
 	->setApplicationDir(SOTER_APP_PATH)
 	//注册拓展包
 	->addPackages(array(
-		//SOTER_PACKAGES_PATH . 'misc',
+		SOTER_PACKAGES_PATH . 'misc',
 	))
 	/**
 	 * 下面配置中可以使用：
@@ -47,13 +47,7 @@ Soter::initialize()
 	))
 ;
 
-//运行
-if (Sr::isCli()) {
-	
-} else {
-	//启动，噪起来
-	Soter::run();
-}
-
+//启动，噪起来
+Soter::run();
 
 

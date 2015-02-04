@@ -191,6 +191,7 @@ class Soter_Config {
 		$excptionErrorJsonTypeName = 'errorType',
 		$excptionErrorJsonCodeName = 'errorCode',
 		$excptionErrorJsonTraceName = 'errorTrace',
+		$excptionErrorJsonTimeName = 'errorTime',
 		$routersContainer = array(),
 		$packageContainer = array(),
 		$loggerWriterContainer = array(),
@@ -429,6 +430,15 @@ class Soter_Config {
 
 	public function getExcptionErrorJsonTraceName() {
 		return $this->excptionErrorJsonTraceName;
+	}
+
+	public function getExcptionErrorJsonTimeName() {
+		return $this->excptionErrorJsonTimeName;
+	}
+
+	public function setExcptionErrorJsonTimeName($excptionErrorJsonTimeName) {
+		$this->excptionErrorJsonTimeName = $excptionErrorJsonTimeName;
+		return $this;
 	}
 
 	public function setExcptionErrorJsonMessageName($excptionErrorJsonMessageName) {

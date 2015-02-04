@@ -76,7 +76,6 @@ abstract class Soter_Exception extends Exception {
 		}
 		return implode(' | ', $levels);
 	}
-
 	public function getErrorMessage() {
 		return $this->errorMessage;
 	}
@@ -108,13 +107,18 @@ abstract class Soter_Exception extends Exception {
 		return $this->errorType2string($this->errorCode);
 	}
 
-	public function render($isJson = FALSE) {
+	public function render($isJson = FALSE, $return = FALSE) {
 		if ($isJson) {
-			echo $this->renderJson();
+			$string = $this->renderJson();
 		} elseif (Sr::isCli()) {
-			echo $this->renderCli() . $this->getTraceString(TRUE);
+			$string = $this->renderCli();
 		} else {
-			echo str_replace('</body>', $this->getTraceString(FALSE) . '</body>', $this->renderHtml());
+			$string = str_replace('</body>', $this->getTraceString(FALSE) . '</body>', $this->renderHtml());
+		}
+		if ($return) {
+			return $string;
+		} else {
+			echo $string;
 		}
 	}
 
@@ -156,7 +160,8 @@ abstract class Soter_Exception extends Exception {
 	public function renderCli() {
 		return "$this->exceptionName [ " . $this->getErrorType() . " ]\n"
 			. "Line: " . $this->getErrorLine() . ". " . $this->getErrorFile() . "\n"
-			. "Message: " . $this->getErrorMessage() . "\n";
+			. "Message: " . $this->getErrorMessage() . "\n"
+			. "Time: " . date('Y/m/d H:i:s T') . "\n";
 	}
 
 	public function renderHtml() {
@@ -164,7 +169,8 @@ abstract class Soter_Exception extends Exception {
 			. '<div style="padding:10px;background:red;font-size:18px;">' . $this->exceptionName . ' [ ' . $this->getErrorType() . ' ] </div>'
 			. '<div style="padding:10px;background:black;font-size:14px;color:yellow;line-height:1.5em;">'
 			. '<font color="whitesmoke">Line: </font>' . $this->getErrorLine() . ' [ ' . $this->getErrorFile(TRUE) . ' ]<br/>'
-			. '<font color="whitesmoke">Message: </font>' . htmlspecialchars($this->getErrorMessage()) . '</div>'
+			. '<font color="whitesmoke">Message: </font>' . htmlspecialchars($this->getErrorMessage()) . '</br>'
+			. '<font color="whitesmoke">Time: </font>' . date('Y/m/d H:i:s T') . '</div>'
 			. '</body>';
 	}
 
@@ -175,6 +181,7 @@ abstract class Soter_Exception extends Exception {
 		$json[$config->getExcptionErrorJsonMessageName()] = $this->getErrorMessage();
 		$json[$config->getExcptionErrorJsonTypeName()] = $this->getErrorType();
 		$json[$config->getExcptionErrorJsonCodeName()] = $this->getErrorCode();
+		$json[$config->getExcptionErrorJsonTimeName()] = date('Y/m/d H:i:s T');
 		$json[$config->getExcptionErrorJsonTraceName()] = $this->getTraceCliString();
 		$output = json_encode($json);
 		return $output;
@@ -183,6 +190,10 @@ abstract class Soter_Exception extends Exception {
 	public function setHttpHeader() {
 		header($this->httpStatusLine);
 		return $this;
+	}
+
+	public function __toString() {
+		return $this->render(FALSE, TRUE);
 	}
 
 }

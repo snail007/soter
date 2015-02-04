@@ -3,6 +3,11 @@
 -> uri重写功能
 -> 完成get模式路由器
 -> 命令行支持
+-> 插件模式支持
+-> 加载模型
+-> 加载类库
+-> 加载配置
+-> 环境配置支持
 
 @done
 -> 异常接管
@@ -19,7 +24,6 @@
    访问Hvmc子项目时：
    1.子项目共享主项目的classes类目录，拓展包，类库。
    2.主项目目录切换成Hvmc子项目目录。也就是$config->getApplicationDir()返回的是Hvmc子项目目录路径。
-
 -> 在hmvc模块中的bootstrap.php配置中下面的配置不再起作用，请勿使用：
    $config->setHmvcModules()
           ->setIndexDir()

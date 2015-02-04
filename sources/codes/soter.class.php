@@ -7,6 +7,10 @@ class Soter {
 
 	private static $soterConfig;
 
+	/**
+	 * 包类库自动加载器
+	 * @param type $className
+	 */
 	public static function classAutoloader($className) {
 		$config = self::$soterConfig;
 		$className = str_replace('_', '/', $className);
@@ -19,7 +23,7 @@ class Soter {
 	}
 
 	/**
-	 * 
+	 * 初始化框架配置
 	 * @return \Soter_Config
 	 */
 	public static function initialize() {
@@ -43,14 +47,31 @@ class Soter {
 	}
 
 	/**
-	 * 
+	 * 获取运行配置
 	 * @return Soter_Config
 	 */
 	public static function &getConfig() {
 		return self::$soterConfig;
 	}
 
+	/**
+	 * 运行调度
+	 */
 	public static function run() {
+		if (Sr::isCli()) {
+			self::runCli();
+		} elseif (defined('SOTER_RUN_MODE_PLUGIN') && SOTER_RUN_MODE_PLUGIN) {
+			self::runPlugin();
+		} else {
+			self::runWeb();
+		}
+	}
+
+	/**
+	 * web模式运行
+	 * @throws Soter_Exception_404
+	 */
+	private static function runWeb() {
 		$config = self::getConfig();
 		$class = '';
 		$method = '';
@@ -81,6 +102,20 @@ class Soter {
 			echo $response;
 		}
 		exit();
+	}
+
+	/**
+	 * 命令行模式运行
+	 */
+	private static function runCli() {
+		
+	}
+
+	/**
+	 * 插件模式运行
+	 */
+	private static function runPlugin() {
+		//插件模式
 	}
 
 }
@@ -161,6 +196,38 @@ class Sr {
 			$var = stripslashes($var);
 		}
 		return $var;
+	}
+
+	/**
+	 * 插件模式下的超级工厂类
+	 * @param type $className
+	 * @param type $hvmcModuleName
+	 * @return \className
+	 * @throws Soter_Exception_404
+	 */
+	static function factory($className, $hvmcModuleName = null) {
+		if (!defined('SOTER_RUN_MODE_PLUGIN') || !SOTER_RUN_MODE_PLUGIN) {
+			throw new Soter_Exception_500('Sr::factory() only in PLUGIN mode');
+		}
+		$config = Soter::getConfig();
+		//hmvc检测
+		if (!empty($hvmcModuleName)) {
+			$hmvcModules = $config->getHmvcModules();
+			if (empty($hmvcModules[$hvmcModuleName])) {
+				throw new Soter_Exception_404('Hmvc Module [ ' . $hvmcModuleName . ' ] not found, please check your config.');
+			}
+			//避免重复加载，提高性能
+			static $loadedModules = array();
+			$hmvcModuleDirName = $hmvcModules[$hvmcModuleName];
+			if (!isset($loadedModules[$hvmcModuleName])) {
+				$loadedModules[$hvmcModuleName] = 1;
+				//找到hmvc模块,去除hmvc模块名称，得到真正的路径
+				$hmvcModulePath = $config->getApplicationDir() . $config->getHmvcDirName() . '/' . $hmvcModuleDirName . '/';
+				//设置hmvc模块目录为主目录，同时注册hmvc模块
+				$config->setApplicationDir($hmvcModulePath)->addPackage($hmvcModulePath, TRUE);
+			}
+		}
+		return new $className();
 	}
 
 }
