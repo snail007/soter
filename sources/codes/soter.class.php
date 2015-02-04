@@ -108,7 +108,7 @@ class Soter {
 	 * 命令行模式运行
 	 */
 	private static function runCli() {
-		
+		echo Sr::config()->getConfigDir();
 	}
 
 	/**
