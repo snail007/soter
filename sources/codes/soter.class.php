@@ -266,12 +266,20 @@ class Sr {
 
 	static function business($businessName) {
 		$name = Sr::config()->getBusinessDirName() . '_' . $businessName;
-		return self::factory($name);
+		$object = self::factory($name);
+		if (!($object instanceof Soter_Business)) {
+			throw new Soter_Exception_500('[ ' . $name . ' ] not a valid Soter_Bussiness');
+		}
+		return $object;
 	}
 
 	static function dao($daoName) {
 		$name = Sr::config()->getDaoDirName() . '_' . $daoName;
-		return self::factory($name);
+		$object = self::factory($name);
+		if (!($object instanceof Soter_Dao)) {
+			throw new Soter_Exception_500('[ ' . $name . ' ] not a valid Soter_Dao');
+		}
+		return $object;
 	}
 
 	/**
@@ -294,6 +302,13 @@ class Sr {
 		return Soter::getConfig();
 	}
 
+	/**
+	 * 插件模式下的超级工厂类
+	 * @param type $className      可以是控制器类名，模型类名，类库类名
+	 * @param type $hmvcModuleName hmvc模块名称，是配置里面的数组的键名
+	 * @return \className
+	 * @throws Soter_Exception_404
+	 */
 	public static function plugin($className, $hmvcModuleName = null) {
 		return Soter::plugin($className, $hmvcModuleName);
 	}

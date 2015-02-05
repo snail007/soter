@@ -4,6 +4,14 @@ abstract class Soter_Controller {
 	
 }
 
+abstract class Soter_Dao {
+	
+}
+
+abstract class Soter_Business {
+	
+}
+
 abstract class Soter_Task {
 
 	abstract function execute(Soter_CliArgs $args);
