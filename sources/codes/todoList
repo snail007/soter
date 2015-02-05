@@ -2,8 +2,6 @@
 -> 完成文件日志Writer：Soter_Logger_FileWriter
 -> uri重写功能
 -> 完成get模式路由器
--> 加载模型（没有自动加载）
--> 加载类库（没有自动加载）
 -> 加载函数文件（有自动加载）
 
 @done
@@ -50,3 +48,7 @@
    命令行可以通过 --env=testing --hmvc=Demo --task=TestTask --parameter1=value1 
    指定环境，hmvc模块，任务名称，以及其它参数
    任务类的execute(Soter_CliArgs $args)方法里面通过$args->get('parameter1')获取参数值
+-> 加载模型
+   1.模型层分层为business和dao层
+   2.或者不分层的model层
+-> 加载类库

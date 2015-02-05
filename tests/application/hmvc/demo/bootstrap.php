@@ -7,6 +7,10 @@ Soter::getConfig()
 	->addMasterPackages(array(
 	    dirname(__FILE__) . '/packages/misc/'
 	))
+	//注册自动加载的函数文件
+	->addAutoloadFunctions(array(
+	    'functions'
+	))
 	//设置运行环境
 	//->setEnvironment(($env = (($cliEnv = getopt('', array('env:'))) ? $cliEnv['env'] : Sr::arrayGet($_SERVER, 'ENVIRONMENT'))) ? Sr::config()->getServerEnvironment($env) : Sr::ENV_DEVELOPMENT)
 	//系统错误显示设置，非产品环境才显示

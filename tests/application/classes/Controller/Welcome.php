@@ -5,8 +5,13 @@ class Controller_Welcome extends Soter_Controller {
 	public function do_index() {
 		Sr::dao('TestDao');
 		Sr::business('TestBusiness');
-		//echo Sr::loadConfig('config.host');
-		Sr::dump(new MyClass(), new Misc());
+		Sr::model('TestModel');
+		Sr::library('MyClass');
+		Sr::factory('MyClass');
+		Sr::factory('Misc');
+		echo Sr::config('config.host');
+		//Sr::functions('functions');
+		myFunction();
 	}
 
 	public function index() {

@@ -119,7 +119,7 @@ class Soter {
 		if (!empty($hmvcModuleName)) {
 			self::checkHmvc($hmvcModuleName);
 		}
-		$taskName = Sr::config()->getTaskDirName() . '_' . $task;
+		$taskName = Soter::getConfig()->getTaskDirName() . '_' . $task;
 		if (!class_exists($taskName)) {
 			throw new Soter_Exception_404('class [ ' . $taskName . ' ] not found');
 		}
@@ -190,8 +190,6 @@ class Sr {
 	const ENV_PRODUCTION = 2; //产品环境
 	const ENV_DEVELOPMENT = 3; //开发环境
 
-	private static $includeFiles = array();
-
 	static function arrayGet($array, $key, $default = null) {
 		return isset($array[$key]) ? $array[$key] : $default;
 	}
@@ -206,10 +204,11 @@ class Sr {
 	}
 
 	public static function includeOnce($filePath) {
+		static $includeFiles = array();
 		$key = self::realPath($filePath);
-		if (!isset(self::$includeFiles[$key])) {
+		if (!isset($includeFiles[$key])) {
 			include $filePath;
-			self::$includeFiles[$key] = 1;
+			$includeFiles[$key] = 1;
 		}
 	}
 
@@ -265,7 +264,7 @@ class Sr {
 	}
 
 	static function business($businessName) {
-		$name = Sr::config()->getBusinessDirName() . '_' . $businessName;
+		$name = Soter::getConfig()->getBusinessDirName() . '_' . $businessName;
 		$object = self::factory($name);
 		if (!($object instanceof Soter_Business)) {
 			throw new Soter_Exception_500('[ ' . $name . ' ] not a valid Soter_Bussiness');
@@ -274,12 +273,47 @@ class Sr {
 	}
 
 	static function dao($daoName) {
-		$name = Sr::config()->getDaoDirName() . '_' . $daoName;
+		$name = Soter::getConfig()->getDaoDirName() . '_' . $daoName;
 		$object = self::factory($name);
 		if (!($object instanceof Soter_Dao)) {
 			throw new Soter_Exception_500('[ ' . $name . ' ] not a valid Soter_Dao');
 		}
 		return $object;
+	}
+
+	static function model($modelName) {
+		$name = Soter::getConfig()->getModelDirName() . '_' . $modelName;
+		$object = self::factory($name);
+		if (!($object instanceof Soter_Model)) {
+			throw new Soter_Exception_500('[ ' . $name . ' ] not a valid Soter_Model');
+		}
+		return $object;
+	}
+
+	static function library($className) {
+		return self::factory($className);
+	}
+
+	static function functions($functionFilename) {
+		static $loadedFunctionsFile = array();
+		if (isset($loadedFunctionsFile[$functionFilename])) {
+			return;
+		} else {
+			$loadedFunctionsFile[$functionFilename] = 1;
+		}
+		$config = Soter::getConfig();
+		$found = false;
+		foreach ($config->getPackages() as $packagePath) {
+			$filePath = $packagePath . $config->getFunctionsDirName() . '/' . $functionFilename . '.php';
+			if (file_exists($filePath)) {
+				self::includeOnce($filePath);
+				$found = true;
+				break;
+			}
+		}
+		if (!$found) {
+			throw new Soter_Exception_404('functions file [ ' . $functionFilename . '.php ] not found');
+		}
 	}
 
 	/**
@@ -298,10 +332,6 @@ class Sr {
 		return new $className();
 	}
 
-	static function &config() {
-		return Soter::getConfig();
-	}
-
 	/**
 	 * 插件模式下的超级工厂类
 	 * @param type $className      可以是控制器类名，模型类名，类库类名
@@ -313,7 +343,17 @@ class Sr {
 		return Soter::plugin($className, $hmvcModuleName);
 	}
 
-	static function loadConfig($configName) {
+	/**
+	 * 1.不传递参数返回系统配置对象（Soter_Config）。<br/>
+	 * 2.传递参数加载具体的配置<br/>
+	 * @staticvar array $loadedConfig
+	 * @param type $configName
+	 * @return Soter_Config|mixed
+	 */
+	static function &config($configName = null) {
+		if (empty($configName)) {
+			return Soter::getConfig();
+		}
 		$_info = explode('.', $configName);
 		$configFileName = current($_info);
 		static $loadedConfig = array();
@@ -322,6 +362,7 @@ class Sr {
 			$cfg = $loadedConfig[$configFileName];
 		} else {
 			$config = Soter::getConfig();
+			$found = false;
 			foreach ($config->getPackages() as $packagePath) {
 				$filePath = $packagePath . $config->getConfigDirName() . '/' . $config->getConfigCurrentDirName() . '/' . $configFileName . '.php';
 				$fileDefaultPath = $packagePath . $config->getConfigDirName() . '/default/' . $configFileName . '.php';
@@ -334,8 +375,12 @@ class Sr {
 				if ($contents) {
 					$cfg = eval('?>' . $contents);
 					$loadedConfig[$configFileName] = $cfg;
+					$found = true;
 					break;
 				}
+			}
+			if (!$found) {
+				throw new Soter_Exception_404('config file [ ' . $configFileName . '.php ] not found');
 			}
 		}
 		if ($cfg && count($_info) > 1) {
@@ -344,7 +389,8 @@ class Sr {
 			foreach ($_info as $k) {
 				$keyStrArray.= "['" . $k . "']";
 			}
-			return eval('return isset($cfg' . $keyStrArray . ')?$cfg' . $keyStrArray . ':null;');
+			$val = eval('return isset($cfg' . $keyStrArray . ')?$cfg' . $keyStrArray . ':null;');
+			return $val;
 		} else {
 			return $cfg;
 		}

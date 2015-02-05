@@ -195,6 +195,7 @@ class Soter_Config {
 		$classesDirName = 'classes',
 		$hmvcDirName = 'hmvc',
 		$libraryDirName = 'library',
+		$functionsDirName = 'functions',
 		$configDirName = 'config',
 		$configTestingDirName = 'testing',
 		$configProductionDirName = 'production',
@@ -202,6 +203,7 @@ class Soter_Config {
 		$controllerDirName = 'Controller',
 		$businessDirName = 'Business',
 		$daoDirName = 'Dao',
+		$modelDirName = 'Model',
 		$taskDirName = 'Task',
 		$defaultController = 'Welcome',
 		$defaultMethod = 'index',
@@ -226,6 +228,31 @@ class Soter_Config {
 		$serverEnvironmentDevelopmentValue = 'development',
 		$serverEnvironmentProductionValue = 'production',
 		$hmvcModules = array();
+
+	public function addAutoloadFunctions(Array $funciontsFileNameArray) {
+		foreach ($funciontsFileNameArray as $functionsFileName) {
+			Sr::functions($functionsFileName);
+		}
+		return $this;
+	}
+
+	public function getFunctionsDirName() {
+		return $this->functionsDirName;
+	}
+
+	public function setFunctionsDirName($functionsDirName) {
+		$this->functionsDirName = $functionsDirName;
+		return $this;
+	}
+
+	public function getModelDirName() {
+		return $this->modelDirName;
+	}
+
+	public function setModelDirName($modelDirName) {
+		$this->modelDirName = $modelDirName;
+		return $this;
+	}
 
 	public function getBusinessDirName() {
 		return $this->businessDirName;

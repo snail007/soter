@@ -4,6 +4,10 @@ abstract class Soter_Controller {
 	
 }
 
+abstract class Soter_Model {
+	
+}
+
 abstract class Soter_Dao {
 	
 }
