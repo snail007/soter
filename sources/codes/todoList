@@ -1,8 +1,8 @@
 @todo
 -> 完成文件日志Writer：Soter_Logger_FileWriter
--> uri重写功能
--> 完成get模式路由器
--> 加载函数文件（有自动加载）
+-> uri重写功能 *
+-> 完成get模式路由器 *
+
 
 @done
 -> 异常接管
@@ -52,3 +52,4 @@
    1.模型层分层为business和dao层
    2.或者不分层的model层
 -> 加载类库
+-> 加载函数文件（有自动加载）
