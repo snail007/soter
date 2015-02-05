@@ -2,13 +2,9 @@
 -> 完成文件日志Writer：Soter_Logger_FileWriter
 -> uri重写功能
 -> 完成get模式路由器
--> 命令行支持 *
 -> 加载模型（没有自动加载）
 -> 加载类库（没有自动加载）
--> 加载配置（没有自动加载）*
 -> 加载函数文件（有自动加载）
-
-
 
 @done
 -> 异常接管
@@ -49,3 +45,8 @@
    1.当设置了自定义类错误显示处理类，系统错误显示处理类不再起作用。
    2.当没有设置自定义类错误显示处理类，系统错误显示处理类是否显示错误是由$config->getShowError()决定的。
    3.用户错误处理类不受showError限制，是否显示错误由自定义处理类决定。
+-> 加载配置（没有自动加载）,支持用点快捷获取键值
+-> 命令行支持
+   命令行可以通过 --env=testing --hmvc=Demo --task=TestTask --parameter1=value1 
+   指定环境，hmvc模块，任务名称，以及其它参数
+   任务类的execute(Soter_CliArgs $args)方法里面通过$args->get('parameter1')获取参数值

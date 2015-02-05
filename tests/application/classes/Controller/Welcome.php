@@ -1,10 +1,9 @@
 <?php
 
-class Controller_Welcome {
+class Controller_Welcome extends Soter_Controller {
 
 	public function do_index() {
-		
-		Sr::dump(Sr::loadConfig('config'));
+		//echo Sr::loadConfig('config.host');
 		Sr::dump(new MyClass(), new Misc());
 	}
 

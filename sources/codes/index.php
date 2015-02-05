@@ -19,7 +19,7 @@ Soter::initialize()
 	    SOTER_PACKAGES_PATH . 'misc',
 	))
 	//设置运行环境
-	->setEnvironment(($env = (($cliEnv = getopt('', array('env:'))) ? $cliEnv['env'] : Sr::arrayGet($_SERVER, 'ENVIRONMENT'))) ? Sr::config()->getServerEnvironment($env) : Sr::ENV_DEVELOPMENT)
+	->setEnvironment(($env = (($cliEnv = Sr::getOpt('env')) ? $cliEnv : Sr::arrayGet($_SERVER, 'ENVIRONMENT'))) ? Sr::config()->getServerEnvironment($env) : Sr::ENV_DEVELOPMENT)
 	//系统错误显示设置，非产品环境才显示
 	->setShowError(Sr::config()->getEnvironment() != Sr::ENV_PRODUCTION)
 	/**

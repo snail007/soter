@@ -23,17 +23,34 @@ class Soter_Response {
 	
 }
 
+class Soter_CliArgs {
+
+	private $args;
+
+	public function __construct() {
+		$this->args = Sr::getOpt();
+	}
+
+	public function get($key = null, $default = null) {
+		if (empty($key)) {
+			return $this->args;
+		}
+		return Sr::arrayGet($this->args, $key, $default);
+	}
+
+}
+
 class Soter_Route {
 
 	private $found = false;
-	private $controller, $method, $args, $hvmcModuleName;
+	private $controller, $method, $args, $hmvcModuleName;
 
 	public function getHvmcModuleName() {
 		return $this->hvmcModuleName;
 	}
 
-	public function setHvmcModuleName($hvmcModuleName) {
-		$this->hvmcModuleName = $hvmcModuleName;
+	public function setHvmcModuleName($hmvcModuleName) {
+		$this->hvmcModuleName = $hmvcModuleName;
 		return $this;
 	}
 
@@ -183,6 +200,9 @@ class Soter_Config {
 		$configProductionDirName = 'production',
 		$configDevelopmentDirName = 'development',
 		$controllerDirName = 'Controller',
+		$businessDirName = 'Business',
+		$daoDirName = 'Dao',
+		$taskDirName = 'Task',
 		$defaultController = 'Welcome',
 		$defaultMethod = 'index',
 		$methodPrefix = 'do_',
@@ -206,6 +226,33 @@ class Soter_Config {
 		$serverEnvironmentDevelopmentValue = 'development',
 		$serverEnvironmentProductionValue = 'production',
 		$hmvcModules = array();
+
+	public function getBusinessDirName() {
+		return $this->businessDirName;
+	}
+
+	public function getDaoDirName() {
+		return $this->daoDirName;
+	}
+
+	public function getTaskDirName() {
+		return $this->taskDirName;
+	}
+
+	public function setBusinessDirName($businessDirName) {
+		$this->businessDirName = $businessDirName;
+		return $this;
+	}
+
+	public function setDaoDirName($daoDirName) {
+		$this->daoDirName = $daoDirName;
+		return $this;
+	}
+
+	public function setTaskDirName($taskDirName) {
+		$this->taskDirName = $taskDirName;
+		return $this;
+	}
 
 	public function getServerEnvironment($environment) {
 		switch (strtoupper($environment)) {

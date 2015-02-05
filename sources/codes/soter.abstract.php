@@ -1,5 +1,14 @@
 <?php
 
+abstract class Soter_Controller {
+	
+}
+
+abstract class Soter_Task {
+
+	abstract function execute(Soter_CliArgs $args);
+}
+
 /**
  * @property Soter_Route $route
  */
@@ -76,6 +85,7 @@ abstract class Soter_Exception extends Exception {
 		}
 		return implode(' | ', $levels);
 	}
+
 	public function getErrorMessage() {
 		return $this->errorMessage;
 	}

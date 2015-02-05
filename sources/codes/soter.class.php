@@ -92,6 +92,9 @@ class Soter {
 			$method = $config->getMethodPrefix() . $config->getDefaultMethod();
 		}
 		$controllerObject = new $class();
+		if (!($controllerObject instanceof Soter_Controller)) {
+			throw new Soter_Exception_500('[ ' . $class . ' ] not a valid Soter_Controller');
+		}
 		if (!method_exists($controllerObject, $method)) {
 			throw new Soter_Exception_404('Method [ ' . $class . '->' . $method . '() ] not found');
 		}
@@ -108,7 +111,25 @@ class Soter {
 	 * 命令行模式运行
 	 */
 	private static function runCli() {
-		
+		$task = Sr::getOpt('task');
+		$hmvcModuleName = Sr::getOpt('hmvc');
+		if (empty($task)) {
+			exit('require a task name,please use --task=<taskname>' . "\n");
+		}
+		if (!empty($hmvcModuleName)) {
+			self::checkHmvc($hmvcModuleName);
+		}
+		$taskName = Sr::config()->getTaskDirName() . '_' . $task;
+		if (!class_exists($taskName)) {
+			throw new Soter_Exception_404('class [ ' . $taskName . ' ] not found');
+		}
+		$taskObject = new $taskName();
+		if (!($taskObject instanceof Soter_Task)) {
+			throw new Soter_Exception_500('[ ' . $taskName . ' ] not a valid Soter_Task');
+		}
+		$args = Sr::getOpt();
+		$args = empty($args) ? array() : $args;
+		$taskObject->execute(new Soter_CliArgs($args));
 	}
 
 	/**
@@ -116,6 +137,49 @@ class Soter {
 	 */
 	private static function runPlugin() {
 		//插件模式
+	}
+
+	/**
+	 * 插件模式下的超级工厂类
+	 * @param type $className      可以是控制器类名，模型类名，类库类名
+	 * @param type $hmvcModuleName hmvc模块名称，是配置里面的数组的键名
+	 * @return \className
+	 * @throws Soter_Exception_404
+	 */
+	public static function plugin($className, $hmvcModuleName = null) {
+		if (!defined('SOTER_RUN_MODE_PLUGIN') || !SOTER_RUN_MODE_PLUGIN) {
+			throw new Soter_Exception_500('Sr::plugin() only in PLUGIN mode');
+		}
+		//hmvc检测
+		self::checkHmvc($hmvcModuleName);
+		return new $className();
+	}
+
+	/**
+	 * 检测并加载hmvc模块
+	 * @staticvar array $loadedModules
+	 * @param type $hmvcModuleName
+	 * @throws Soter_Exception_404
+	 */
+	private static function checkHmvc($hmvcModuleName) {
+		//hmvc检测
+		if (!empty($hmvcModuleName)) {
+			$config = Soter::getConfig();
+			$hmvcModules = $config->getHmvcModules();
+			if (empty($hmvcModules[$hmvcModuleName])) {
+				throw new Soter_Exception_404('Hmvc Module [ ' . $hmvcModuleName . ' ] not found, please check your config.');
+			}
+			//避免重复加载，提高性能
+			static $loadedModules = array();
+			$hmvcModuleDirName = $hmvcModules[$hmvcModuleName];
+			if (!isset($loadedModules[$hmvcModuleName])) {
+				$loadedModules[$hmvcModuleName] = 1;
+				//找到hmvc模块,去除hmvc模块名称，得到真正的路径
+				$hmvcModulePath = $config->getApplicationDir() . $config->getHmvcDirName() . '/' . $hmvcModuleDirName . '/';
+				//设置hmvc子项目目录为主目录，同时注册hmvc子项目目录到主包容器，以保证高优先级
+				$config->setApplicationDir($hmvcModulePath)->addMasterPackage($hmvcModulePath);
+			}
+		}
 	}
 
 }
@@ -137,7 +201,7 @@ class Sr {
 		@ob_start();
 		call_user_func_array('var_dump', func_get_args());
 		$html = @ob_get_clean();
-		echo htmlspecialchars($html);
+		echo!self::isCli() ? htmlspecialchars($html) : $html;
 		echo!self::isCli() ? "</pre>" : "\n";
 	}
 
@@ -157,7 +221,6 @@ class Sr {
 		if (strpos($path, ':') === false && strlen($path) && $path{0} != '/') {
 			$path = realpath('.') . DIRECTORY_SEPARATOR . $path;
 		}
-		// resolve path parts (single dot, double dot and double delimiters)
 		$path = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $path);
 		$parts = array_filter(explode(DIRECTORY_SEPARATOR, $path), 'strlen');
 		$absolutes = array();
@@ -201,34 +264,28 @@ class Sr {
 		return $var;
 	}
 
+	static function business($businessName) {
+		$name = Sr::config()->getBusinessDirName() . '_' . $businessName;
+		return self::factory($name);
+	}
+
+	static function dao($daoName) {
+		$name = Sr::config()->getDaoDirName() . '_' . $daoName;
+		return self::factory($name);
+	}
+
 	/**
-	 * 插件模式下的超级工厂类
-	 * @param type $className      可以是控制器类名，模型类名，类库类名
-	 * @param type $hvmcModuleName hmvc模块名称，是配置里面的数组的键名
+	 * web模式和命令行模式下的超级工厂方法
+	 * @param type $className
 	 * @return \className
 	 * @throws Soter_Exception_404
 	 */
-	static function factory($className, $hvmcModuleName = null) {
-		if (!defined('SOTER_RUN_MODE_PLUGIN') || !SOTER_RUN_MODE_PLUGIN) {
-			throw new Soter_Exception_500('Sr::factory() only in PLUGIN mode');
+	static function factory($className) {
+		if (defined('SOTER_RUN_MODE_PLUGIN') && SOTER_RUN_MODE_PLUGIN) {
+			throw new Soter_Exception_500('Sr::factory() only in web or cli mode');
 		}
-		$config = Soter::getConfig();
-		//hmvc检测
-		if (!empty($hvmcModuleName)) {
-			$hmvcModules = $config->getHmvcModules();
-			if (empty($hmvcModules[$hvmcModuleName])) {
-				throw new Soter_Exception_404('Hmvc Module [ ' . $hvmcModuleName . ' ] not found, please check your config.');
-			}
-			//避免重复加载，提高性能
-			static $loadedModules = array();
-			$hmvcModuleDirName = $hmvcModules[$hvmcModuleName];
-			if (!isset($loadedModules[$hvmcModuleName])) {
-				$loadedModules[$hvmcModuleName] = 1;
-				//找到hmvc模块,去除hmvc模块名称，得到真正的路径
-				$hmvcModulePath = $config->getApplicationDir() . $config->getHmvcDirName() . '/' . $hmvcModuleDirName . '/';
-				//设置hmvc子项目目录为主目录，同时注册hmvc子项目目录到主包容器，以保证高优先级
-				$config->setApplicationDir($hmvcModulePath)->addMasterPackage($hmvcModulePath);
-			}
+		if (!class_exists($className)) {
+			throw new Soter_Exception_404("class [ $className ] not found");
 		}
 		return new $className();
 	}
@@ -237,26 +294,91 @@ class Sr {
 		return Soter::getConfig();
 	}
 
+	public static function plugin($className, $hmvcModuleName = null) {
+		return Soter::plugin($className, $hmvcModuleName);
+	}
+
 	static function loadConfig($configName) {
-		$config = Soter::getConfig();
-		$configFilename = $configName;
-		foreach ($config->getPackages() as $packagePath) {
-			$filePath = $packagePath . $config->getConfigDirName() . '/' . $config->getConfigCurrentDirName() . '/' . $configFilename . '.php';
-			$fileDefaultPath = $packagePath . $config->getConfigDirName() . '/default/' . $configFilename . '.php';
-			$contents = '';
-			if (file_exists($filePath)) {
-				$contents = file_get_contents($filePath);
-			} elseif (file_exists($fileDefaultPath)) {
-				$contents = file_get_contents($fileDefaultPath);
-			}
-			if ($contents) {
-				$cfg = eval('?>' . $contents);
-				return $cfg;
-			} else {
-				return null;
+		$_info = explode('.', $configName);
+		$configFileName = current($_info);
+		static $loadedConfig = array();
+		$cfg = null;
+		if (isset($loadedConfig[$configFileName])) {
+			$cfg = $loadedConfig[$configFileName];
+		} else {
+			$config = Soter::getConfig();
+			foreach ($config->getPackages() as $packagePath) {
+				$filePath = $packagePath . $config->getConfigDirName() . '/' . $config->getConfigCurrentDirName() . '/' . $configFileName . '.php';
+				$fileDefaultPath = $packagePath . $config->getConfigDirName() . '/default/' . $configFileName . '.php';
+				$contents = '';
+				if (file_exists($filePath)) {
+					$contents = file_get_contents($filePath);
+				} elseif (file_exists($fileDefaultPath)) {
+					$contents = file_get_contents($fileDefaultPath);
+				}
+				if ($contents) {
+					$cfg = eval('?>' . $contents);
+					$loadedConfig[$configFileName] = $cfg;
+					break;
+				}
 			}
 		}
-		return null;
+		if ($cfg && count($_info) > 1) {
+			array_shift($_info);
+			$keyStrArray = '';
+			foreach ($_info as $k) {
+				$keyStrArray.= "['" . $k . "']";
+			}
+			return eval('return isset($cfg' . $keyStrArray . ')?$cfg' . $keyStrArray . ':null;');
+		} else {
+			return $cfg;
+		}
+	}
+
+	/**
+	 * 解析命令行参数 $GLOBALS['argv'] 到一个数组
+	 *
+	 * 参数形式支持:
+	 * -e
+	 * -e <value>
+	 * --long-param
+	 * --long-param=<value>
+	 * --long-param <value>
+	 * <value>
+	 *
+	 */
+	static function getOpt($key = null) {
+		if (!self::isCli()) {
+			return null;
+		}
+		$noopt = array();
+		static $result = array();
+		static $parsed = false;
+		if (!$parsed) {
+			$parsed = true;
+			$params = self::arrayGet($GLOBALS, 'argv', array());
+			reset($params);
+			while (list($tmp, $p) = each($params)) {
+				if ($p{0} == '-') {
+					$pname = substr($p, 1);
+					$value = true;
+					if ($pname{0} == '-') {
+						$pname = substr($pname, 1);
+						if (strpos($p, '=') !== false) {
+							list($pname, $value) = explode('=', substr($p, 2), 2);
+						}
+					}
+					$nextparm = current($params);
+					if (!in_array($pname, $noopt) && $value === true && $nextparm !== false && $nextparm{0} != '-') {
+						list($tmp, $value) = each($params);
+					}
+					$result[$pname] = $value;
+				} else {
+					$result[] = $p;
+				}
+			}
+		}
+		return empty($key) ? $result : (isset($result[$key]) ? $result[$key] : null);
 	}
 
 }
