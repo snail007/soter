@@ -47,7 +47,7 @@
 -> 命令行支持
    命令行可以通过 --env=testing --hmvc=Demo --task=TestTask --parameter1=value1 
    指定环境，hmvc模块，任务名称，以及其它参数
-   任务类的execute(Soter_CliArgs $args)方法里面通过$args->get('parameter1')获取参数值
+   任务类的execute(Soter_CliArgs $args)方法里面通过$args->get('parameter1')获取具体参数值
 -> 加载模型
    1.模型层分层为business和dao层
    2.或者不分层的model层
