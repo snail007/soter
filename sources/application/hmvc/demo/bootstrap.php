@@ -3,8 +3,8 @@
 defined('IN_SOTER') or die();
 
 Soter::getConfig()
-	//注册拓展包
-	->addPackages(array(
+	//注册拓展包到主包容器，以保证优先级大于主项目
+	->addMasterPackages(array(
 	    dirname(__FILE__) . '/packages/misc/'
 	))
 	//设置运行环境

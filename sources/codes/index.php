@@ -12,6 +12,8 @@ define('SOTER_PACKAGES_PATH', SOTER_APP_PATH . 'packages/');
 Soter::initialize()
        //项目目录路径
 	->setApplicationDir(SOTER_APP_PATH)
+	//注册项目包
+	->addPackage(SOTER_APP_PATH)
 	//注册拓展包
 	->addPackages(array(
 	    SOTER_PACKAGES_PATH . 'misc',

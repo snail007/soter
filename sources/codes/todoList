@@ -19,12 +19,22 @@
 -> pathinfo路由器对hmvc的支持
 -> 类库自动加载
 -> 添加包功能
--> 主项目，Hvmc子项目，拓展包，类库，如果存在相同的类名,视图名,配置文件名等等，优先级最高的起作用。
-   优先级由高->低的顺序是：
-   Hvmc子项目拓展包->Hvmc子项目类库->Hvmc子项目classes目录类->主项目拓展包->主项目类库->主项目classes目录类
-   访问Hvmc子项目时：
-   1.子项目共享主项目的classes类目录，拓展包，类库。
-   2.主项目目录切换成Hvmc子项目目录。也就是$config->getApplicationDir()返回的是Hvmc子项目目录路径。
+-> 对于主项目，Hvmc子项目，拓展包，类库。
+   1.类（控制器，模型，类库等）的查找的顺序是：
+   Hvmc子项目[classes->类库classes->拓展包classes->拓展包类库classes]
+   ->主项目[classes->类库classes->拓展包classes->拓展包类库classes]
+   2.配置文件,查找的顺序是：
+   Hvmc子项目当前环境配置目录->Hvmc子项目default配置目录
+   ->Hvmc子项目类库当前环境配置目录->Hvmc子项目类库default配置目录
+   ->Hvmc子项目拓展包当前环境配置目录->Hvmc子项目拓展包default配置目录
+   ->主项目当前环境配置目录->主项目default配置目录
+   ->主项目类库当前环境配置目录->主项目类库default配置目录
+   ->主项目拓展包当前环境配置目录->主项目拓展包default配置目录
+   3.函数文件,查找的顺序是：
+   Hvmc子项目functions目录->Hvmc子项目类库functions目录->Hvmc子项目拓展包functions目录
+   ->主项目functions目录->主项目类库functions目录->主项目拓展包functions目录
+  所以为了避免了解这么复杂的顺序，保证名称唯一就行了，但是了解了顺序就能合理的利用配置类库等。
+
 -> 在hmvc模块中的bootstrap.php配置中下面的配置不再起作用，请勿使用：
    $config->setHmvcModules()
           ->setIndexDir()

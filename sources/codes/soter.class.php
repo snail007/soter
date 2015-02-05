@@ -142,7 +142,6 @@ class Sr {
 	}
 
 	public static function includeOnce($filePath) {
-
 		$key = self::realPath($filePath);
 		if (!isset(self::$includeFiles[$key])) {
 			include $filePath;
@@ -227,8 +226,8 @@ class Sr {
 				$loadedModules[$hvmcModuleName] = 1;
 				//找到hmvc模块,去除hmvc模块名称，得到真正的路径
 				$hmvcModulePath = $config->getApplicationDir() . $config->getHmvcDirName() . '/' . $hmvcModuleDirName . '/';
-				//设置hmvc模块目录为主目录，同时注册hmvc模块
-				$config->setApplicationDir($hmvcModulePath)->addPackage($hmvcModulePath, TRUE);
+				//设置hmvc子项目目录为主目录，同时注册hmvc子项目目录到主包容器，以保证高优先级
+				$config->setApplicationDir($hmvcModulePath)->addMasterPackage($hmvcModulePath);
 			}
 		}
 		return new $className();
@@ -243,9 +242,18 @@ class Sr {
 		$configFilename = $configName;
 		foreach ($config->getPackages() as $packagePath) {
 			$filePath = $packagePath . $config->getConfigDirName() . '/' . $config->getConfigCurrentDirName() . '/' . $configFilename . '.php';
+			$fileDefaultPath = $packagePath . $config->getConfigDirName() . '/default/' . $configFilename . '.php';
+			$contents = '';
 			if (file_exists($filePath)) {
-				$cfg = eval('?>'.file_get_contents($filePath));
+				$contents = file_get_contents($filePath);
+			} elseif (file_exists($fileDefaultPath)) {
+				$contents = file_get_contents($fileDefaultPath);
+			}
+			if ($contents) {
+				$cfg = eval('?>' . $contents);
 				return $cfg;
+			} else {
+				return null;
 			}
 		}
 		return null;

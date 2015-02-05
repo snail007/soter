@@ -120,8 +120,8 @@ class Soter_Default_Router_PathInfo extends Soter_Router {
 		if ($hmvcModuleDirName) {
 			//找到hmvc模块,去除hmvc模块名称，得到真正的路径
 			$hmvcModulePath = $config->getApplicationDir() . $config->getHmvcDirName() . '/' . $hmvcModuleDirName . '/';
-			//设置hmvc模块目录为主目录，同时注册hmvc模块
-			$config->setApplicationDir($hmvcModulePath)->addPackage($hmvcModulePath, TRUE);
+			//设置hmvc子项目目录为主目录，同时注册hmvc子项目目录到主包容器，以保证高优先级
+			$config->setApplicationDir($hmvcModulePath)->addMasterPackage($hmvcModulePath);
 			$uri = ltrim(substr($uri, strlen($hmvcModule)), '/');
 		}
 
@@ -197,6 +197,7 @@ class Soter_Config {
 		$excptionErrorJsonTraceName = 'errorTrace',
 		$excptionErrorJsonTimeName = 'errorTime',
 		$routersContainer = array(),
+		$packageMasterContainer = array(),
 		$packageContainer = array(),
 		$loggerWriterContainer = array(),
 		$uriReWriterContainer = array(),
@@ -403,9 +404,6 @@ class Soter_Config {
 
 	public function setApplicationDir($applicationDir) {
 		$this->applicationDir = Sr::realPath($applicationDir) . '/';
-		if (!in_array($applicationDir, $this->packageContainer)) {
-			$this->addPackage($applicationDir);
-		}
 		return $this;
 	}
 
@@ -473,7 +471,30 @@ class Soter_Config {
 	}
 
 	public function getPackages() {
-		return $this->packageContainer;
+		return array_merge($this->packageMasterContainer, $this->packageContainer);
+	}
+
+	public function addMasterPackages(Array $packagesPath) {
+		foreach ($packagesPath as $packagePath) {
+			$this->addMasterPackage($packagePath);
+		}
+		return $this;
+	}
+
+	public function addMasterPackage($packagePath) {
+		$packagePath = Sr::realPath($packagePath) . '/';
+		if (!in_array($packagePath, $this->packageMasterContainer)) {
+			//注册“包”到主包容器中
+			array_push($this->packageMasterContainer, $packagePath);
+			if (file_exists($library = $packagePath . $this->getLibraryDirName() . '/')) {
+				array_push($this->packageMasterContainer, $library);
+			}
+			//引入“包”配置
+			if (file_exists($bootstrap = $packagePath . 'bootstrap.php')) {
+				Sr::includeOnce($bootstrap);
+			}
+		}
+		return $this;
 	}
 
 	public function addPackages(Array $packagesPath) {
@@ -483,21 +504,20 @@ class Soter_Config {
 		return $this;
 	}
 
-	public function addPackage($packagePath, $isHmvc = false) {
+	public function addPackage($packagePath) {
 		$packagePath = Sr::realPath($packagePath) . '/';
 		if (!in_array($packagePath, $this->packageContainer)) {
 			//注册“包”到包容器中
-			array_unshift($this->packageContainer, $packagePath);
+			array_push($this->packageContainer, $packagePath);
 			if (file_exists($library = $packagePath . $this->getLibraryDirName() . '/')) {
-				array_unshift($this->packageContainer, $library);
+				array_push($this->packageContainer, $library);
 			}
-		}
-		if ($isHmvc) {
-			//引入hmvc模块配置
+			//引入“包”配置
 			if (file_exists($bootstrap = $packagePath . 'bootstrap.php')) {
 				Sr::includeOnce($bootstrap);
 			}
 		}
+		return $this;
 	}
 
 	public function getShowError() {

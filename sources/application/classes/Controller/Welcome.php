@@ -3,7 +3,8 @@
 class Controller_Welcome {
 
 	public function do_index() {
-Sr::dump(Sr::loadConfig('config'));
+		
+		Sr::dump(Sr::loadConfig('config'));
 		Sr::dump(new MyClass(), new Misc());
 	}
 
