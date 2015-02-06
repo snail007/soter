@@ -23,7 +23,7 @@ Soter::getConfig()
 	 * hmvc子项目拓展包->hmvc子项目类库目录->hmvc子项目claseses目录->主项目拓展包->主项目类库目录->主项目claseses目录
 	 */
 	//->addLoggerWriter(new Logger_MyWriter())
-	//->setExceptionHandle(new Exception_Handle())
+	//->setExceptionHandle(new Exception_HandleTest())
 	->setDefaultController('Welcome')
 	->setDefaultMethod('index')
 	->setMethodPrefix('do_')

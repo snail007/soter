@@ -4,8 +4,8 @@
 class Exception_Handle implements Soter_Exception_Handle {
 
     public function handle(Soter_Exception $exception) {
-        echo "<br/>Exception_Handle Called :".__FILE__.'<br/>';
-        echo $exception;
+       
+       echo 'from hmvcException_Handle';
     }
 
 //put your code here

@@ -16,7 +16,7 @@ Soter::initialize()
 	->addPackage(SOTER_APP_PATH)
 	//注册拓展包
 	->addPackages(array(
-	    SOTER_PACKAGES_PATH . 'misc',
+	    //SOTER_PACKAGES_PATH . 'misc',
 	))
 	//注册自动加载的函数文件
 	->addAutoloadFunctions(array(
@@ -53,8 +53,10 @@ Soter::initialize()
 	->setMethodUriSubfix('.do')
 	//注册hvmc模块，数组键是uri里面的hmvc模块名称，值是hmvc模块文件夹名称
 	->setHmvcModules(array(
-	    'Demo' => 'demo'
+	   // 'Demo' => 'demo'
 	))
+	//加载项目自定义bootstrap.php配置,这一句一定要在最后，确保能覆盖上面的配置
+	->bootstrap()
 ;
 
 //启动，噪起来

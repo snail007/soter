@@ -138,7 +138,7 @@ class Soter_Default_Router_PathInfo extends Soter_Router {
 			//找到hmvc模块,去除hmvc模块名称，得到真正的路径
 			$hmvcModulePath = $config->getApplicationDir() . $config->getHmvcDirName() . '/' . $hmvcModuleDirName . '/';
 			//设置hmvc子项目目录为主目录，同时注册hmvc子项目目录到主包容器，以保证高优先级
-			$config->setApplicationDir($hmvcModulePath)->addMasterPackage($hmvcModulePath);
+			$config->setApplicationDir($hmvcModulePath)->addMasterPackage($hmvcModulePath)->bootstrap();
 			$uri = ltrim(substr($uri, strlen($hmvcModule)), '/');
 		}
 
@@ -563,10 +563,6 @@ class Soter_Config {
 			if (file_exists($library = $packagePath . $this->getLibraryDirName() . '/')) {
 				array_push($this->packageMasterContainer, $library);
 			}
-			//引入“包”配置
-			if (file_exists($bootstrap = $packagePath . 'bootstrap.php')) {
-				Sr::includeOnce($bootstrap);
-			}
 		}
 		return $this;
 	}
@@ -586,12 +582,18 @@ class Soter_Config {
 			if (file_exists($library = $packagePath . $this->getLibraryDirName() . '/')) {
 				array_push($this->packageContainer, $library);
 			}
-			//引入“包”配置
-			if (file_exists($bootstrap = $packagePath . 'bootstrap.php')) {
-				Sr::includeOnce($bootstrap);
-			}
 		}
 		return $this;
+	}
+
+	/**
+	 * 加载项目目录下的bootstrap.php配置
+	 */
+	public function bootstrap() {
+		//引入“bootstrap”配置
+		if (file_exists($bootstrap = $this->getApplicationDir() . 'bootstrap.php')) {
+			Sr::includeOnce($bootstrap);
+		}
 	}
 
 	public function getShowError() {
@@ -724,7 +726,10 @@ class Soter_Logger_Writer_Dispatcher {
 		if (empty(self::$instance)) {
 			self::$instance = new self();
 			error_reporting(E_ALL);
-			ini_set('display_errors', FALSE);
+			//只在web和命令行模式下关闭错误显示，插件模式不应该关闭
+			if (!defined('SOTER_RUN_MODE_PLUGIN') || !SOTER_RUN_MODE_PLUGIN) {
+				ini_set('display_errors', FALSE);
+			}
 			set_exception_handler(array(self::$instance, 'handleException'));
 			set_error_handler(array(self::$instance, 'handleError'));
 			register_shutdown_function(array(self::$instance, 'handleFatal'));

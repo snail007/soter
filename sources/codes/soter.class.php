@@ -177,7 +177,7 @@ class Soter {
 				//找到hmvc模块,去除hmvc模块名称，得到真正的路径
 				$hmvcModulePath = $config->getApplicationDir() . $config->getHmvcDirName() . '/' . $hmvcModuleDirName . '/';
 				//设置hmvc子项目目录为主目录，同时注册hmvc子项目目录到主包容器，以保证高优先级
-				$config->setApplicationDir($hmvcModulePath)->addMasterPackage($hmvcModulePath);
+				$config->setApplicationDir($hmvcModulePath)->addMasterPackage($hmvcModulePath)->bootstrap();
 			}
 		}
 	}
