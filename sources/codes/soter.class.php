@@ -197,7 +197,8 @@ class Sr {
 	static function dump() {
 		echo!self::isCli() ? '<pre style="line-height:1.5em;font-size:14px;">' : "\n";
 		@ob_start();
-		call_user_func_array('var_dump', func_get_args());
+		$args=func_get_args();
+		call_user_func_array('var_dump',$args );
 		$html = @ob_get_clean();
 		echo!self::isCli() ? htmlspecialchars($html) : $html;
 		echo!self::isCli() ? "</pre>" : "\n";

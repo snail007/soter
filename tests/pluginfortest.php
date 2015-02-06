@@ -1,6 +1,15 @@
 <?php
+
 define('SOTER_RUN_MODE_PLUGIN', TRUE);
-require dirname(__FILE__).'/../sources/codes/index.php';
+require dirname(__FILE__) . '/../sources/codes/index.php';
+
 function testUrl($route, $index = 'indexfortest.php/') {
-    return 'http://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['REQUEST_URI']) . '/' . $index . $route;
+	return 'http://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['REQUEST_URI']) . '/' . $index . $route;
+}
+
+function fixString($string) {
+	if ($string) {
+		$string = strtolower(str_replace(' ', '', $string));
+	}
+	return $string;
 }

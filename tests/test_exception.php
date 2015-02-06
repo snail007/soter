@@ -44,7 +44,7 @@ class Test_model extends UnitTestCase {
 		$this->assertTrue(!empty($obj->errorCode));
 		$this->assertTrue(!empty($obj->errorMessage));
 		$flag = 'Call to undefined function none()';
-		$this->assertTrue($obj->errorMessage === $flag);
+		$this->assertTrue(fixString($obj->errorMessage) === fixString($flag));
 	}
 
 	/**
@@ -56,7 +56,7 @@ class Test_model extends UnitTestCase {
 		$flag = '<body style="padding:0;margin:0;background:black;color:whitesmoke;">';
 		$this->assertTrue(strpos($browser->getContent(), $flag) === 0);
 		$flag2 = 'Call to undefined function none()';
-		$this->assertTrue(strpos($browser->getContent(), $flag2) !== FALSE);
+		$this->assertTrue(strpos(fixString($browser->getContent()), fixString($flag2)) !== FALSE);
 	}
 
 	/**
@@ -68,7 +68,7 @@ class Test_model extends UnitTestCase {
 		$flag1 = 'Soter_Exception_500 [ ERROR ]';
 		$this->assertTrue(strpos($browser->getContent(), $flag1) === 0);
 		$flag2 = 'Call to undefined function none()';
-		$this->assertTrue(strpos($browser->getContent(), $flag2) !== FALSE);
+		$this->assertTrue(strpos(fixString($browser->getContent()), fixString($flag2)) !== FALSE);
 	}
 
 	/**
@@ -104,7 +104,7 @@ class Test_model extends UnitTestCase {
 		$this->assertTrue(!empty($obj->errorCode));
 		$this->assertTrue(!empty($obj->errorMessage));
 		$flag = 'Call to undefined function none()';
-		$this->assertTrue($obj->errorMessage === $flag);
+		$this->assertTrue(strpos(fixString($obj->errorMessage), fixString($flag)) !== FALSE);
 	}
 
 	/**
@@ -116,7 +116,7 @@ class Test_model extends UnitTestCase {
 		$flag = '<body style="padding:0;margin:0;background:black;color:whitesmoke;">';
 		$this->assertTrue(strpos($browser->getContent(), $flag) === 0);
 		$flag2 = 'Call to undefined function none()';
-		$this->assertTrue(strpos($browser->getContent(), $flag2) !== FALSE);
+		$this->assertTrue(strpos(fixString($browser->getContent()), fixString($flag2)) !== FALSE);
 	}
 
 	/**
@@ -128,7 +128,7 @@ class Test_model extends UnitTestCase {
 		$flag1 = 'Soter_Exception_500 [ ERROR ]';
 		$this->assertTrue(strpos($browser->getContent(), $flag1) === 0);
 		$flag2 = 'Call to undefined function none()';
-		$this->assertTrue(strpos($browser->getContent(), $flag2) !== FALSE);
+		$this->assertTrue(strpos(fixString($browser->getContent()), fixString($flag2)) !== FALSE);
 	}
 
 	/**
