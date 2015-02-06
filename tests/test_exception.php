@@ -10,6 +10,28 @@ require_once('simpletest/browser.php');
 class Test_model extends UnitTestCase {
 
 	/**
+	 * 测试hmvc模式下notice异常
+	 */
+	public function testHmvcExceptionNotice() {
+		$browser = new SimpleBrowser();
+		$browser->get(testUrl('Demo/Welcome/exceptionNotice.html'));
+		$obj = json_decode($browser->getContent());
+		$this->assertTrue($obj->errorMessage === 'Undefined variable: none');
+		$this->assertTrue($obj->errorType === 'NOTICE');
+	}
+
+	/**
+	 * 测试hmvc模式下throw exception异常
+	 */
+	public function testHmvcExceptionException() {
+		$browser = new SimpleBrowser();
+		$browser->get(testUrl('Demo/Welcome/exceptionException.html'));
+		$obj = json_decode($browser->getContent());
+		$this->assertTrue($obj->errorMessage === 'throw test');
+		$this->assertTrue($obj->errorType === 'Exception');
+	}
+
+	/**
 	 * 测试hmvc模式下异常json输出
 	 */
 	public function testHmvcExceptionJson() {
@@ -127,6 +149,28 @@ class Test_model extends UnitTestCase {
 		$browser->get(testUrl('Welcome/exceptionLoggerWriter.do'));
 		$flag1 = 'my writer called';
 		$this->assertTrue($browser->getContent() === $flag1);
+	}
+
+	/**
+	 * 测试notice异常
+	 */
+	public function testExceptionNotice() {
+		$browser = new SimpleBrowser();
+		$browser->get(testUrl('Welcome/exceptionNotice.do'));
+		$obj = json_decode($browser->getContent());
+		$this->assertTrue($obj->errorMessage === 'Undefined variable: none');
+		$this->assertTrue($obj->errorType === 'NOTICE');
+	}
+
+	/**
+	 * 测试throw exception异常
+	 */
+	public function testExceptionException() {
+		$browser = new SimpleBrowser();
+		$browser->get(testUrl('Welcome/exceptionException.do'));
+		$obj = json_decode($browser->getContent());
+		$this->assertTrue($obj->errorMessage === 'throw test');
+		$this->assertTrue($obj->errorType === 'Exception');
 	}
 
 }

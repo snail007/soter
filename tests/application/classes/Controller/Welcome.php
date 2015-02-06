@@ -3,7 +3,23 @@
 class Controller_Welcome extends Soter_Controller {
 
 	public function do_index() {
-		 
+		
+	}
+
+	/**
+	 * 测试notice异常
+	 */
+	public function do_exceptionNotice() {
+		Sr::config()->setExceptionHandle(new Exception_HandleTest());
+		echo $none;
+	}
+
+	/**
+	 * 测试exception异常
+	 */
+	public function do_exceptionException() {
+		Sr::config()->setExceptionHandle(new Exception_HandleTest());
+		throw new Soter_Exception_500('throw test');
 	}
 
 	/**
@@ -29,6 +45,7 @@ class Controller_Welcome extends Soter_Controller {
 		Sr::config()->setExceptionHandle(new Exception_HandleTestCli());
 		none();
 	}
+
 	/**
 	 * 测试异常托管
 	 */
@@ -36,6 +53,7 @@ class Controller_Welcome extends Soter_Controller {
 		Sr::config()->setExceptionHandle(new Exception_Handle());
 		none();
 	}
+
 	/**
 	 * 测试异常LoggerWriter
 	 */
