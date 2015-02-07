@@ -1,7 +1,9 @@
 <?php
 
 class Misc {
-	public function __construct() {
-		echo 'Form  Package Misc :'.__FILE__.'<br>';
+
+	public function config() {
+		return Sr::config('misc_cfg.name');
 	}
+
 }

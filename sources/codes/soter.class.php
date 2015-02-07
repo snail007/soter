@@ -104,7 +104,6 @@ class Soter {
 		} else {
 			echo $response;
 		}
-		exit();
 	}
 
 	/**
@@ -156,18 +155,22 @@ class Soter {
 	}
 
 	/**
-	 * 检测并加载hmvc模块
-	 * @staticvar array $loadedModules
-	 * @param type $hmvcModuleName
+	 * 检测并加载hmvc模块,成功返回模块文件夹名称，失败返回false或抛出异常
+	 * @staticvar array $loadedModules  
+	 * @param type $hmvcModuleName  hmvc模块在URI中的名称，即注册配置hmvc模块数组的键名称
 	 * @throws Soter_Exception_404
 	 */
-	private static function checkHmvc($hmvcModuleName) {
+	public static function checkHmvc($hmvcModuleName, $throwException = true) {
 		//hmvc检测
 		if (!empty($hmvcModuleName)) {
 			$config = Soter::getConfig();
 			$hmvcModules = $config->getHmvcModules();
 			if (empty($hmvcModules[$hmvcModuleName])) {
-				throw new Soter_Exception_404('Hmvc Module [ ' . $hmvcModuleName . ' ] not found, please check your config.');
+				if ($throwException) {
+					throw new Soter_Exception_404('Hmvc Module [ ' . $hmvcModuleName . ' ] not found, please check your config.');
+				} else {
+					return FALSE;
+				}
 			}
 			//避免重复加载，提高性能
 			static $loadedModules = array();
@@ -179,7 +182,9 @@ class Soter {
 				//设置hmvc子项目目录为主目录，同时注册hmvc子项目目录到主包容器，以保证高优先级
 				$config->setApplicationDir($hmvcModulePath)->addMasterPackage($hmvcModulePath)->bootstrap();
 			}
+			return $hmvcModuleDirName;
 		}
+		return FALSE;
 	}
 
 }
@@ -197,8 +202,8 @@ class Sr {
 	static function dump() {
 		echo!self::isCli() ? '<pre style="line-height:1.5em;font-size:14px;">' : "\n";
 		@ob_start();
-		$args=func_get_args();
-		call_user_func_array('var_dump',$args );
+		$args = func_get_args();
+		call_user_func_array('var_dump', $args);
 		$html = @ob_get_clean();
 		echo!self::isCli() ? htmlspecialchars($html) : $html;
 		echo!self::isCli() ? "</pre>" : "\n";

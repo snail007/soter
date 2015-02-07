@@ -2,18 +2,32 @@
 -> 完成文件日志Writer：Soter_Logger_FileWriter
 -> uri重写功能 *
 -> 完成get模式路由器 *
+-> 便捷获取输入功能，get post cookie session server raw_post
+-> 数据验证功能
+-> 便捷输出的设计
+-> 视图设计
+-> Controller父类设计
+-> 各种缓存无缝切换设计（memcache redis mongodb file apc）
+-> session托管（memcache redis mysql）
+-> 数据库日志Soter_Logger_DatabaseWriter
+-> 各种数据库驱动支持，以及无缝切换（pdo mysql mysqli sqlite）
+-> Dao模型父类设计
+-> Business模型父类设计
+-> Model模型父类设计
+
 
 
 @done
--> 异常接管
--> 异常类的错误消息和掉用堆栈的各种模式（cli，html，json）格式化
--> 自定义LoggerWriter
--> 自定义错误处理，显示自定义的错误页面
--> pathinfo模式路由器
--> pathinfo路由器对hmvc的支持
+(*代表已测试)
+-> * 异常接管
+-> * 异常类的错误消息和掉用堆栈的各种模式（cli，html，json）格式化
+-> * 自定义LoggerWriter
+-> * 自定义错误处理，显示自定义的错误页面
+-> * pathinfo模式路由器
+-> * pathinfo路由器对hmvc的支持
 -> 类库自动加载
--> 添加包功能
--> 对于主项目，Hvmc子项目，拓展包，类库。
+-> * 添加包功能
+-> * 对于主项目，Hvmc子项目，拓展包，类库。
    1.类（控制器，模型，类库等）的查找的顺序是：
    Hvmc子项目[classes->类库classes->拓展包classes->拓展包类库classes]
    ->主项目[classes->类库classes->拓展包classes->拓展包类库classes]
@@ -29,27 +43,27 @@
    ->主项目functions目录->主项目类库functions目录->主项目拓展包functions目录
   所以为了避免了解这么复杂的顺序，保证名称唯一就行了，但是了解了顺序就能合理的利用配置类库等。
 
--> 在hmvc模块中的bootstrap.php配置中下面的配置不再起作用，请勿使用：
+-> * 在hmvc模块中的bootstrap.php配置中下面的配置不再起作用，请勿使用：
    $config->setHmvcModules()
           ->setIndexDir()
           ->setIndexName()
           ->setApplicationDir()
           ->setRequest()
           ->addRouter()
--> 插件模式支持
--> 环境配置支持
--> 运行环境自动切换支持
--> 用户自定义类错误显示处理类优先级大于系统错误显示处理类。
-   1.当设置了自定义类错误显示处理类，系统错误显示处理类不再起作用。
-   2.当没有设置自定义类错误显示处理类，系统错误显示处理类是否显示错误是由$config->getShowError()决定的。
-   3.用户错误处理类不受showError限制，是否显示错误由自定义处理类决定。
--> 加载配置（没有自动加载）,支持用点快捷获取键值
--> 命令行支持
+-> * 插件模式支持
+-> * 环境配置支持
+-> * 运行环境自动切换支持
+-> * 用户自定义类错误显示处理类优先级大于系统错误显示处理类。
+   * 1.当设置了自定义类错误显示处理类，系统错误显示处理类不再起作用。
+   * 2.当没有设置自定义类错误显示处理类，系统错误显示处理类是否显示错误是由$config->getShowError()决定的。
+   * 3.用户错误处理类不受showError限制，是否显示错误由自定义处理类决定。
+-> * 加载配置,支持用点快捷获取键值
+-> * 命令行支持
    命令行可以通过 --env=testing --hmvc=Demo --task=TestTask --parameter1=value1 
    指定环境，hmvc模块，任务名称，以及其它参数
    任务类的execute(Soter_CliArgs $args)方法里面通过$args->get('parameter1')获取具体参数值
--> 加载模型
+-> * 加载模型
    1.模型层分层为business和dao层
    2.或者不分层的model层
--> 加载类库
--> 加载函数文件（有自动加载）
+-> * 加载类库
+-> * 加载函数文件（有自动加载）

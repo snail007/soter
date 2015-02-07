@@ -9,7 +9,7 @@ Soter::getConfig()
 	))
 	//注册自动加载的函数文件
 	->addAutoloadFunctions(array(
-		// 'functions'
+		 'functions_auto'
 	))
 	//入口文件所在目录
 	->setIndexDir(dirname(__FILE__) . '/../')
