@@ -60,7 +60,7 @@ class Soter {
 	public static function run() {
 		if (Sr::isCli()) {
 			self::runCli();
-		} elseif (defined('SOTER_RUN_MODE_PLUGIN') && SOTER_RUN_MODE_PLUGIN) {
+		} elseif (Sr::isPluginMode()) {
 			self::runPlugin();
 		} else {
 			self::runWeb();
@@ -136,22 +136,6 @@ class Soter {
 	 */
 	private static function runPlugin() {
 		//插件模式
-	}
-
-	/**
-	 * 插件模式下的超级工厂类
-	 * @param type $className      可以是控制器类名，模型类名，类库类名
-	 * @param type $hmvcModuleName hmvc模块名称，是配置里面的数组的键名
-	 * @return \className
-	 * @throws Soter_Exception_404
-	 */
-	public static function plugin($className, $hmvcModuleName = null) {
-		if (!defined('SOTER_RUN_MODE_PLUGIN') || !SOTER_RUN_MODE_PLUGIN) {
-			throw new Soter_Exception_500('Sr::plugin() only in PLUGIN mode');
-		}
-		//hmvc检测
-		self::checkHmvc($hmvcModuleName);
-		return new $className();
 	}
 
 	/**
@@ -329,7 +313,7 @@ class Sr {
 	 * @throws Soter_Exception_404
 	 */
 	static function factory($className) {
-		if (defined('SOTER_RUN_MODE_PLUGIN') && SOTER_RUN_MODE_PLUGIN) {
+		if (Sr::isPluginMode()) {
 			throw new Soter_Exception_500('Sr::factory() only in web or cli mode');
 		}
 		if (!class_exists($className)) {
@@ -345,8 +329,21 @@ class Sr {
 	 * @return \className
 	 * @throws Soter_Exception_404
 	 */
-	public static function plugin($className, $hmvcModuleName = null) {
-		return Soter::plugin($className, $hmvcModuleName);
+	static function plugin($className, $hmvcModuleName = null) {
+		if (!Sr::isPluginMode()) {
+			throw new Soter_Exception_500('Sr::plugin() only in PLUGIN mode');
+		}
+		//hmvc检测
+		Soter::checkHmvc($hmvcModuleName);
+		return new $className();
+	}
+
+	/**
+	 * 判断是否是插件模式运行
+	 * @return type
+	 */
+	static function isPluginMode() {
+		return (defined('SOTER_RUN_MODE_PLUGIN') && SOTER_RUN_MODE_PLUGIN);
 	}
 
 	/**

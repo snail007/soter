@@ -722,7 +722,7 @@ class Soter_Logger_Writer_Dispatcher {
 			self::$instance = new self();
 			error_reporting(E_ALL);
 			//只在web和命令行模式下关闭错误显示，插件模式不应该关闭
-			if (!defined('SOTER_RUN_MODE_PLUGIN') || !SOTER_RUN_MODE_PLUGIN) {
+			if (!Sr::isPluginMode()) {
 				ini_set('display_errors', FALSE);
 			}
 			set_exception_handler(array(self::$instance, 'handleException'));
