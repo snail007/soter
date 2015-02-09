@@ -16,13 +16,14 @@ Soter::getConfig()
 	//入口文件名称
 	->setIndexName('indexfortest.php')
 	//设置运行环境
-	//->setEnvironment(($env = (($cliEnv = Sr::getOpt('env')) ? $cliEnv : Sr::arrayGet($_SERVER, 'ENVIRONMENT'))) ? Sr::config()->getServerEnvironment($env) : Sr::ENV_DEVELOPMENT)
+	->setEnvironment(($env = (($cliEnv = Sr::getOpt('env')) ? $cliEnv : Sr::arrayGet($_SERVER, 'ENVIRONMENT'))) ? Sr::config()->getServerEnvironment($env) : Sr::ENV_DEVELOPMENT)
 	//系统错误显示设置，非产品环境才显示
-	//->setShowError(Sr::config()->getEnvironment() != Sr::ENV_PRODUCTION)
+	->setShowError(Sr::config()->getEnvironment() != Sr::ENV_PRODUCTION)
 	/**
 	 * 下面配置中可以使用：
 	 * 1.主项目的claseses目录，主项目类库目录，主项目拓展包里面的类
-	 * 2.这几个目录如果存在同名类，使用的优先级高到低是：拓展包->类库目录->claseses目录
+	 * 2.这几个目录如果存在同名类，使用的优先级高到低是：
+	 * 项目claseses目录->项目类库claseses目录->项目拓展包claseses目录
 	 */
 	//->addLoggerWriter(new Logger_MyWriter())
 	//设置自定义的错误显示控制处理类
@@ -33,8 +34,8 @@ Soter::getConfig()
 	->setLogsDirPath(SOTER_APP_PATH . 'logs/')
 	//设置日志子目录格式，参数就是date()函数的第一个参数,默认是 Y-m-d/H
 	->setLogsSubDirNameFormat('Y-m-d/H')
-	//注册uri重写
-	->setUriRewriter(new Uri_Rewriter())
+	//设置自定义的uri重写类
+	//->setUriRewriter(new Uri_Rewriter())
 	//默认控制器
 	->setDefaultController('Welcome')
 	//默认方法
