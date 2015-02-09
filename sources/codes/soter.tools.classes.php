@@ -833,7 +833,7 @@ class Soter_Logger_FileWriter implements Soter_Logger_Writer {
 			. 'ClientIP : ' . Sr::server('SERVER_ADDR') . "\n"
 			. 'ServerIP : ' . Sr::serverIp() . "\n"
 			. 'ServerHostname : ' . Sr::hostname() . "\n"
-			. $exception->renderCli() . "\n";
+			. $exception->renderCli();
 		if (!file_exists($logsFilePath = $logsDirPath . 'logs.php')) {
 			$content = '<?php defined("IN_SOTER") or exit();?>' . "\n" . $content;
 		}
