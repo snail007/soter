@@ -39,9 +39,9 @@ Soter::initialize()
 	->setRequest(new Soter_Request(Sr::arrayGet($_SERVER, 'REQUEST_URI')))
 	//默认路由器
 	->addRouter(new Soter_Default_Router_PathInfo())
-	//->addLoggerWriter(new Logger_MyWriter())
 	//设置自定义的错误显示控制处理类
 	//->setExceptionHandle(new Exception_Handle())
+	//记录日志
 	//->addLoggerWriter(new Soter_Logger_FileWriter())
 	//默认控制器
 	->setDefaultController('Welcome')

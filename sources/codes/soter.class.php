@@ -445,4 +445,173 @@ class Sr {
 		return empty($key) ? $result : (isset($result[$key]) ? $result[$key] : null);
 	}
 
+	static function get($key = null, $default = null, $xssClean = false) {
+		$value = is_null($key) ? $_GET : self::arrayGet($_GET, $key, $default);
+		return $xssClean ? self::xssClean($value) : $value;
+	}
+
+	static function getPost($key, $default = null, $xssClean = false) {
+		$getValue = self::arrayGet($_GET, $key);
+		$value = is_null($getValue) ? self::arrayGet($_POST, $key, $default) : $getValue;
+		return $xssClean ? self::xssClean($value) : $value;
+	}
+
+	static function post($key = null, $default = null, $xssClean = false) {
+		$value = is_null($key) ? $_POST : self::arrayGet($_POST, $key, $default);
+		return $xssClean ? self::xssClean($value) : $value;
+	}
+
+	static function postGet($key, $default = null, $xssClean = false) {
+		$postValue = self::arrayGet($_POST, $key);
+		$value = is_null($postValue) ? self::arrayGet($_GET, $key, $default) : $postValue;
+		return $xssClean ? self::xssClean($value) : $value;
+	}
+
+	static function server($key = null, $default = null) {
+		return is_null($key) ? $_SERVER : self::arrayGet($_SERVER, strtoupper($key), $default);
+	}
+
+	/**
+	 * 获取一个cookie
+	 * 提醒:
+	 * 该方法会在key前面加上系统配置里面的getCookiePrefix()
+	 * 如果想不加前缀，获取原始key的cookie，可以使用方法：Sr::cookieRaw();
+	 * @return type
+	 */
+	static function cookie($key = null, $default = null, $xssClean = false) {
+		$key = is_null($key) ? null : Sr::config()->getCookiePrefix() . $key;
+		$value = self::cookieRaw($key, $default, $xssClean);
+		return $xssClean ? self::xssClean($value) : $value;
+	}
+
+	static function cookieRaw($key = null, $default = null, $xssClean = false) {
+		$value = is_null($key) ? $_COOKIE : self::arrayGet($_COOKIE, $key, $default);
+		return $xssClean ? self::xssClean($value) : $value;
+	}
+
+	/**
+	 * 设置一个cookie，该方法会在key前面加上系统配置里面的getCookiePrefix()前缀<br>
+	 * 如果不想加前缀，可以使用方法：Sr::setCookieRaw()<br>
+	 * 或者设置前缀为空那么Sr::cookie和Sr::cookieRaw效果一样。前缀默认就是空。
+	 */
+	static function setCookie($key, $value, $life = null, $path = '/', $domian = null, $http_only = false) {
+		$key = Sr::config()->getCookiePrefix() . $key;
+		return self::setCookieRaw($key, $value, $life, $path, $domian, $http_only);
+	}
+
+	static function setCookieRaw($key, $value, $life = null, $path = '/', $domian = null, $httpOnly = false) {
+		header('P3P: CP="CURa ADMa DEVa PSAo PSDo OUR BUS UNI PUR INT DEM STA PRE COM NAV OTC NOI DSP COR"');
+		if (!is_null($domian)) {
+			$autoDomain = $domian;
+		} else {
+			$host = self::server('HTTP_HOST');
+			// $_host = current(explode(":", $host));
+			$is_ip = preg_match('/^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$/', $host);
+			$notRegularDomain = preg_match('/^[^\\.]+$/', $host);
+			if ($is_ip) {
+				$autoDomain = $host;
+			} elseif ($notRegularDomain) {
+				$autoDomain = NULL;
+			} else {
+				$autoDomain = '.' . $host;
+			}
+		}
+		setcookie($key, $value, ($life ? $life + time() : null), $path, $autoDomain, (self::server('SERVER_PORT') == 443 ? 1 : 0), $httpOnly);
+		$_COOKIE[$key] = $value;
+	}
+
+	static function xssClean($var) {
+		if (is_array($var)) {
+			foreach ($var as $key => $val) {
+				if (is_array($val)) {
+					$var[$key] = self::xss_clean($val);
+				} else {
+					$var[$key] = self::xssClean0($val);
+				}
+			}
+		} elseif (is_string($var)) {
+			$var = self::xssClean0($var);
+		}
+		return $var;
+	}
+
+	private static function xssClean0($data) {
+		// Fix &entity\n;
+		$data = str_replace(array('&amp;', '&lt;', '&gt;'), array('&amp;amp;', '&amp;lt;', '&amp;gt;'), $data);
+		$data = preg_replace('/(&#*\w+)[\x00-\x20]+;/u', '$1;', $data);
+		$data = preg_replace('/(&#x*[0-9A-F]+);*/iu', '$1;', $data);
+		$data = html_entity_decode($data, ENT_COMPAT, 'UTF-8');
+
+		// Remove any attribute starting with "on" or xmlns
+		$data = preg_replace('#(<[^>]+?[\x00-\x20"\'])(?:on|xmlns)[^>]*+>#iu', '$1>', $data);
+
+		// Remove javascript: and vbscript: protocols
+		$data = preg_replace('#([a-z]*)[\x00-\x20]*=[\x00-\x20]*([`\'"]*)[\x00-\x20]*j[\x00-\x20]*a[\x00-\x20]*v[\x00-\x20]*a[\x00-\x20]*s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:#iu', '$1=$2nojavascript...', $data);
+		$data = preg_replace('#([a-z]*)[\x00-\x20]*=([\'"]*)[\x00-\x20]*v[\x00-\x20]*b[\x00-\x20]*s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:#iu', '$1=$2novbscript...', $data);
+		$data = preg_replace('#([a-z]*)[\x00-\x20]*=([\'"]*)[\x00-\x20]*-moz-binding[\x00-\x20]*:#u', '$1=$2nomozbinding...', $data);
+
+		// Only works in IE: <span style="width: expression(alert('Ping!'));"></span>
+		$data = preg_replace('#(<[^>]+?)style[\x00-\x20]*=[\x00-\x20]*[`\'"]*.*?expression[\x00-\x20]*\([^>]*+>#i', '$1>', $data);
+		$data = preg_replace('#(<[^>]+?)style[\x00-\x20]*=[\x00-\x20]*[`\'"]*.*?behaviour[\x00-\x20]*\([^>]*+>#i', '$1>', $data);
+		$data = preg_replace('#(<[^>]+?)style[\x00-\x20]*=[\x00-\x20]*[`\'"]*.*?s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:*[^>]*+>#iu', '$1>', $data);
+
+		// Remove namespaced elements (we do not need them)
+		$data = preg_replace('#</*\w+:\w[^>]*+>#i', '', $data);
+		do {
+			// Remove really unwanted tags
+			$old_data = $data;
+			$data = preg_replace('#</*(?:applet|b(?:ase|gsound|link)|embed|iframe|frame(?:set)?|i(?:frame|layer)|l(?:ayer|ink)|meta|object|s(?:cript|tyle)|title|xml)[^>]*+>#i', '', $data);
+		} while ($old_data !== $data);
+
+		// we are done...
+		return $data;
+	}
+
+	/**
+	 * 服务器的hostname
+	 * @return type
+	 */
+	static function hostname() {
+		return function_exists('gethostname') ? gethostname() : (function_exists('php_uname') ? php_uname('n') : 'unknown');
+	}
+
+	/**
+	 * 服务器的ip
+	 * @return type
+	 */
+	static function serverIp() {
+		return self::isCli() ? gethostbyname(self::hostname()) : Sr::server('SERVER_ADDR');
+	}
+
+	static function clientIp() {
+		if ($ip = self::checkClientIp(Sr::arrayGet($_SERVER, 'HTTP_X_FORWARDED_FOR'))) {
+			return $ip;
+		} elseif ($ip = self::server('HTTP_CLIENT_IP')) {
+			return $ip;
+		} elseif ($ip = Sr::arrayGet($_SERVER, 'REMOTE_ADDR')) {
+			return $ip;
+		} elseif ($ip = self::checkClientIp(getenv("HTTP_X_FORWARDED_FOR"))) {
+			return $ip;
+		} elseif ($ip = getenv("HTTP_CLIENT_IP")) {
+			return $ip;
+		} elseif ($ip = getenv("REMOTE_ADDR")) {
+			return $ip;
+		} else {
+			return "Unknown";
+		}
+	}
+
+	private static function checkClientIp($ip) {
+		if (empty($ip)) {
+			return false;
+		}
+		$whitelist = Sr::config()->getBackendServerIpWhitelist();
+		foreach ($whitelist as $okayIp) {
+			if ($okayIp == $ip) {
+				return $ip;
+			}
+		}
+		return FALSE;
+	}
+
 }

@@ -46,11 +46,11 @@ class Soter_Route {
 	private $controller, $method, $args, $hmvcModuleName;
 
 	public function getHvmcModuleName() {
-		return $this->hvmcModuleName;
+		return $this->hmvcModuleName;
 	}
 
 	public function setHvmcModuleName($hmvcModuleName) {
-		$this->hvmcModuleName = $hmvcModuleName;
+		$this->hmvcModuleName = $hmvcModuleName;
 		return $this;
 	}
 
@@ -132,7 +132,7 @@ class Soter_Default_Router_PathInfo extends Soter_Router {
 		//hmvc检测 
 		$_info = explode('/', $uri);
 		$hmvcModule = current($_info);
-		if ($hmvcModuleDirName=Soter::checkHmvc($hmvcModule,FALSE)) {
+		if ($hmvcModuleDirName = Soter::checkHmvc($hmvcModule, FALSE)) {
 			//找到hmvc模块,去除hmvc模块名称，得到真正的路径
 			$uri = ltrim(substr($uri, strlen($hmvcModule)), '/');
 		}
@@ -204,6 +204,10 @@ class Soter_Config {
 		$defaultMethod = 'index',
 		$methodPrefix = 'do_',
 		$methodUriSubfix = '.do',
+		$logsDirPath = '',
+		$logsSubDirNameFormat = 'Y-m-d/H',
+		$cookiePrefix = '',
+		$backendServerIpWhitelist = '',
 		$isRewrite = FALSE,
 		$request, $showError = true,
 		$excptionErrorJsonMessageName = 'errorMessage',
@@ -223,6 +227,48 @@ class Soter_Config {
 		$serverEnvironmentDevelopmentValue = 'development',
 		$serverEnvironmentProductionValue = 'production',
 		$hmvcModules = array();
+
+	public function getBackendServerIpWhitelist() {
+		return $this->backendServerIpWhitelist;
+	}
+
+	public function setBackendServerIpWhitelist($backendServerIpWhitelist) {
+		$backendServerIpWhitelist = explode(',', str_replace(' ', ',', $backendServerIpWhitelist));
+		$this->backendServerIpWhitelist = $backendServerIpWhitelist;
+		return $this;
+	}
+
+	public function getCookiePrefix() {
+		return $this->cookiePrefix;
+	}
+
+	public function setCookiePrefix($cookiePrefix) {
+		$this->cookiePrefix = $cookiePrefix;
+		return $this;
+	}
+
+	public function getLogsSubDirNameFormat() {
+		return $this->logsSubDirNameFormat;
+	}
+
+	/**
+	 * 设置日志子目录格式，参数就是date()函数的第一个参数,默认是 Y-m-d/H
+	 * @param type $logsSubDirNameFormat
+	 * @return \Soter_Config
+	 */
+	public function setLogsSubDirNameFormat($logsSubDirNameFormat) {
+		$this->logsSubDirNameFormat = $logsSubDirNameFormat;
+		return $this;
+	}
+
+	public function getLogsDirPath() {
+		return Sr::realPath(($this->logsDirPath ? $this->logsDirPath : $this->getApplicationDir() . 'logs/') . date($this->getLogsSubDirNameFormat())) . '/';
+	}
+
+	public function setLogsDirPath($logsDirPath) {
+		$this->logsDirPath = $logsDirPath;
+		return $this;
+	}
 
 	public function addAutoloadFunctions(Array $funciontsFileNameArray) {
 		foreach ($funciontsFileNameArray as $functionsFileName) {
@@ -780,7 +826,18 @@ class Soter_Logger_Writer_Dispatcher {
 class Soter_Logger_FileWriter implements Soter_Logger_Writer {
 
 	public function write(Soter_Exception $exception) {
-		
+		if (!file_exists($logsDirPath = Sr::config()->getLogsDirPath())) {
+			mkdir($logsDirPath, 0755, TRUE);
+		}
+		$content = 'Domain : ' . Sr::server('http_host') . "\n"
+			. 'ClientIP : ' . Sr::server('SERVER_ADDR') . "\n"
+			. 'ServerIP : ' . Sr::serverIp() . "\n"
+			. 'ServerHostname : ' . Sr::hostname() . "\n"
+			. $exception->renderCli() . "\n";
+		if (!file_exists($logsFilePath = $logsDirPath . 'logs.php')) {
+			$content = '<?php defined("IN_SOTER") or exit();?>' . "\n" . $content;
+		}
+		file_put_contents($logsFilePath, $content, LOCK_EX | FILE_APPEND);
 	}
 
 }

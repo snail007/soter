@@ -27,7 +27,7 @@ Soter::getConfig()
 	//->addLoggerWriter(new Logger_MyWriter())
 	//设置自定义的错误显示控制处理类
 	//->setExceptionHandle(new Exception_Handle())
-	//->addLoggerWriter(new Soter_Logger_FileWriter())
+	->addLoggerWriter(new Soter_Logger_FileWriter())
 	//默认控制器
 	->setDefaultController('Welcome')
 	//默认方法
