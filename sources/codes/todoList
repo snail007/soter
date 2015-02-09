@@ -1,6 +1,5 @@
 @todo
--> uri重写功能 *
--> 完成get模式路由器 *
+
 -> 数据验证功能
 -> 便捷输出的设计
 -> 视图设计
@@ -67,3 +66,5 @@
 -> * 加载函数文件（有自动加载）
 -> * 完成文件日志Writer：Soter_Logger_FileWriter
 -> 便捷获取输入功能，get post cookie session server raw_post
+-> * uri重写功能
+-> * 完成get模式路由器

@@ -622,4 +622,12 @@ class Sr {
 		return FALSE;
 	}
 
+	static function strBeginsWith($str, $sub) {
+		return ( substr($str, 0, strlen($sub)) == $sub );
+	}
+
+	static function strEndsWith($str, $sub) {
+		return ( substr($str, strlen($str) - strlen($sub)) == $sub );
+	}
+
 }

@@ -10,17 +10,17 @@ define('SOTER_APP_PATH', Sr::realPath(dirname(__FILE__) . '/../../tests/applicat
 define('SOTER_PACKAGES_PATH', SOTER_APP_PATH . 'packages/');
 //初始化系统配置
 Soter::initialize()
-       //项目目录路径
+	//项目目录路径
 	->setApplicationDir(SOTER_APP_PATH)
 	//注册项目包
 	->addPackage(SOTER_APP_PATH)
 	//注册拓展包
 	->addPackages(array(
-	    //SOTER_PACKAGES_PATH . 'misc',
+		//SOTER_PACKAGES_PATH . 'misc',
 	))
 	//注册自动加载的函数文件
 	->addAutoloadFunctions(array(
-	   // 'functions'
+		// 'functions'
 	))
 	//设置运行环境
 	->setEnvironment(($env = (($cliEnv = Sr::getOpt('env')) ? $cliEnv : Sr::arrayGet($_SERVER, 'ENVIRONMENT'))) ? Sr::config()->getServerEnvironment($env) : Sr::ENV_DEVELOPMENT)
@@ -37,12 +37,26 @@ Soter::initialize()
 	->setIndexName(pathinfo(__FILE__, PATHINFO_BASENAME))
 	//初始化请求
 	->setRequest(new Soter_Request(Sr::arrayGet($_SERVER, 'REQUEST_URI')))
-	//默认路由器
+	//注册默认pathinfo路由器
 	->addRouter(new Soter_Default_Router_PathInfo())
+	//pathinfo路由器,注册uri重写
+	//->setUriRewriter(new Uri_Rewriter())
+	//注册默认get路由器
+	->addRouter(new Soter_Default_Router_Get())
+	//get路由器,url中的控制器的get变量名
+	//->setRouterUrlControllerKey('c')
+	//get路由器,url中的方法的get变量名
+	//->setRouterUrlMethodKey('a')
+	//get路由器,url中的hmvc模块的get变量名
+	//->setRouterUrlModuleKey('m')
 	//设置自定义的错误显示控制处理类
 	//->setExceptionHandle(new Exception_Handle())
-	//记录日志
+	//错误日志记录，注释掉这行会关闭日志记录，去掉注释则开启日志文件记录
 	//->addLoggerWriter(new Soter_Logger_FileWriter())
+	//日志文件目录路径
+	//->setLogsDirPath(SOTER_APP_PATH . 'logs/')
+	//设置日志子目录格式，参数就是date()函数的第一个参数,默认是 Y-m-d/H
+	//->setLogsSubDirNameFormat('Y-m-d/H')
 	//默认控制器
 	->setDefaultController('Welcome')
 	//默认方法
@@ -53,7 +67,7 @@ Soter::initialize()
 	->setMethodUriSubfix('.do')
 	//注册hvmc模块，数组键是uri里面的hmvc模块名称，值是hmvc模块文件夹名称
 	->setHmvcModules(array(
-	   // 'Demo' => 'demo'
+		// 'Demo' => 'demo'
 	))
 	//加载项目自定义bootstrap.php配置,这一句一定要在最后，确保能覆盖上面的配置
 	->bootstrap()

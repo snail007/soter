@@ -30,9 +30,11 @@ Soter::getConfig()
 	//日志记录，注释掉这行会关闭日志记录，去掉注释则开启日志文件记录
 	->addLoggerWriter(new Soter_Logger_FileWriter())
 	//日志文件目录路径
-	//->setLogsDirPath(SOTER_APP_PATH . 'logs/')
+	->setLogsDirPath(SOTER_APP_PATH . 'logs/')
 	//设置日志子目录格式，参数就是date()函数的第一个参数,默认是 Y-m-d/H
 	->setLogsSubDirNameFormat('Y-m-d/H')
+	//注册uri重写
+	->setUriRewriter(new Uri_Rewriter())
 	//默认控制器
 	->setDefaultController('Welcome')
 	//默认方法

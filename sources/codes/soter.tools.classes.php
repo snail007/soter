@@ -96,6 +96,32 @@ class Soter_Route {
 
 }
 
+class Soter_Default_Router_Get extends Soter_Router {
+
+	public function find() {
+		$config = Sr::config();
+		$uri = explode('?', $config->getRequest()->getUri());
+		$query = end($uri);
+		parse_str($query, $get);
+		$controllerName = Sr::arrayGet($get, $config->getRouterUrlControllerKey(),'');
+		$hmvcMethodName = Sr::arrayGet($get, $config->getRouterUrlMethodKey(),'');
+		$hmvcModuleName = Sr::arrayGet($get, $config->getRouterUrlModuleKey(),'');
+		//hmvc检测
+		$hmvcModuleName=Soter::checkHmvc($hmvcModuleName, false);
+		if($controllerName){
+			$controllerName=$config->getControllerDirName().'_'.$controllerName;
+		}
+		if($hmvcMethodName){
+			$hmvcMethodName=$config->getMethodPrefix().$hmvcMethodName;
+		}
+		return $this->route->setHvmcModuleName($hmvcModuleName)
+				->setController($controllerName)
+				->setMethod($hmvcMethodName)
+				->setFound($hmvcModuleName || $controllerName);
+	}
+
+}
+
 class Soter_Default_Router_PathInfo extends Soter_Router {
 
 	/**
@@ -109,8 +135,7 @@ class Soter_Default_Router_PathInfo extends Soter_Router {
 		$config = Soter::getConfig();
 		//获取uri
 		$uri = $config->getRequest()->getUri();
-		$uri = $uri ? $uri : Soter_Tools::issetGet($_SERVER, 'REQUEST_URI', '/');
-
+		$subfix = $config->getMethodUriSubfix();
 		/**
 		 * pathinfo模式路由判断以及解析uri中的访问路径 
 		 * 比如：http://127.0.0.1/index.php/Welcome/index.do?id=11
@@ -121,6 +146,9 @@ class Soter_Default_Router_PathInfo extends Soter_Router {
 			$uri = ltrim(substr($uri, $pos + strlen('/' . $indexName)), '/');
 			$_uriarr = explode('?', $uri);
 			$uri = trim(current($_uriarr), '/');
+			if ($uriRewriter = $config->getUriRewriter()) {
+				$uri = $uriRewriter->rewrite($uri);
+			}
 		} else {
 			$uri = '';
 		}
@@ -146,7 +174,7 @@ class Soter_Default_Router_PathInfo extends Soter_Router {
 		 * 形如：Welcome/index.do , Welcome/User , Welcome
 		 */
 		if ($uri) {
-			$subfix = $config->getMethodUriSubfix();
+
 			//解析路径
 			$methodPathArr = explode($subfix, $uri);
 			//找到了控制器名和方法名
@@ -166,14 +194,6 @@ class Soter_Default_Router_PathInfo extends Soter_Router {
 				->setController($controller)
 				->setMethod($method)
 				->setFound(TRUE);
-	}
-
-}
-
-class Soter_Tools {
-
-	static function issetGet($arr, $key, $default = NULL) {
-		return isset($arr[$key]) ? $arr[$key] : $default;
 	}
 
 }
@@ -205,6 +225,9 @@ class Soter_Config {
 		$defaultMethod = 'index',
 		$methodPrefix = 'do_',
 		$methodUriSubfix = '.do',
+		$routerUrlModuleKey = 'm',
+		$routerUrlControllerKey = 'c',
+		$routerUrlMethodKey = 'a',
 		$logsDirPath = '',
 		$logsSubDirNameFormat = 'Y-m-d/H',
 		$cookiePrefix = '',
@@ -222,12 +245,52 @@ class Soter_Config {
 		$packageMasterContainer = array(),
 		$packageContainer = array(),
 		$loggerWriterContainer = array(),
-		$uriReWriterContainer = array(),
+		$uriRewriter,
 		$exceptionHandle, $route, $environment = Sr::ENV_DEVELOPMENT,
 		$serverEnvironmentTestingValue = 'testing',
 		$serverEnvironmentDevelopmentValue = 'development',
 		$serverEnvironmentProductionValue = 'production',
 		$hmvcModules = array();
+
+	public function getRouterUrlModuleKey() {
+		return $this->routerUrlModuleKey;
+	}
+
+	public function getRouterUrlControllerKey() {
+		return $this->routerUrlControllerKey;
+	}
+
+	public function getRouterUrlMethodKey() {
+		return $this->routerUrlMethodKey;
+	}
+
+	public function setRouterUrlModuleKey($routerUrlModuleKey) {
+		$this->routerUrlModuleKey = $routerUrlModuleKey;
+		return $this;
+	}
+
+	public function setRouterUrlControllerKey($routerUrlControllerKey) {
+		$this->routerUrlControllerKey = $routerUrlControllerKey;
+		return $this;
+	}
+
+	public function setRouterUrlMethodKey($routerUrlMethodKey) {
+		$this->routerUrlMethodKey = $routerUrlMethodKey;
+		return $this;
+	}
+
+	/**
+	 * 
+	 * @return Soter_Uri_Rewriter
+	 */
+	public function getUriRewriter() {
+		return $this->uriRewriter;
+	}
+
+	public function setUriRewriter(Soter_Uri_Rewriter $uriRewriter) {
+		$this->uriRewriter = $uriRewriter;
+		return $this;
+	}
 
 	public function getPrimaryApplicationDir() {
 		return $this->primaryApplicationDir;
@@ -242,8 +305,15 @@ class Soter_Config {
 		return $this->backendServerIpWhitelist;
 	}
 
-	public function setBackendServerIpWhitelist($backendServerIpWhitelist) {
-		$backendServerIpWhitelist = explode(',', str_replace(' ', ',', $backendServerIpWhitelist));
+	/**
+	 * 如果服务器是ngix之类代理转发请求到后端apache运行的PHP<br>
+	 * 那么这里应该设置信任的nginx所在服务器的ip<br>
+	 * nginx里面应该设置 X_FORWARDED_FOR server变量来表示真实的客户端IP<br>
+	 * 不然通过Sr::clientIp()是获取不到真实的客户端IP的<br>
+	 * @param type $backendServerIpWhitelist
+	 * @return \Soter_Config
+	 */
+	public function setBackendServerIpWhitelist(Array $backendServerIpWhitelist) {
 		$this->backendServerIpWhitelist = $backendServerIpWhitelist;
 		return $this;
 	}
@@ -480,15 +550,6 @@ class Soter_Config {
 
 	public function setHmvcModules($hmvcModules) {
 		$this->hmvcModules = $hmvcModules;
-		return $this;
-	}
-
-	public function getUriReWriter() {
-		return $this->uriReWriterContainer;
-	}
-
-	public function addUriReWriter($uriReWriter) {
-		$this->uriReWriterContainer[] = $uriReWriter;
 		return $this;
 	}
 
