@@ -184,6 +184,7 @@ class Soter_Tools {
 class Soter_Config {
 
 	private $applicationDir = '', //项目目录
+		$primaryApplicationDir = '', //主项目目录
 		$indexDir = '', //入口文件目录
 		$indexName = '', //入口文件名称
 		$timeZone = 'PRC',
@@ -228,6 +229,15 @@ class Soter_Config {
 		$serverEnvironmentProductionValue = 'production',
 		$hmvcModules = array();
 
+	public function getPrimaryApplicationDir() {
+		return $this->primaryApplicationDir;
+	}
+
+	public function setPrimaryApplicationDir($primaryApplicationDir) {
+		$this->primaryApplicationDir = $primaryApplicationDir;
+		return $this;
+	}
+
 	public function getBackendServerIpWhitelist() {
 		return $this->backendServerIpWhitelist;
 	}
@@ -262,7 +272,7 @@ class Soter_Config {
 	}
 
 	public function getLogsDirPath() {
-		return Sr::realPath(($this->logsDirPath ? $this->logsDirPath : $this->getApplicationDir() . 'logs/') . date($this->getLogsSubDirNameFormat())) . '/';
+		return Sr::realPath(($this->logsDirPath ? $this->logsDirPath : $this->getPrimaryApplicationDir() . 'logs/') . date($this->getLogsSubDirNameFormat())) . '/';
 	}
 
 	public function setLogsDirPath($logsDirPath) {
@@ -519,6 +529,9 @@ class Soter_Config {
 
 	public function setApplicationDir($applicationDir) {
 		$this->applicationDir = Sr::realPath($applicationDir) . '/';
+		if (empty($this->primaryApplicationDir)) {
+			$this->primaryApplicationDir = $this->applicationDir;
+		}
 		return $this;
 	}
 
@@ -833,7 +846,12 @@ class Soter_Logger_FileWriter implements Soter_Logger_Writer {
 			. 'ClientIP : ' . Sr::server('SERVER_ADDR') . "\n"
 			. 'ServerIP : ' . Sr::serverIp() . "\n"
 			. 'ServerHostname : ' . Sr::hostname() . "\n"
-			. $exception->renderCli();
+			. (!Sr::isCli() ? 'Request Uri : ' . Sr::server('request_uri') : '') . "\n"
+			. (!Sr::isCli() ? 'Get Data : ' . json_encode(Sr::get()) : '') . "\n"
+			. (!Sr::isCli() ? 'Post Data : ' . json_encode(Sr::post()) : '') . "\n"
+			. (!Sr::isCli() ? 'Cookie Data : ' . json_encode(Sr::cookie()) : '') . "\n"
+			. (!Sr::isCli() ? 'Server Data : ' . json_encode(Sr::server()) : '') . "\n"
+			. $exception->renderCli() . "\n";
 		if (!file_exists($logsFilePath = $logsDirPath . 'logs.php')) {
 			$content = '<?php defined("IN_SOTER") or exit();?>' . "\n" . $content;
 		}

@@ -472,6 +472,14 @@ class Sr {
 	}
 
 	/**
+	 * 获取原始的POST数据，即php://input获取到的
+	 * @return type
+	 */
+	static function postRawBody() {
+		return file_get_contents('php://input');
+	}
+
+	/**
 	 * 获取一个cookie
 	 * 提醒:
 	 * 该方法会在key前面加上系统配置里面的getCookiePrefix()

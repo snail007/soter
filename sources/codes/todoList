@@ -1,5 +1,4 @@
 @todo
--> 完成文件日志Writer：Soter_Logger_FileWriter
 -> uri重写功能 *
 -> 完成get模式路由器 *
 -> 便捷获取输入功能，get post cookie session server raw_post
@@ -67,3 +66,4 @@
    2.或者不分层的model层
 -> * 加载类库
 -> * 加载函数文件（有自动加载）
+-> * 完成文件日志Writer：Soter_Logger_FileWriter
