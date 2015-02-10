@@ -65,7 +65,7 @@ Soter::initialize()
 	->setMethodPrefix('do_')
 	//方法url后缀
 	->setMethodUriSubfix('.do')
-	//注册hvmc模块，数组键是uri里面的hmvc模块名称，值是hmvc模块文件夹名称
+	//注册hmvc模块，数组键是uri里面的hmvc模块名称，值是hmvc模块文件夹名称
 	->setHmvcModules(array(
 		// 'Demo' => 'demo'
 	))

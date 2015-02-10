@@ -45,11 +45,11 @@ class Soter_Route {
 	private $found = false;
 	private $controller, $method, $args, $hmvcModuleName;
 
-	public function getHvmcModuleName() {
+	public function getHmvcModuleName() {
 		return $this->hmvcModuleName;
 	}
 
-	public function setHvmcModuleName($hmvcModuleName) {
+	public function setHmvcModuleName($hmvcModuleName) {
 		$this->hmvcModuleName = $hmvcModuleName;
 		return $this;
 	}
@@ -107,17 +107,17 @@ class Soter_Default_Router_Get extends Soter_Router {
 		$hmvcMethodName = Sr::arrayGet($get, $config->getRouterUrlMethodKey(), '');
 		$hmvcModuleName = Sr::arrayGet($get, $config->getRouterUrlModuleKey(), '');
 		//hmvc检测
-		$hmvcModuleName = Soter::checkHmvc($hmvcModuleName, false);
+		$hmvcModuleDirName = Soter::checkHmvc($hmvcModuleName, false);
 		if ($controllerName) {
 			$controllerName = $config->getControllerDirName() . '_' . $controllerName;
 		}
 		if ($hmvcMethodName) {
 			$hmvcMethodName = $config->getMethodPrefix() . $hmvcMethodName;
 		}
-		return $this->route->setHvmcModuleName($hmvcModuleName)
+		return $this->route->setHmvcModuleName($hmvcModuleName)
 				->setController($controllerName)
 				->setMethod($hmvcMethodName)
-				->setFound($hmvcModuleName || $controllerName);
+				->setFound($hmvcModuleDirName || $controllerName);
 	}
 
 }
@@ -169,7 +169,7 @@ class Soter_Default_Router_PathInfo extends Soter_Router {
 		$method = $config->getDefaultMethod();
 		$subfix = $config->getMethodUriSubfix();
 		/**
-		 * 到此，如果上面$uri被去除掉hvmc模块名称后，$uri有可能是空
+		 * 到此，如果上面$uri被去除掉hmvc模块名称后，$uri有可能是空
 		 * 或者$uri有控制器名称或者方法名称
 		 * 形如：Welcome/index.do , Welcome/User , Welcome
 		 */
@@ -189,7 +189,7 @@ class Soter_Default_Router_PathInfo extends Soter_Router {
 		$controller = $config->getControllerDirName() . '_' . $controller;
 		$method = $config->getMethodPrefix() . $method;
 		return $this->route
-				->setHvmcModuleName($hmvcModuleDirName)
+				->setHmvcModuleName($hmvcModule)
 				->setController($controller)
 				->setMethod($method)
 				->setFound(TRUE);
