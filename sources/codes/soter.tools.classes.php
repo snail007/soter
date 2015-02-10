@@ -103,16 +103,16 @@ class Soter_Default_Router_Get extends Soter_Router {
 		$uri = explode('?', $config->getRequest()->getUri());
 		$query = end($uri);
 		parse_str($query, $get);
-		$controllerName = Sr::arrayGet($get, $config->getRouterUrlControllerKey(),'');
-		$hmvcMethodName = Sr::arrayGet($get, $config->getRouterUrlMethodKey(),'');
-		$hmvcModuleName = Sr::arrayGet($get, $config->getRouterUrlModuleKey(),'');
+		$controllerName = Sr::arrayGet($get, $config->getRouterUrlControllerKey(), '');
+		$hmvcMethodName = Sr::arrayGet($get, $config->getRouterUrlMethodKey(), '');
+		$hmvcModuleName = Sr::arrayGet($get, $config->getRouterUrlModuleKey(), '');
 		//hmvc检测
-		$hmvcModuleName=Soter::checkHmvc($hmvcModuleName, false);
-		if($controllerName){
-			$controllerName=$config->getControllerDirName().'_'.$controllerName;
+		$hmvcModuleName = Soter::checkHmvc($hmvcModuleName, false);
+		if ($controllerName) {
+			$controllerName = $config->getControllerDirName() . '_' . $controllerName;
 		}
-		if($hmvcMethodName){
-			$hmvcMethodName=$config->getMethodPrefix().$hmvcMethodName;
+		if ($hmvcMethodName) {
+			$hmvcMethodName = $config->getMethodPrefix() . $hmvcMethodName;
 		}
 		return $this->route->setHvmcModuleName($hmvcModuleName)
 				->setController($controllerName)
@@ -135,7 +135,7 @@ class Soter_Default_Router_PathInfo extends Soter_Router {
 		$config = Soter::getConfig();
 		//获取uri
 		$uri = $config->getRequest()->getUri();
-		$subfix = $config->getMethodUriSubfix();
+
 		/**
 		 * pathinfo模式路由判断以及解析uri中的访问路径 
 		 * 比如：http://127.0.0.1/index.php/Welcome/index.do?id=11
@@ -157,24 +157,23 @@ class Soter_Default_Router_PathInfo extends Soter_Router {
 			return $this->route->setFound(FALSE);
 		}
 		//到此$uri形如：Welcome/index.do , Welcome/User , Welcome
-		//hmvc检测 
 		$_info = explode('/', $uri);
 		$hmvcModule = current($_info);
+		//hmvc检测 ，Soter::checkHmvc()执行后，主配置会被hmvc子项目配置覆盖
 		if ($hmvcModuleDirName = Soter::checkHmvc($hmvcModule, FALSE)) {
 			//找到hmvc模块,去除hmvc模块名称，得到真正的路径
 			$uri = ltrim(substr($uri, strlen($hmvcModule)), '/');
 		}
-
 		//首先控制器名和方法名初始化为默认
 		$controller = $config->getDefaultController();
 		$method = $config->getDefaultMethod();
+		$subfix = $config->getMethodUriSubfix();
 		/**
 		 * 到此，如果上面$uri被去除掉hvmc模块名称后，$uri有可能是空
 		 * 或者$uri有控制器名称或者方法名称
 		 * 形如：Welcome/index.do , Welcome/User , Welcome
 		 */
 		if ($uri) {
-
 			//解析路径
 			$methodPathArr = explode($subfix, $uri);
 			//找到了控制器名和方法名
