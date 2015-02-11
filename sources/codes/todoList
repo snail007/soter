@@ -7,7 +7,7 @@
 -> 各种缓存无缝切换设计（memcache redis mongodb file apc）
 -> session托管（memcache redis mysql）
 -> 数据库日志Soter_Logger_DatabaseWriter
--> 各种数据库驱动支持，以及无缝切换（pdo mysql mysqli sqlite）
+-> 各种数据库驱动支持，以及无缝切换（pdo mysql mysqli sqlite） *
 -> Dao模型父类设计
 -> Business模型父类设计
 -> Model模型父类设计
