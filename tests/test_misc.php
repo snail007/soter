@@ -43,5 +43,29 @@ class TestMisc extends UnitTestCase {
 		$browser->get(testUrl('Welcome/functionsAuto.do'));
 		$this->assertEqual($browser->getContent(),'myFunctionAuto');
 	}
+	public function TestArgs() {
+		$browser = new SimpleBrowser();
+		$browser->get(testUrl('Welcome/args.do'));
+		$this->assertEqual($browser->getContent(),'system002');
+		$browser->get(testUrl('Welcome/args-cat.do'));
+		$this->assertEqual($browser->getContent(),'cat002');
+		$browser->get(testUrl('Welcome/args-cat-001.do'));
+		$this->assertEqual($browser->getContent(),'cat001');
+		$browser->get(testUrl('Welcome/args--001.do'));
+		$this->assertEqual($browser->getContent(),'001');
+		$browser->get(testUrl('Welcome/args-cat-.do'));
+		$this->assertEqual($browser->getContent(),'cat');
+		//hmvc
+		$browser->get(testUrl('Demo/Welcome/args.html'));
+		$this->assertEqual($browser->getContent(),'system002');
+		$browser->get(testUrl('Demo/Welcome/args-cat.html'));
+		$this->assertEqual($browser->getContent(),'cat002');
+		$browser->get(testUrl('Demo/Welcome/args-cat-001.html'));
+		$this->assertEqual($browser->getContent(),'cat001');
+		$browser->get(testUrl('Demo/Welcome/args--001.html'));
+		$this->assertEqual($browser->getContent(),'001');
+		$browser->get(testUrl('Demo/Welcome/args-cat-.html'));
+		$this->assertEqual($browser->getContent(),'cat');
+	}
 
 }

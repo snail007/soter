@@ -22,6 +22,20 @@
 -> * 自定义错误处理，显示自定义的错误页面
 -> * pathinfo模式路由器
 -> * pathinfo路由器对hmvc的支持
+-> * pathinfo路由器对传递参数的支持
+     可以这样传递参数：
+     1.比如：/index.php/Welcome/article-system-001.do
+      传递了两个参数给Welcome->do_article($cat='food',$id='002'),其中$cat是system，$id是001
+      为了避免没有传递参数的时候报错，我们需要给$cat和$id设置默认值。
+     2.比如：/index.php/Welcome/article--001.do
+      传递了两个参数给Welcome->do_article($cat='food',$id='002'),其中$cat是空，$id是001
+     3.比如：/index.php/Welcome/article-system-.do
+      传递了两个参数给Welcome->do_article($cat='food',$id='002'),其中$cat是system，$id是空
+     4.比如：/index.php/Welcome/article-system.do
+      传递了两个参数给Welcome->do_article($cat='food',$id='002'),其中$cat是system，$id是002
+     5.比如：/index.php/Welcome/article.do
+      传递了两个参数给Welcome->do_article($cat='food',$id='002'),其中$cat是food，$id是002
+      默认的参数分隔符 - 可以通过配置修改 ->setMethodParametersDelimiter('-');
 -> * 类库自动加载
 -> * 添加包功能
 -> * 对于主项目，Hmvc子项目，拓展包，类库。

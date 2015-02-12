@@ -67,4 +67,11 @@ class Controller_Welcome extends Soter_Controller {
 		none();
 	}
 
+	/**
+	 * 传递参数给方法
+	 */
+	public function do_args($type = 'system', $id = '002') {
+		echo $type . $id;
+	}
+
 }

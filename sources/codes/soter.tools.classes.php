@@ -168,30 +168,43 @@ class Soter_Default_Router_PathInfo extends Soter_Router {
 		$controller = $config->getDefaultController();
 		$method = $config->getDefaultMethod();
 		$subfix = $config->getMethodUriSubfix();
+
 		/**
 		 * 到此，如果上面$uri被去除掉hmvc模块名称后，$uri有可能是空
-		 * 或者$uri有控制器名称或者方法名称
-		 * 形如：Welcome/index.do , Welcome/User , Welcome
+		 * 或者$uri有控制器名称或者方法-参数名称
+		 * 形如：1.Welcome/article-001.do , 2.Welcome/article-001.do , 
+		 *      3.article-001.do ,4.article.do , 5.Welcome/User , 6.Welcome 
 		 */
 		if ($uri) {
 			//解析路径
 			$methodPathArr = explode($subfix, $uri);
-			//找到了控制器名和方法名
-			if (count($methodPathArr) == 2 && empty($methodPathArr[1])) {
-				//覆盖上面的默认控制器名和方法名
-				$controller = str_replace('/', '_', dirname($uri));
-				$method = basename($methodPathArr[0], $subfix);
-			} elseif (!empty($methodPathArr[0])) {
-				//只找到了控制器名，覆盖上面的默认控制器名
+			//找到了控制器名或者方法-参数名(1,2,3,4)
+			if (Sr::strEndsWith($uri, $subfix)) {
+				//找到了控制器名和方法-参数名(1,2)，覆盖上面的默认控制器名和方法-参数名
+				if (stripos($methodPathArr[0], '/') !== false) {
+					$controller = str_replace('/', '_', dirname($uri));
+					$method = basename($methodPathArr[0]);
+				} else {
+					//只找到了方法-参数名(3,4)，覆盖上面的默认方法名
+					$method = basename($methodPathArr[0]);
+				}
+			} else {
+				//只找到了控制器名(5,6)，覆盖上面的默认控制器名
 				$controller = str_replace('/', '_', $uri);
 			}
 		}
 		$controller = $config->getControllerDirName() . '_' . $controller;
-		$method = $config->getMethodPrefix() . $method;
+		//统一解析方法-参数名
+		$methodAndParameters = explode($config->getMethodParametersDelimiter(), $method);
+		$method = $config->getMethodPrefix().current($methodAndParameters);
+		array_shift($methodAndParameters);
+		$parameters = $methodAndParameters;
+		//$config->getMethodPrefix() . $method;
 		return $this->route
 				->setHmvcModuleName($hmvcModule)
 				->setController($controller)
 				->setMethod($method)
+				->setArgs($parameters)
 				->setFound(TRUE);
 	}
 
@@ -227,6 +240,7 @@ class Soter_Config {
 		$routerUrlModuleKey = 'm',
 		$routerUrlControllerKey = 'c',
 		$routerUrlMethodKey = 'a',
+		$methodParametersDelimiter = '-',
 		$logsDirPath = '',
 		$logsSubDirNameFormat = 'Y-m-d/H',
 		$cookiePrefix = '',
@@ -250,6 +264,15 @@ class Soter_Config {
 		$serverEnvironmentDevelopmentValue = 'development',
 		$serverEnvironmentProductionValue = 'production',
 		$hmvcModules = array();
+
+	public function getMethodParametersDelimiter() {
+		return $this->methodParametersDelimiter;
+	}
+
+	public function setMethodParametersDelimiter($methodParametersDelimiter) {
+		$this->methodParametersDelimiter = $methodParametersDelimiter;
+		return $this;
+	}
 
 	public function getRouterUrlModuleKey() {
 		return $this->routerUrlModuleKey;

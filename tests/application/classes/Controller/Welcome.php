@@ -128,6 +128,7 @@ class Controller_Welcome extends Soter_Controller {
 	public function do_model() {
 		echo (Sr::model('TestModel') instanceof Model_TestModel) ? '1' : 0;
 	}
+
 	/**
 	 * 加载functions
 	 */
@@ -135,12 +136,19 @@ class Controller_Welcome extends Soter_Controller {
 		Sr::functions('functions');
 		echo myFunction();
 	}
+
 	/**
 	 * 自动加载functions
 	 */
 	public function do_functionsAuto() {
 		echo myFunctionAuto();
 	}
-	
+
+	/**
+	 * 传递参数给方法
+	 */
+	public function do_args($type = 'system', $id = '002') {
+		echo $type . $id;
+	}
 
 }
