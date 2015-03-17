@@ -630,4 +630,57 @@ class Sr {
 		return ( substr($str, strlen($str) - strlen($sub)) == $sub );
 	}
 
+	/**
+	 * 获取IP段信息<br>
+	 * $ipAddr格式：192.168.1.10/24、192.168.1.10/32<br>
+	 * 传入Ip地址对Ip段地址进行处理得到相关的信息<br>
+	 * 1.没有$key时，返回数组：array(<br>
+	 * netmask=>网络掩码<br>
+	 * count=>网络可用IP数目<br>
+	 * start=>可用IP开始<br>
+	 * end=>可用IP结束<br>
+	 * netaddress=>网络地址<br>
+	 * broadcast=>广播地址<br>
+	 * )<br>
+	 * 2.有$key时返回$key对应的值，$key是上面数组的键。
+	 */
+	static function ipInfo($ipAddr, $key = null) {
+		$ipAddr = str_replace(" ", "", $ipAddr);    //去除字符串中的空格
+		$arr = explode('/', $ipAddr); //对IP段进行解剖
+		$ipAddr = $arr[0];    //得到IP地址
+		$ipAddrArr = explode('.', $ipAddr);
+		foreach ($ipAddrArr as &$v) {
+			$v = intval($v); //去掉192.023.20.01其中的023的0
+		}
+		$ipAddr = implode('.', $ipAddrArr); //修正后的ip地址
+		$netbits = intval($arr[1]);   //得到掩码位
+
+		$subnetMask = long2ip(ip2long("255.255.255.255") << (32 - $netbits));
+		$ip = ip2long($ipAddr);
+		$nm = ip2long($subnetMask);
+		$nw = ($ip & $nm);
+		$bc = $nw | (~$nm);
+
+		$ips = array();
+		$ips['netmask'] = long2ip($nm);     //网络掩码
+		$ips['count'] = ($bc - $nw - 1);      //可用IP数目
+		if ($ips['count'] <= 0) {
+			$ips['count'] += 4294967296;
+		}
+		if ($ips['count'] < 0) {
+			$ips['count'] = 0;      //当$netbits是32的时候可用数目是-1，这里修正为1
+			$ips['start'] = long2ip($ip);    //可用IP开始
+			$ips['end'] = long2ip($ip);      //可用IP结束
+		} else {
+			$ips['start'] = long2ip($nw + 1);    //可用IP开始
+			$ips['end'] = long2ip($bc - 1);      //可用IP结束
+		}
+		$bc = sprintf('%u', $bc);    //或者采用此方法转换成无符号的，修复32位操作系统中long2ip后会出现负数
+		$nw = sprintf('%u', $nw);
+		$ips['netaddress'] = long2ip($nw);       //网络地址
+		$ips['broadcast'] = long2ip($bc);       //广播地址
+
+		return is_null($key) ? $ips : $ips[$key];
+	}
+
 }

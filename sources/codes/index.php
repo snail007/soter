@@ -44,17 +44,17 @@ Soter::initialize()
 	//注册默认get路由器
 	->addRouter(new Soter_Default_Router_Get())
 	//get路由器,url中的控制器的get变量名
-	//->setRouterUrlControllerKey('c')
+	->setRouterUrlControllerKey('c')
 	//get路由器,url中的方法的get变量名
-	//->setRouterUrlMethodKey('a')
+	->setRouterUrlMethodKey('a')
 	//get路由器,url中的hmvc模块的get变量名
-	//->setRouterUrlModuleKey('m')
+	->setRouterUrlModuleKey('m')
 	//设置自定义的错误显示控制处理类
-	//->setExceptionHandle(new Exception_Handle())
+	->setExceptionHandle(new Exception_Handle())
 	//错误日志记录，注释掉这行会关闭日志记录，去掉注释则开启日志文件记录
-	//->addLoggerWriter(new Soter_Logger_FileWriter())
+	->addLoggerWriter(new Soter_Logger_FileWriter())
 	//日志文件目录路径
-	//->setLogsDirPath(SOTER_APP_PATH . 'logs/')
+	->setLogsDirPath(SOTER_APP_PATH . 'storage/logs/')
 	//设置日志子目录格式，参数就是date()函数的第一个参数,默认是 Y-m-d/H
 	//->setLogsSubDirNameFormat('Y-m-d/H')
 	//默认控制器
@@ -69,6 +69,7 @@ Soter::initialize()
 	->setHmvcModules(array(
 		// 'Demo' => 'demo'
 	))
+	->setMaintainIpWhitelist(array())
 	//加载项目自定义bootstrap.php配置,这一句一定要在最后，确保能覆盖上面的配置
 	->bootstrap()
 ;

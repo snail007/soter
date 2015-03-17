@@ -196,7 +196,7 @@ class Soter_Default_Router_PathInfo extends Soter_Router {
 		$controller = $config->getControllerDirName() . '_' . $controller;
 		//统一解析方法-参数名
 		$methodAndParameters = explode($config->getMethodParametersDelimiter(), $method);
-		$method = $config->getMethodPrefix().current($methodAndParameters);
+		$method = $config->getMethodPrefix() . current($methodAndParameters);
 		array_shift($methodAndParameters);
 		$parameters = $methodAndParameters;
 		//$config->getMethodPrefix() . $method;
@@ -263,7 +263,19 @@ class Soter_Config {
 		$serverEnvironmentTestingValue = 'testing',
 		$serverEnvironmentDevelopmentValue = 'development',
 		$serverEnvironmentProductionValue = 'production',
-		$hmvcModules = array();
+		$hmvcModules = array(),
+		$maintainIpWhitelist = array()
+
+	;
+
+	public function getMaintainIpWhitelist() {
+		return $this->maintainIpWhitelist;
+	}
+
+	public function setMaintainIpWhitelist($maintainIpWhitelist) {
+		$this->maintainIpWhitelist = $maintainIpWhitelist;
+		return $this;
+	}
 
 	public function getMethodParametersDelimiter() {
 		return $this->methodParametersDelimiter;
