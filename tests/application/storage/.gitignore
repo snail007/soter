@@ -1,4 +1,4 @@
 *
-logs/*
+!logs/.gitignore
 !.htaccess
 !.gitignore

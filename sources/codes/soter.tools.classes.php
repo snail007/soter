@@ -926,7 +926,7 @@ class Soter_Logger_FileWriter implements Soter_Logger_Writer {
 	private $logsDirPath;
 
 	public function __construct($logsDirPath) {
-		$this->logsDirPath = Sr::realPath($logsDirPath);
+		$this->logsDirPath = Sr::realPath($logsDirPath) . '/' . date(Sr::config()->getLogsSubDirNameFormat()) . '/';
 	}
 
 	public function write(Soter_Exception $exception) {
@@ -940,7 +940,10 @@ class Soter_Logger_FileWriter implements Soter_Logger_Writer {
 			. (!Sr::isCli() ? 'Cookie Data : ' . json_encode(Sr::cookie()) : '') . "\n"
 			. (!Sr::isCli() ? 'Server Data : ' . json_encode(Sr::server()) : '') . "\n"
 			. $exception->renderCli() . "\n";
-		if (!file_exists($logsFilePath = $this->logsDirPath . '/logs.php')) {
+		if (!is_dir($this->logsDirPath)) {
+			mkdir($this->logsDirPath, 0700, true);
+		}
+		if (!file_exists($logsFilePath = $this->logsDirPath . 'logs.php')) {
 			$content = '<?php defined("IN_SOTER") or exit();?>' . "\n" . $content;
 		}
 		file_put_contents($logsFilePath, $content, LOCK_EX | FILE_APPEND);
