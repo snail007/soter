@@ -241,7 +241,6 @@ class Soter_Config {
 		$routerUrlControllerKey = 'c',
 		$routerUrlMethodKey = 'a',
 		$methodParametersDelimiter = '-',
-		$logsDirPath = '',
 		$logsSubDirNameFormat = 'Y-m-d/H',
 		$cookiePrefix = '',
 		$backendServerIpWhitelist = '',
@@ -372,15 +371,6 @@ class Soter_Config {
 	 */
 	public function setLogsSubDirNameFormat($logsSubDirNameFormat) {
 		$this->logsSubDirNameFormat = $logsSubDirNameFormat;
-		return $this;
-	}
-
-	public function getLogsDirPath() {
-		return Sr::realPath(($this->logsDirPath ? $this->logsDirPath : $this->getPrimaryApplicationDir() . 'logs/') . date($this->getLogsSubDirNameFormat())) . '/';
-	}
-
-	public function setLogsDirPath($logsDirPath) {
-		$this->logsDirPath = $logsDirPath;
 		return $this;
 	}
 
@@ -933,10 +923,13 @@ class Soter_Logger_Writer_Dispatcher {
 
 class Soter_Logger_FileWriter implements Soter_Logger_Writer {
 
+	private $logsDirPath;
+
+	public function __construct($logsDirPath) {
+		$this->logsDirPath = Sr::realPath($logsDirPath);
+	}
+
 	public function write(Soter_Exception $exception) {
-		if (!file_exists($logsDirPath = Sr::config()->getLogsDirPath())) {
-			mkdir($logsDirPath, 0755, TRUE);
-		}
 		$content = 'Domain : ' . Sr::server('http_host') . "\n"
 			. 'ClientIP : ' . Sr::server('SERVER_ADDR') . "\n"
 			. 'ServerIP : ' . Sr::serverIp() . "\n"
@@ -947,7 +940,7 @@ class Soter_Logger_FileWriter implements Soter_Logger_Writer {
 			. (!Sr::isCli() ? 'Cookie Data : ' . json_encode(Sr::cookie()) : '') . "\n"
 			. (!Sr::isCli() ? 'Server Data : ' . json_encode(Sr::server()) : '') . "\n"
 			. $exception->renderCli() . "\n";
-		if (!file_exists($logsFilePath = $logsDirPath . 'logs.php')) {
+		if (!file_exists($logsFilePath = $this->logsDirPath . '/logs.php')) {
 			$content = '<?php defined("IN_SOTER") or exit();?>' . "\n" . $content;
 		}
 		file_put_contents($logsFilePath, $content, LOCK_EX | FILE_APPEND);
