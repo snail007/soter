@@ -63,7 +63,25 @@ class Soter {
 		} elseif (Sr::isPluginMode()) {
 			self::runPlugin();
 		} else {
-			self::runWeb();
+			$canRunWeb = !Sr::config()->getIsMaintainMode();
+			if (!$canRunWeb) {
+				foreach (Sr::config()->getMaintainIpWhitelist() as $ip) {
+					$info = explode('/', $ip);
+					$netmask = empty($info[1]) ? '32' : $info[1];
+					if (Sr::ipInfo(Sr::clientIp() . '/' . $netmask, 'netaddress') == Sr::ipInfo($info[0] . '/' . $netmask, 'netaddress')) {
+						$canRunWeb = true;
+						break;
+					}
+				}
+			}
+			if ($canRunWeb) {
+				self::runWeb();
+			} else {
+				$handle = Sr::config()->getMaintainModeHandle();
+				if (is_object($handle)) {
+					$handle->handle();
+				}
+			}
 		}
 	}
 
@@ -647,12 +665,14 @@ class Sr {
 	static function ipInfo($ipAddr, $key = null) {
 		$ipAddr = str_replace(" ", "", $ipAddr);    //去除字符串中的空格
 		$arr = explode('/', $ipAddr); //对IP段进行解剖
+
 		$ipAddr = $arr[0];    //得到IP地址
 		$ipAddrArr = explode('.', $ipAddr);
 		foreach ($ipAddrArr as &$v) {
 			$v = intval($v); //去掉192.023.20.01其中的023的0
 		}
 		$ipAddr = implode('.', $ipAddrArr); //修正后的ip地址
+
 		$netbits = intval($arr[1]);   //得到掩码位
 
 		$subnetMask = long2ip(ip2long("255.255.255.255") << (32 - $netbits));

@@ -263,9 +263,29 @@ class Soter_Config {
 		$serverEnvironmentDevelopmentValue = 'development',
 		$serverEnvironmentProductionValue = 'production',
 		$hmvcModules = array(),
-		$maintainIpWhitelist = array()
+		$isMaintainMode = false,
+		$maintainIpWhitelist = array(),
+		$maintainModeHandle
 
 	;
+
+	public function getIsMaintainMode() {
+		return $this->isMaintainMode;
+	}
+
+	public function getMaintainModeHandle() {
+		return $this->maintainModeHandle;
+	}
+
+	public function setIsMaintainMode($isMaintainMode) {
+		$this->isMaintainMode = $isMaintainMode;
+		return $this;
+	}
+
+	public function setMaintainModeHandle(Soter_Maintain_Handle $maintainModeHandle) {
+		$this->maintainModeHandle = $maintainModeHandle;
+		return $this;
+	}
 
 	public function getMaintainIpWhitelist() {
 		return $this->maintainIpWhitelist;
@@ -947,6 +967,31 @@ class Soter_Logger_FileWriter implements Soter_Logger_Writer {
 			$content = '<?php defined("IN_SOTER") or exit();?>' . "\n" . $content;
 		}
 		file_put_contents($logsFilePath, $content, LOCK_EX | FILE_APPEND);
+	}
+
+}
+
+class Soter_Maintain_Default_Handle implements Soter_Maintain_Handle {
+
+	public function handle() {
+		header('Content-type: text/html;charset=utf-8');
+		echo '<center><h2>server is under maintenance</h2><h3>服务器维护中</h3>' . date('Y/m/d H:i:s e') . '</center>';
+	}
+
+}
+
+class Soter_Uri_Rewriter_Default implements Soter_Uri_Rewriter {
+
+	public function rewrite($uri) {
+		return $uri;
+	}
+
+}
+
+class Soter_Exception_Handle_Default implements Soter_Exception_Handle {
+
+	public function handle(Soter_Exception $exception) {
+		
 	}
 
 }

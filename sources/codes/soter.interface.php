@@ -11,6 +11,7 @@ interface Soter_Logger_Writer {
 }
 
 interface Soter_Uri_Rewriter {
+
 	/**
 	 * 参数是uri中的访问路径部分 <br>
 	 * 比如：http://127.0.0.1/index.php/Welcome/index.do?id=11<br>
@@ -24,4 +25,9 @@ interface Soter_Uri_Rewriter {
 interface Soter_Exception_Handle {
 
 	public function handle(Soter_Exception $exception);
+}
+
+interface Soter_Maintain_Handle {
+
+	public function handle();
 }
