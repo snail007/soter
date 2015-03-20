@@ -703,4 +703,8 @@ class Sr {
 		return is_null($key) ? $ips : $ips[$key];
 	}
 
+	public static function createSqlite3Database($path) {
+		return new PDO('sqlite:' . $path);
+	}
+
 }

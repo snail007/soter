@@ -265,9 +265,19 @@ class Soter_Config {
 		$hmvcModules = array(),
 		$isMaintainMode = false,
 		$maintainIpWhitelist = array(),
-		$maintainModeHandle
+		$maintainModeHandle,
+		$databseConfig
 
 	;
+
+	public function getDatabseConfig($group = 'default') {
+		return $this->databseConfig[$group];
+	}
+
+	public function setDatabseConfig($databseConfig) {
+		$this->databseConfig = $databseConfig;
+		return $this;
+	}
 
 	public function getIsMaintainMode() {
 		return $this->isMaintainMode;
@@ -991,7 +1001,7 @@ class Soter_Uri_Rewriter_Default implements Soter_Uri_Rewriter {
 class Soter_Exception_Handle_Default implements Soter_Exception_Handle {
 
 	public function handle(Soter_Exception $exception) {
-		
+		$exception->render();
 	}
 
 }

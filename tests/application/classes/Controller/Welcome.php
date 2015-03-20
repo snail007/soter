@@ -151,4 +151,44 @@ class Controller_Welcome extends Soter_Controller {
 		echo $type . $id;
 	}
 
+	public function do_db() {
+//		$pdo = new PDO("mysql:dbname=test;host=127.0.0.1;port=3306", "root", "admin", array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES \'UTF8\''));
+//		$query = new SoterPDO($pdo);
+//		$query->debug = true ;
+//		$query->from('catalog')->execute();
+//		foreach ($query as $row) {
+//			echo "{$row['name']}\n";
+//		}
+		$config = array(
+		    'driverType' => 'mysql',
+		    'database' => 'test',
+		    'tablePrefix' => 'tb_',
+		    'masters' => array(
+			array(
+			    'hostname' => '127.0.0.1',
+			    'port' => 3306,
+			    'username' => 'root',
+			    'password' => 'admin'
+			)
+		    )
+		);
+		$db = new Soter_Database_ActiveRecord($config);
+		$db->from('test', 'b')
+			->join(array('testb' => 'c'), 'b.id=c.id', 'left', '(', ')', 'dd')
+			->join('aaa', 'aaa.id=dd.id', 'left')
+			->select('a,bc,c.dd')
+			->where(array(
+			    'c.dd' => 'ds',
+			    'b.id' => null,
+			    'dd not' => array(1, 2, 3),
+			    'cc' => array(44, 55)
+				)
+				
+			)
+			->where(array('c'=>'d'))
+		;
+		echo $db->getSql();
+		//(join(!on)+on([^=]+=[^=]+))[^a-zA-z0-9_-]?
+	}
+
 }

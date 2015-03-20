@@ -37,9 +37,9 @@ Soter::initialize()
 	//入口文件名称
 	->setIndexName(pathinfo(__FILE__, PATHINFO_BASENAME))
 	//宕机维护模式
-	->setIsMaintainMode(true)
+	->setIsMaintainMode(false)
 	//宕机维护模式IP白名单
-	->setMaintainIpWhitelist(array('127.0.0.2','192.168.0.2/32'))
+	->setMaintainIpWhitelist(array('127.0.0.2', '192.168.0.2/32'))
 	//宕机维护模式处理方法
 	->setMaintainModeHandle(new Soter_Maintain_Default_Handle())
 	//初始化请求
@@ -73,6 +73,48 @@ Soter::initialize()
 	//注册hmvc模块，数组键是uri里面的hmvc模块名称，值是hmvc模块文件夹名称
 	->setHmvcModules(array(
 		// 'Demo' => 'demo'
+	))
+	//数据库连接信息，支持多主多从。如果只有一个数据库，只需要设置一个主即可。
+	->setDatabseConfig(array(
+	    //默认组
+	    'default_group' => 'mysql',
+	    //组名=>配置
+	    'mysql' => array(
+		'driverType' => 'mysql',
+		'debug' => true,
+		'pconnect' => true,
+		'charset' => 'utf8',
+		'collate' => 'utf8_general_ci',
+		'database' => '',
+		'tablePrefix' => '',
+		'tablePrefixSqlIdentifier' => '{tablePrefix}',
+		'masters' => array(
+		    'master01' => array(
+			'hostname' => '127.0.0.1',
+			'port' => 3306,
+			'username' => 'root',
+			'password' => '',
+		    )
+		),
+		'slaves' => array(
+//		    'slave01' => array(
+//		    )
+		)
+	    ),
+	    'sqlite3'=>array(
+		'driverType' => 'sqlite',
+		'debug' => true,
+		'pconnect' => true,
+		'masters' => array(
+		    'master01' => array(
+			'hostname' => 'test.sqlite3',//sqlite3数据库路径
+		    )
+		),
+		'slaves' => array(
+//		    'slave01' => array(
+//		    )
+		)
+	    )
 	))
 	//加载项目自定义bootstrap.php配置,这一句一定要在最后，确保能覆盖上面的配置
 	->bootstrap()
