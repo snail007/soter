@@ -185,8 +185,14 @@ class Controller_Welcome extends Soter_Controller {
 				)
 				
 			)
+			->groupBy('dd')
+			->groupBy('ad')
+			->orderBy('dd','asc')
+			->orderBy('aad','desc')
+			->limit(0,30)
 			->where(array('c'=>'d'))
 		;
+		$db->execute('');
 		echo $db->getSql();
 		//(join(!on)+on([^=]+=[^=]+))[^a-zA-z0-9_-]?
 	}

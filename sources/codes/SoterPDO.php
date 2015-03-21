@@ -3,7 +3,7 @@
 /**
  * SoterPDO is simple and smart wrapper for PDO
  */
-class Soter_PDO {
+class Soter_PDO extends PDO {
 
 	protected $transactionCount = 0;
 
@@ -44,8 +44,8 @@ abstract class Soter_Database {
 		$tablePrefixSqlIdentifier,
 		$masters,
 		$slaves,
-		$connectoinMasters,
-		$connectoinSlaves;
+		$connectionMasters,
+		$connectionSlaves;
 
 	public function getDriverType() {
 		return $this->driverType;
@@ -175,50 +175,31 @@ abstract class Soter_Database {
 	}
 
 	private function _init() {
-		foreach ($this->getMasters() as $key => $config) {
-			if (!isset($this->connectoinMasters[$key])) {
-				$options[PDO::ATTR_PERSISTENT] = $this->getPconnect();
-				if (strtolower($this->getDriverType()) == 'mysql') {
-					$options[PDO::MYSQL_ATTR_INIT_COMMAND] = 'SET NAMES ' . $this->getCharset() . ' COLLATE ' . $this->getCollate();
-					$options[PDO::ATTR_EMULATE_PREPARES] = true;
-					try {
-						$dsn = 'mysql:host = ' . $config['hostname'] . ';port = ' . $config['port'] . ';dbname = ' . $this->getDatabase() . ';charset=' . $this->getCharset();
-						$this->connectoinMasters[$key] = new Soter_PDO($dsn, $config['username'], $config['password'], $options);
-						$this->connectoinSlaves[$key]->exec('SET NAMES ' . $this->getCharset());
-					} catch (Exception $exc) {
-						if ($this->getDebug()) {
-							throw $exc;
-						}
-					}
-				} elseif (strtolower($this->getDriverType()) == 'sqlite') {
-					if (!file_exists($config['hostname'])) {
-						throw new Soter_Exception_Database('sqlite3 database file [' . Sr::realPath($config['hostname']) . '] not found');
-					}
-					try {
-						$this->connectoinMasters[$key] = new Soter_PDO('sqlite:' . $config['hostname'], null, null, $options);
-					} catch (Exception $exc) {
-						if ($this->getDebug()) {
-							throw $exc;
-						}
-					}
-				}
-			}
-		}
+		$info = array(
+		    'master' => array(
+			'getMasters',
+			'connectionMasters',
+		    ),
+		    'slave' => array(
+			'getSlaves',
+			'connectionSlaves',
+		    ),
+		);
 		$slaves = $this->getSlaves();
-		if (empty($slaves)) {
-			$this->connectoinSlaves[0] = current($this->connectoinMasters);
-		} else {
-			foreach ($slaves as $key => $config) {
-				if (!isset($this->connectoinSlaves[$key])) {
+		$masters = $this->getMasters();
+		foreach ($info as $type => $group) {
+			$configGroup = $this->{$group[0]}();
+			$connections = &$this->{$group[1]};
+			foreach ($configGroup as $key => $config) {
+				if (!isset($connections[$key])) {
 					$options[PDO::ATTR_PERSISTENT] = $this->getPconnect();
 					if (strtolower($this->getDriverType()) == 'mysql') {
 						$options[PDO::MYSQL_ATTR_INIT_COMMAND] = 'SET NAMES ' . $this->getCharset() . ' COLLATE ' . $this->getCollate();
-						$options[PDO::ATTR_EMULATE_PREPARES] = true;
+						$options[PDO::ATTR_EMULATE_PREPARES] = empty($slaves) && count($masters) == 1;
 						try {
-							$dsn = 'mysql:host = ' . $config['hostname'] . ';port = ' . $config['port'] . ';dbname = ' . $this->getDatabase() . ';charset=' . $this->getCharset();
-							;
-							$this->connectoinSlaves[$key] = new Soter_PDO($dsn, $config['username'], $config['password'], $options);
-							$this->connectoinSlaves[$key]->exec('SET NAMES ' . $this->getCharset());
+							$dsn = 'mysql:host=' . $config['hostname'] . ';port=' . $config['port'] . ';dbname=' . $this->getDatabase() . ';charset=' . $this->getCharset();
+							$connections[$key] = new Soter_PDO($dsn, $config['username'], $config['password'], $options);
+							$connections[$key]->exec('SET NAMES ' . $this->getCharset());
 						} catch (Exception $exc) {
 							if ($this->getDebug()) {
 								throw $exc;
@@ -229,18 +210,21 @@ abstract class Soter_Database {
 							throw new Soter_Exception_Database('sqlite3 database file [' . Sr::realPath($config['hostname']) . '] not found');
 						}
 						try {
-							$this->connectoinSlaves[$key] = new Soter_PDO('sqlite:' . $config['hostname'], null, null, $options);
+							$connections[$key] = new Soter_PDO('sqlite:' . $config['hostname'], null, null, $options);
 						} catch (Exception $exc) {
 							if ($this->getDebug()) {
 								throw $exc;
 							}
 						}
-					} else {
-						throw new Soter_Exception_Database('unknown driverType [' . $this->getDriverType() . '] in database config');
 					}
 				}
 			}
 		}
+		if (empty($slaves)) {
+			$this->connectionSlaves[0] = current($this->connectionMasters);
+		}
+		reset($this->connectionMasters);
+		reset($this->connectionSlaves);
 	}
 
 	public function query($sql, $values = null) {
@@ -289,7 +273,8 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		, $arHaving
 		, $arLimit
 		, $arOrderby
-		, $_as
+		, $_asTable
+		, $_asColumn
 		, $_values
 
 	;
@@ -306,9 +291,11 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		$this->arWhere = array();
 		$this->arGroupby = array();
 		$this->arHaving = array();
-		$this->arLimit = '';
 		$this->arOrderby = array();
-		$this->_as = array();
+		$this->arLimit = '';
+
+		$this->_asTable = array();
+		$this->_asColumn = array();
 		$this->_values = array();
 	}
 
@@ -332,7 +319,49 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		return $this;
 	}
 
-	public function _compileWhere($where, $leftWrap = ' AND ', $rightWrap = '', $index = -1) {
+	public function groupBy($key) {
+		$this->arGroupby[] = $key;
+		return $this;
+	}
+
+	public function orderBy($key, $type = 'desc') {
+		$this->arOrderby[$key] = $type;
+		return $this;
+	}
+
+	public function limit($offset, $count) {
+		$this->arLimit = "$offset , $count";
+		return $this;
+	}
+
+	private function _compileGroupBy() {
+		$groupBy = array();
+		foreach ($this->arGroupby as $key) {
+			$_key = explode('.', $key);
+			if (count($_key) == 2) {
+				$groupBy[] = $this->_protectIdentifier($this->_checkPrefix($_key[0])) . '.' . $this->_protectIdentifier($_key[1]);
+			} else {
+				$groupBy[] = $this->_protectIdentifier($_key[0]);
+			}
+		}
+		return implode(' , ', $groupBy);
+	}
+
+	private function _compileOrderBy() {
+		$orderby = array();
+		foreach ($this->arOrderby as $key => $type) {
+			$type = strtoupper($type);
+			$_key = explode('.', $key);
+			if (count($_key) == 2) {
+				$orderby[] = $this->_protectIdentifier($this->_checkPrefix($_key[0])) . '.' . $this->_protectIdentifier($_key[1]) . ' ' . $type;
+			} else {
+				$orderby[] = $this->_protectIdentifier($_key[0]) . ' ' . $type;
+			}
+		}
+		return implode(' , ', $orderby);
+	}
+
+	private function _compileWhere($where, $leftWrap = ' AND ', $rightWrap = '', $index = -1) {
 		$_where = '';
 		if ($index == 0 && strtoupper($leftWrap) == ' AND ') {
 			$leftWrap = '';
@@ -393,7 +422,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 
 	private function _compileFrom($from, $as = '') {
 		if ($as) {
-			$this->_as[] = $as;
+			$this->_asTable[$as] = 1;
 			$as = ' AS ' . $this->_protectIdentifier($as) . ' ';
 		}
 		return $this->_protectIdentifier($this->_checkPrefix($from)) . $as;
@@ -401,7 +430,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 
 	private function _compileJoin($table, $on, $type = '', $leftWrap = '', $rightWrap = '', $as = '') {
 		if (is_array($table)) {
-			$this->_as[] = current($table);
+			$this->_asTable[current($table)] = 1;
 			$table = $this->_protectIdentifier($this->_checkPrefix(key($table))) . ' AS ' . $this->_protectIdentifier(current($table)) . ' ';
 		} else {
 			$table = $this->_protectIdentifier($this->_checkPrefix($table));
@@ -427,7 +456,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		}
 		$on = $left . ' = ' . $right;
 		if ($as) {
-			$this->_as[] = $as;
+			$this->_asTable[$as] = 1;
 			$as = ' AS ' . $this->_protectIdentifier($as);
 		}
 		return $leftWrap . ' ' . $type . ' JOIN ' . $table . ' ON ' . $on . ' ' . $rightWrap . ' ' . $as . ' ';
@@ -436,7 +465,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 	private function _checkPrefix($str) {
 		$prefix = $this->getTablePrefix();
 		if ($prefix && strpos($str, $prefix) === FALSE) {
-			if (!in_array($str, $this->_as)) {
+			if (!isset($this->_asTable[$str])) {
 				return $prefix . $str;
 			}
 		}
@@ -479,9 +508,22 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		if ($where) {
 			$where = ' WHERE ' . $where;
 		}
+		$groupBy = trim($this->_compileGroupBy());
+		if ($groupBy) {
+			$groupBy = ' GROUP BY ' . $groupBy;
+		}
+		$orderBy = trim($this->_compileOrderBy());
+		if ($where) {
+			$orderBy = ' ORDER BY ' . $orderBy;
+		}
+		$limit = $this->arLimit;
+		if ($limit) {
+			$limit = ' LIMIT ' . $limit;
+		}
 		$sql = 'SELECT ' . $select
 			. ' FROM ' . $from
-			. $where;
+			. $where . $groupBy . $orderBy . $limit
+		;
 		return $sql;
 	}
 
