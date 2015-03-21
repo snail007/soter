@@ -176,25 +176,31 @@ class Controller_Welcome extends Soter_Controller {
 		$db->from('test', 'b')
 			->join(array('testb' => 'c'), 'b.id=c.id', 'left', '(', ')', 'dd')
 			->join('aaa', 'aaa.id=dd.id', 'left')
-			->select('a,bc,c.dd')
+			->select('a,bc,c.dd,max(' . $db->wrap('id') . '),c.ccc as bdc')
 			->where(array(
 			    'c.dd' => 'ds',
 			    'b.id' => null,
 			    'dd not' => array(1, 2, 3),
 			    'cc' => array(44, 55)
 				)
-				
 			)
 			->groupBy('dd')
 			->groupBy('ad')
-			->orderBy('dd','asc')
-			->orderBy('aad','desc')
-			->limit(0,30)
-			->where(array('c'=>'d'))
+			->orderBy('dd', 'asc')
+			->orderBy('aad', 'desc')
+			->orderBy('random()')
+			->having(array('count(' . $db->wrap('id') . ') >' => '0'), '(')
+			->having(array('count(' . $db->wrap('id') . ') >' => '0'), 'and', ')')
+			->limit(0, 30)
+			->where(array('c' => 'd'))
 		;
+
+		echo $db;
 		$db->execute('');
-		echo $db->getSql();
-		//(join(!on)+on([^=]+=[^=]+))[^a-zA-z0-9_-]?
+
+		echo $db->from('user')
+			->set('score', 'score+1')
+			->update();
 	}
 
 }
