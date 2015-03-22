@@ -162,7 +162,8 @@ class Controller_Welcome extends Soter_Controller {
 		$config = array(
 		    'driverType' => 'mysql',
 		    'database' => 'test',
-		    'tablePrefix' => 'tb_',
+		    'tablePrefix' => 'weibo_',
+		    'debug' => false,
 		    'masters' => array(
 			array(
 			    'hostname' => '127.0.0.1',
@@ -173,34 +174,49 @@ class Controller_Welcome extends Soter_Controller {
 		    )
 		);
 		$db = new Soter_Database_ActiveRecord($config);
-		$db->from('test', 'b')
-			->join(array('testb' => 'c'), 'b.id=c.id', 'left', '(', ')', 'dd')
-			->join('aaa', 'aaa.id=dd.id', 'left')
-			->select('a,bc,c.dd,max(' . $db->wrap('id') . '),c.ccc as bdc')
-			->where(array(
-			    'c.dd' => 'ds',
-			    'b.id' => null,
-			    'dd not' => array(1, 2, 3),
-			    'cc' => array(44, 55)
-				)
-			)
-			->groupBy('dd')
-			->groupBy('ad')
-			->orderBy('dd', 'asc')
-			->orderBy('aad', 'desc')
-			->orderBy('random()')
-			->having(array('count(' . $db->wrap('id') . ') >' => '0'), '(')
-			->having(array('count(' . $db->wrap('id') . ') >' => '0'), 'and', ')')
-			->limit(0, 30)
-			->where(array('c' => 'd'))
-		;
-
-		echo $db;
-		$db->execute('');
-
-		echo $db->from('user')
-			->set('score', 'score+1')
-			->update();
+//		$db->from('test', 'b')
+//			->join(array('testb' => 'c'), 'b.id=c.id', 'left', '(', ')', 'dd')
+//			->join('aaa', 'aaa.id=dd.id', 'left')
+//			->select('a,bc,c.dd,max(' . $db->wrap('id') . '),c.ccc as bdc')
+//			->where(array(
+//			    'c.dd' => 'ds',
+//			    'b.id' => null,
+//			    'dd not' => array(1, 2, 3),
+//			    'cc' => array(44, 55)
+//				)
+//			)
+//			->groupBy('dd')
+//			->groupBy('ad')
+//			->orderBy('dd', 'asc')
+//			->orderBy('aad', 'desc')
+//			->orderBy('random()')
+//			->having(array('count(' . $db->wrap('id') . ') >' => '0'), '(')
+//			->having(array('count(' . $db->wrap('id') . ') >' => '0'), 'and', ')')
+//			->limit(0, 30)
+//			->where(array('c' => 'd'))
+//		;
+//
+//		echo $db;
+//		$db->execute('');
+//		Sr::dump($db->from('account2')
+//			->where(array('id >='=>1))
+//			->select('*')
+//			->execute(),$db->errorMsg());
+		$db->begin();
+		try {
+			$db->update(array('key'=>'555'))
+				->from('account')
+				->where(array('id'=>1))
+				->execute();
+			$db->update()
+				->from('current')
+				->set('test', '22', TRUE)
+				->execute();
+			echo 'okay';
+		} catch (Exception $exc) {
+			$db->rollback();
+			echo $exc->getMessage();
+		}
 	}
 
 }

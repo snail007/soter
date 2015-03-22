@@ -51,7 +51,7 @@ abstract class Soter_Exception extends Exception {
 		$httpStatusLine = 'HTTP/1.0 500 Internal Server Error',
 		$exceptionName = 'Soter_Exception';
 
-	public function __construct($errorMessage = '', $errorCode = '-1', $errorType = 'Exception', $errorFile = '', $errorLine = '0') {
+	public function __construct($errorMessage = '', $errorCode = 0, $errorType = 'Exception', $errorFile = '', $errorLine = '0') {
 		parent::__construct($errorMessage, $errorCode);
 		$this->errorMessage = $errorMessage;
 		$this->errorCode = $errorCode;

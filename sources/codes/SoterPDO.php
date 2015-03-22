@@ -6,6 +6,11 @@
 class Soter_PDO extends PDO {
 
 	protected $transactionCount = 0;
+	private $isLast;
+
+	public function isInTransaction() {
+		return !$this->isLast;
+	}
 
 	public function beginTransaction() {
 		if (!$this->transactionCounter++) {
@@ -17,8 +22,10 @@ class Soter_PDO extends PDO {
 
 	public function commit() {
 		if (!--$this->transactionCounter) {
+			$this->isLast = true;
 			return parent::commit();
 		}
+		$this->isLast = false;
 		return $this->transactionCounter >= 0;
 	}
 
@@ -45,7 +52,22 @@ abstract class Soter_Database {
 		$masters,
 		$slaves,
 		$connectionMasters,
-		$connectionSlaves;
+		$connectionSlaves,
+		$_errorMsg,
+		$_lastSql,
+		$_isInTransaction = false
+
+	;
+
+	public function error() {
+		return $this->_errorMsg;
+	}
+
+	public function __construct(Array $config = array()) {
+		foreach (array_merge($this->getDefaultConfig(), $config) as $key => $value) {
+			$this->{$key} = $value;
+		}
+	}
 
 	public function getDriverType() {
 		return $this->driverType;
@@ -167,13 +189,6 @@ abstract class Soter_Database {
 		);
 	}
 
-	public function __construct(Array $config = array()) {
-		$config = array_merge($this->getDefaultConfig(), $config);
-		foreach (array_keys($config) as $key) {
-			$this->{$key} = $config[$key];
-		}
-	}
-
 	private function _init() {
 		$info = array(
 		    'master' => array(
@@ -187,68 +202,152 @@ abstract class Soter_Database {
 		);
 		$slaves = $this->getSlaves();
 		$masters = $this->getMasters();
-		foreach ($info as $type => $group) {
-			$configGroup = $this->{$group[0]}();
-			$connections = &$this->{$group[1]};
-			foreach ($configGroup as $key => $config) {
-				if (!isset($connections[$key])) {
-					$options[PDO::ATTR_PERSISTENT] = $this->getPconnect();
-					if (strtolower($this->getDriverType()) == 'mysql') {
-						$options[PDO::MYSQL_ATTR_INIT_COMMAND] = 'SET NAMES ' . $this->getCharset() . ' COLLATE ' . $this->getCollate();
-						$options[PDO::ATTR_EMULATE_PREPARES] = empty($slaves) && count($masters) == 1;
-						try {
+		try {
+			foreach ($info as $type => $group) {
+				$configGroup = $this->{$group[0]}();
+				$connections = &$this->{$group[1]};
+				foreach ($configGroup as $key => $config) {
+					if (!isset($connections[$key])) {
+						$options[PDO::ATTR_ERRMODE] = PDO::ERRMODE_EXCEPTION;
+						$options[PDO::ATTR_PERSISTENT] = $this->getPconnect();
+						if (strtolower($this->getDriverType()) == 'mysql') {
+							$options[PDO::MYSQL_ATTR_INIT_COMMAND] = 'SET NAMES ' . $this->getCharset() . ' COLLATE ' . $this->getCollate();
+							$options[PDO::ATTR_EMULATE_PREPARES] = empty($slaves) && count($masters) == 1;
 							$dsn = 'mysql:host=' . $config['hostname'] . ';port=' . $config['port'] . ';dbname=' . $this->getDatabase() . ';charset=' . $this->getCharset();
 							$connections[$key] = new Soter_PDO($dsn, $config['username'], $config['password'], $options);
 							$connections[$key]->exec('SET NAMES ' . $this->getCharset());
-						} catch (Exception $exc) {
-							$this->_displayError($exc);
-						}
-					} elseif (strtolower($this->getDriverType()) == 'sqlite') {
-						if (!file_exists($config['hostname'])) {
-							$this->_displayError('sqlite3 database file [' . Sr::realPath($config['hostname']) . '] not found');
-						}
-						try {
+						} elseif (strtolower($this->getDriverType()) == 'sqlite') {
+							if (!file_exists($config['hostname'])) {
+								$this->_displayError('sqlite3 database file [' . Sr::realPath($config['hostname']) . '] not found');
+							}
 							$connections[$key] = new Soter_PDO('sqlite:' . $config['hostname'], null, null, $options);
-						} catch (Exception $exc) {
-							$this->_displayError($exc);
 						}
 					}
 				}
 			}
+		} catch (Exception $e) {
+			$this->_displayError($e);
 		}
-		if (empty($slaves)) {
+		if (empty($slaves) && !empty($this->connectionMasters)) {
 			$this->connectionSlaves[0] = current($this->connectionMasters);
 		}
-		reset($this->connectionMasters);
-		reset($this->connectionSlaves);
+		if (!empty($this->connectionMasters)) {
+			reset($this->connectionMasters);
+		}
+		if (!empty($this->connectionSlaves)) {
+			reset($this->connectionSlaves);
+		}
+		return !(empty($this->connectionMasters) && empty($this->connectionSlaves));
 	}
 
-	public function query($sql, $values = null) {
-		$this->_init();
+	public function begin() {
+		if (!$this->_init()) {
+			return FALSE;
+		}
+		foreach ($this->connectionMasters as &$pdo) {
+			$pdo->beginTransaction();
+		}
+		$this->_isInTransaction = TRUE;
 	}
 
-	public function execute($sql) {
-		$this->_init();
+	public function commit() {
+		if (!$this->_init()) {
+			return FALSE;
+		}
+		foreach ($this->connectionMasters as &$pdo) {
+			$pdo->commit();
+			$this->_isInTransaction = !$pdo->isInTransaction();
+		}
+	}
+
+	public function rollback() {
+		if (!$this->_init()) {
+			return FALSE;
+		}
+		foreach ($this->connectionMasters as &$pdo) {
+			$pdo->rollback();
+		}
+	}
+
+	public function execute($sql = '', array $values = array()) {
+		if (!$this->_init()) {
+			return FALSE;
+		}
+		$sql = $sql ? $this->_checkPrefixIdentifier($sql) : $this->getSql();
+		$this->_lastSql = $sql;
+		$values = !empty($values) ? $values : $this->_getValues();
+		$isWriteType = $this->_isWriteType($sql);
+		if ($isWriteType) {
+			$pdoArr = &$this->connectionMasters;
+		} else {
+			$pdoArr = &$this->connectionSlaves;
+		}
+		$return = false;
+		try {
+			if ($isWriteType) {
+				foreach ($pdoArr as &$pdo) {
+					if ($sth = $pdo->prepare($sql)) {
+						$success = $sth->execute($values);
+						if ($success) {
+							$return = $sth->rowCount();
+						} else {
+							$errorInfo = $sth->errorInfo();
+							$this->_displayError($errorInfo[2], $errorInfo[1]);
+						}
+					} else {
+						$errorInfo = $sth->errorInfo();
+						$this->_displayError($errorInfo[2], $errorInfo[1]);
+					}
+				}
+			} else {
+				$key = array_rand($this->connectionSlaves);
+				$pdo = &$this->connectionSlaves[$key];
+				if ($sth = $pdo->prepare($sql)) {
+					$success = $sth->execute($this->_getValues());
+					if ($success) {
+						$return = $sth->fetchAll(PDO::FETCH_ASSOC);
+					} else {
+						$errorInfo = $sth->errorInfo();
+						$this->_displayError($errorInfo[2], $errorInfo[1]);
+					}
+				} else {
+					$errorInfo = $sth->errorInfo();
+					$this->_displayError($errorInfo[2], $errorInfo[1]);
+				}
+			}
+		} catch (Exception $exc) {
+			$this->_displayError($exc);
+		}
 		$this->_reset();
+		return $return;
 	}
 
-	private function isWriteType($sql) {
+	private function _isWriteType($sql) {
 		if (!preg_match('/^\s*"?(SET|INSERT|UPDATE|DELETE|REPLACE|CREATE|DROP|TRUNCATE|LOAD DATA|COPY|ALTER|GRANT|REVOKE|LOCK|UNLOCK)\s+/i', $sql)) {
 			return FALSE;
 		}
 		return TRUE;
 	}
 
-	protected function _displayError($message) {
+	protected function _displayError($message, $code = -1) {
+		$sql = $this->_lastSql ? ' , ' . "\n" . 'with query : ' . $this->_lastSql : '';
 		if ($message instanceof Exception) {
-			throw $message;
+			$this->_errorMsg = $message->getMessage() . $sql;
+		} else {
+			$this->_errorMsg = $message . $sql;
 		}
-		if ($this->getDebug() && Sr::config()->getShowError()) {
-			throw new Soter_Exception_Database($message);
+		if (($this->getDebug() && Sr::config()->getShowError()) || $this->_isInTransaction) {
+			if ($message instanceof Exception) {
+				throw new Soter_Exception_Database($this->_errorMsg, 500);
+			} else {
+				throw new Soter_Exception_Database($message . $sql, $code);
+			}
 		}
 	}
 
 	public abstract function getSql();
+
+	protected abstract function _getValues();
 }
 
 class Soter_Database_ActiveRecord extends Soter_Database {
@@ -269,13 +368,17 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 
 	;
 
+	protected function _getValues() {
+		return $this->_values;
+	}
+
 	public function __construct(Array $config = array()) {
 		parent::__construct($config);
 		$this->_reset();
 	}
 
 	protected function _reset() {
-		$this->arSelect[] = '*';
+		$this->arSelect = array();
 		$this->arFrom = array();
 		$this->arJoin = array();
 		$this->arWhere = array();
@@ -335,14 +438,15 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		return $this;
 	}
 
-	public function insert() {
+	public function insert(array $data = array()) {
+		
+	}
+
+	public function replace(array $data = array()) {
 		
 	}
 
 	public function update(array $data = array()) {
-		if (empty($data) && empty($this->arSet)) {
-			$this->_displayError('no data to update');
-		}
 		$this->_sqlType = 'update';
 		foreach ($data as $key => $value) {
 			if (is_bool($value)) {
@@ -375,15 +479,84 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		}
 	}
 
+	public function getSql() {
+		switch ($this->_sqlType) {
+			case 'select':
+				return $this->_getSelectSql();
+			case 'update':
+				return $this->_getUpdateSql();
+			case 'insert':
+				return $this->_getInsertSql();
+			case 'replace':
+				return $this->_getReplaceSql();
+			case 'delete':
+				return $this->_getDeleteSql();
+		}
+	}
+
+	private function _getUpdateSql() {
+		$sql[] = "\n" . 'UPDATE ';
+		$sql[] = $this->_getFrom();
+		$sql[] = "\n" . 'SET';
+		$sql[] = $this->_compileSet();
+		$sql[] = $this->_getWhere();
+		$sql[] = $this->_getLimit();
+		return implode(' ', $sql);
+	}
+
+	private function _getInsertSql() {
+		
+	}
+
+	private function _getDeleteSql() {
+		
+	}
+
+	private function _getReplaceSql() {
+		
+	}
+
+	private function _getSelectSql() {
+		$select = $this->_compileSelect();
+		$from = $this->_getFrom();
+		$where = $this->_getWhere();
+		$having = '';
+		foreach ($this->arHaving as $w) {
+			$having.=call_user_func_array(array($this, '_compileWhere'), $w);
+		}
+		$having = trim($having);
+		if ($having) {
+			$having = "\n" . ' HAVING ' . $having;
+		}
+		$groupBy = trim($this->_compileGroupBy());
+		if ($groupBy) {
+			$groupBy = "\n" . ' GROUP BY ' . $groupBy;
+		}
+		$orderBy = trim($this->_compileOrderBy());
+		if ($orderBy) {
+			$orderBy = "\n" . ' ORDER BY ' . $orderBy;
+		}
+		$limit = $this->_getLimit();
+		$sql = "\n" . ' SELECT ' . $select
+			. "\n" . ' FROM ' . $from
+			. $where
+			. $groupBy
+			. $having
+			. $orderBy
+			. $limit
+		;
+		return $sql;
+	}
+
 	private function _compileSet() {
 		$set = array();
 		foreach ($this->arSet as $key => $value) {
 			list($value, $wrap) = $value;
 			if ($wrap) {
-				$set[] = $key . ' = ' . '?';
+				$set[] = $this->_protectIdentifier($key) . ' = ' . '?';
 				$this->_values[] = $value;
 			} else {
-				$set[] = $key . ' = ' . $value;
+				$set[] = $this->_protectIdentifier($key) . ' = ' . $value;
 			}
 		}
 		return implode(' , ', $set);
@@ -460,6 +633,9 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 
 	private function _compileSelect() {
 		$selects = $this->arSelect;
+		if (empty($selects)) {
+			$selects[] = '*';
+		}
 		foreach ($selects as $key => $value) {
 			$value = trim($value);
 			if ($value != '*') {
@@ -532,7 +708,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 	private function _checkPrefixIdentifier($str) {
 		$prefix = $this->getTablePrefix();
 		$identifier = $this->getTablePrefixSqlIdentifier();
-		return $identifier ? str_replace($identifier, $prefix, $str) : $str;
+		return $identifier && $prefix ? str_replace($identifier, $prefix, $str) : $str;
 	}
 
 	private function _protectIdentifier($str) {
@@ -546,43 +722,6 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		} else {
 			return $isMysql ? "`$str`" : $str;
 		}
-	}
-
-	public function getSql() {
-		switch ($this->_sqlType) {
-			case 'select':
-				return $this->_getSelectSql();
-			case 'update':
-				return $this->_getUpdateSql();
-			case 'insert':
-				return $this->_getInsertSql();
-			case 'replace':
-				return $this->_getReplaceSql();
-			case 'delete':
-				return $this->_getDeleteSql();
-		}
-	}
-
-	private function _getUpdateSql() {
-		$sql[] = "\n" . 'UPDATE ';
-		$sql[] = $this->_getFrom();
-		$sql[] = "\n" . 'SET';
-		$sql[] = $this->_compileSet();
-		$sql[] = $this->_getWhere();
-		$sql[] = $this->_getLimit();
-		return implode(' ', $sql);
-	}
-
-	private function _getInsertSql() {
-		
-	}
-
-	private function _getDeleteSql() {
-		
-	}
-
-	private function _getReplaceSql() {
-		
 	}
 
 	private function _getFrom() {
@@ -619,38 +758,6 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 			$limit = "\n" . ' LIMIT ' . $limit;
 		}
 		return $limit;
-	}
-
-	private function _getSelectSql() {
-		$select = $this->_compileSelect();
-		$from = $this->_getFrom();
-		$where = $this->_getWhere();
-		$having = '';
-		foreach ($this->arHaving as $w) {
-			$having.=call_user_func_array(array($this, '_compileWhere'), $w);
-		}
-		$having = trim($having);
-		if ($having) {
-			$having = "\n" . ' HAVING ' . $having;
-		}
-		$groupBy = trim($this->_compileGroupBy());
-		if ($groupBy) {
-			$groupBy = "\n" . ' GROUP BY ' . $groupBy;
-		}
-		$orderBy = trim($this->_compileOrderBy());
-		if ($where) {
-			$orderBy = "\n" . ' ORDER BY ' . $orderBy;
-		}
-		$limit = $this->_getLimit();
-		$sql = "\n" . ' SELECT ' . $select
-			. "\n" . ' FROM ' . $from
-			. $where
-			. $groupBy
-			. $having
-			. $orderBy
-			. $limit
-		;
-		return $sql;
 	}
 
 	public function __toString() {
