@@ -336,7 +336,7 @@ abstract class Soter_Database {
 		} else {
 			$this->_errorMsg = $message . $sql;
 		}
-		if (($this->getDebug() && Sr::config()->getShowError()) || $this->_isInTransaction) {
+		if (($this->getDebug()) || $this->_isInTransaction) {
 			if ($message instanceof Exception) {
 				throw new Soter_Exception_Database($this->_errorMsg, 500);
 			} else {
