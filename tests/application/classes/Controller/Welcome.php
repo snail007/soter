@@ -202,8 +202,9 @@ class Controller_Welcome extends Soter_Controller {
 //			->where(array('id >='=>1))
 //			->select('*')
 //			->execute(),$db->errorMsg());
-		$db->begin();
+		
 		try {
+			$db->begin();
 			$db->update(array('key'=>'555'))
 				->from('account')
 				->where(array('id'=>1))
@@ -212,6 +213,7 @@ class Controller_Welcome extends Soter_Controller {
 				->from('current')
 				->set('test', '22', TRUE)
 				->execute();
+			$db->commit();
 			echo 'okay';
 		} catch (Exception $exc) {
 			$db->rollback();
