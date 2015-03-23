@@ -55,7 +55,8 @@ abstract class Soter_Database {
 		$connectionSlaves,
 		$_errorMsg,
 		$_lastSql,
-		$_isInTransaction = false
+		$_isInTransaction = false,
+		$_config
 
 	;
 
@@ -63,10 +64,27 @@ abstract class Soter_Database {
 		return $this->_errorMsg;
 	}
 
+	public function lastSql() {
+		return $this->_lastSql;
+	}
+
 	public function __construct(Array $config = array()) {
-		foreach (array_merge($this->getDefaultConfig(), $config) as $key => $value) {
+		$this->setConfig($config);
+	}
+
+	public function getConfig() {
+		return $this->_config;
+	}
+
+	public function setConfig(Array $config = array()) {
+		foreach (($this->_config = array_merge($this->getDefaultConfig(), $config)) as $key => $value) {
 			$this->{$key} = $value;
 		}
+		$this->connectionMasters = array();
+		$this->connectionSlaves = array();
+		$this->_errorMsg = '';
+		$this->_lastSql = '';
+		$this->_isInTransaction = false;
 	}
 
 	public function getDriverType() {
@@ -269,6 +287,18 @@ abstract class Soter_Database {
 		}
 	}
 
+	private function _checkPrefixIdentifier($str) {
+		$prefix = $this->getTablePrefix();
+		$identifier = $this->getTablePrefixSqlIdentifier();
+		return $identifier && $prefix ? str_replace($identifier, $prefix, $str) : $str;
+	}
+
+	/**
+	 * 执行一个sql语句，写入型的返回bool或者影响的行数（insert,delete,replace,update），搜索型的返回结果集
+	 * @param type $sql       sql语句
+	 * @param array $values   参数
+	 * @return boolean|\Soter_Database_Resultset
+	 */
 	public function execute($sql = '', array $values = array()) {
 		if (!$this->_init()) {
 			return FALSE;
@@ -277,45 +307,72 @@ abstract class Soter_Database {
 		$this->_lastSql = $sql;
 		$values = !empty($values) ? $values : $this->_getValues();
 		$isWriteType = $this->_isWriteType($sql);
-		if ($isWriteType) {
-			$pdoArr = &$this->connectionMasters;
-		} else {
-			$pdoArr = &$this->connectionSlaves;
-		}
+		$isWritetRowsType = $this->_isWriteRowsType($sql);
 		$return = false;
 		try {
-			if ($isWriteType) {
+			//事务模式，使用主数据库组进行写和读
+			if ($this->_isInTransaction) {
+				$pdoArr = &$this->connectionMasters;
 				foreach ($pdoArr as &$pdo) {
-					if ($sth = $pdo->prepare($sql)) {
-						$success = $sth->execute($values);
-						if ($success) {
-							$return = $sth->rowCount();
+					if ($isWriteType) {
+						if ($sth = $pdo->prepare($sql)) {
+							$status = $sth->execute($values);
+							if ($isWritetRowsType) {
+								$return = $sth->rowCount();
+							} else {
+								$return = $status;
+							}
 						} else {
 							$errorInfo = $sth->errorInfo();
 							$this->_displayError($errorInfo[2], $errorInfo[1]);
 						}
 					} else {
-						$errorInfo = $sth->errorInfo();
-						$this->_displayError($errorInfo[2], $errorInfo[1]);
+						$key = array_rand($this->connectionSlaves);
+						$pdo = &$this->connectionSlaves[$key];
+						if ($sth = $pdo->prepare($sql)) {
+							$return = $sth->execute($this->_getValues()) ? $sth->fetchAll(PDO::FETCH_ASSOC) : array();
+							$return = new Soter_Database_Resultset($return);
+						} else {
+							$errorInfo = $sth->errorInfo();
+							$this->_displayError($errorInfo[2], $errorInfo[1]);
+						}
 					}
 				}
 			} else {
-				$key = array_rand($this->connectionSlaves);
-				$pdo = &$this->connectionSlaves[$key];
-				if ($sth = $pdo->prepare($sql)) {
-					$success = $sth->execute($this->_getValues());
-					if ($success) {
-						$return = $sth->fetchAll(PDO::FETCH_ASSOC);
+				//非事务模式，使用主数据库组进行写，随机选择一个从数据库进行读
+				if ($isWriteType) {
+					$pdoArr = &$this->connectionMasters;
+				} else {
+					$pdoArr = &$this->connectionSlaves;
+				}
+				if ($isWriteType) {
+					foreach ($pdoArr as &$pdo) {
+						if ($sth = $pdo->prepare($sql)) {
+							$status = $sth->execute($values);
+							if ($isWritetRowsType) {
+								$return = $sth->rowCount();
+							} else {
+								$return = $status;
+							}
+						} else {
+							$errorInfo = $sth->errorInfo();
+							$this->_displayError($errorInfo[2], $errorInfo[1]);
+						}
+					}
+				} else {
+					$key = array_rand($this->connectionSlaves);
+					$pdo = &$this->connectionSlaves[$key];
+					if ($sth = $pdo->prepare($sql)) {
+						$return = $sth->execute($this->_getValues()) ? $sth->fetchAll(PDO::FETCH_ASSOC) : array();
+						$return = new Soter_Database_Resultset($return);
 					} else {
 						$errorInfo = $sth->errorInfo();
 						$this->_displayError($errorInfo[2], $errorInfo[1]);
 					}
-				} else {
-					$errorInfo = $sth->errorInfo();
-					$this->_displayError($errorInfo[2], $errorInfo[1]);
 				}
 			}
 		} catch (Exception $exc) {
+			$this->_reset();
 			$this->_displayError($exc);
 		}
 		$this->_reset();
@@ -329,6 +386,13 @@ abstract class Soter_Database {
 		return TRUE;
 	}
 
+	private function _isWriteRowsType($sql) {
+		if (!preg_match('/^\s*"?(INSERT|UPDATE|DELETE|REPLACE)\s+/i', $sql)) {
+			return FALSE;
+		}
+		return TRUE;
+	}
+
 	protected function _displayError($message, $code = -1) {
 		$sql = $this->_lastSql ? ' , ' . "\n" . 'with query : ' . $this->_lastSql : '';
 		if ($message instanceof Exception) {
@@ -336,7 +400,7 @@ abstract class Soter_Database {
 		} else {
 			$this->_errorMsg = $message . $sql;
 		}
-		if (($this->getDebug()) || $this->_isInTransaction) {
+		if ($this->getDebug() || $this->_isInTransaction) {
 			if ($message instanceof Exception) {
 				throw new Soter_Exception_Database($this->_errorMsg, 500);
 			} else {
@@ -361,6 +425,9 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		, $arLimit
 		, $arOrderby
 		, $arSet
+		, $arUpdateBatch
+		, $arInsert
+		, $arInsertBatch
 		, $_asTable
 		, $_asColumn
 		, $_values
@@ -387,6 +454,9 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		$this->arOrderby = array();
 		$this->arLimit = '';
 		$this->arSet = array();
+		$this->arUpdateBatch = array();
+		$this->arInsert = array();
+		$this->arInsertBatch = array();
 		$this->_asTable = array();
 		$this->_asColumn = array();
 		$this->_values = array();
@@ -438,16 +508,70 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		return $this;
 	}
 
-	public function insert(array $data = array()) {
-		
+	public function insert(array $data) {
+		$this->_sqlType = 'insert';
+		$this->arInsert = $data;
+		return $this;
 	}
 
-	public function replace(array $data = array()) {
-		
+	public function replace(array $data) {
+		$this->_sqlType = 'replace';
+		$this->arInsert = $data;
+		return $this;
+	}
+
+	private function _compileInsert() {
+		$keys = array();
+		$values = array();
+		foreach ($this->arInsert as $key => $value) {
+			$keys[] = $this->_protectIdentifier($key);
+			$values[] = '?';
+			$this->_values[] = $value;
+		}
+		if (!empty($keys)) {
+			return '(' . implode(',', $keys) . ') ' . "\n" . 'VALUES (' . implode(',', $values) . ')';
+		}
+		return '';
+	}
+
+	public function insertBatch(array $data) {
+		$this->_sqlType = 'insertBatch';
+		$this->arInsertBatch = $data;
+		return $this;
+	}
+
+	public function replaceBatch(array $data) {
+		$this->_sqlType = 'replaceBatch';
+		$this->arInsertBatch = $data;
+		return $this;
+	}
+
+	private function _compileInsertBatch() {
+		$keys = array();
+		$values = array();
+		if (!empty($this->arInsertBatch[0])) {
+			foreach ($this->arInsertBatch[0] as $key => $value) {
+				$keys[] = $this->_protectIdentifier($key);
+			}
+			foreach ($this->arInsertBatch as $row) {
+				$_values = array();
+				foreach ($row as $key => $value) {
+					$_values[] = '?';
+					$this->_values[] = $value;
+				}
+				$values[] = '(' . implode(',', $_values) . ')';
+			}
+			return '(' . implode(',', $keys) . ') ' . "\n VALUES " . implode(' , ', $values);
+		}
+		return '';
+	}
+
+	public function delete() {
+		$this->_sqlType = 'delete';
+		return $this;
 	}
 
 	public function update(array $data = array()) {
-		$this->_sqlType = 'update';
 		foreach ($data as $key => $value) {
 			if (is_bool($value)) {
 				$this->set($key, (($value === FALSE) ? 0 : 1), true);
@@ -460,7 +584,56 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		return $this;
 	}
 
-	public function set($key, $value, $wrap = false) {
+	/**
+	 * 批量更新
+	 * 
+	 * @param type $values 必须包含$index字段
+	 * @param type $index  唯一字段名称，一般是主键id
+	 * @return int
+	 */
+	public function updateBatch(array $values, $index) {
+		$this->_sqlType = 'updateBatch';
+		$this->arUpdateBatch = array($values, $index);
+		if (!empty($values[0])) {
+			foreach ($values as $val) {
+				$ids[] = $val[$index];
+			}
+			$this->where(array($index => $ids));
+		}
+		return $this;
+	}
+
+	private function _compileUpdateBatch() {
+		list($values, $index) = $this->arUpdateBatch;
+		if (count($values) && isset($values[0][$index])) {
+			$ids = array();
+			$final = array();
+			foreach ($values as $key => $val) {
+				$ids[] = $val[$index];
+				foreach (array_keys($val) as $field) {
+					if ($field != $index) {
+						$final[$field][] = 'WHEN ' . $this->_protectIdentifier($index) . ' = ' . $val[$index] . ' THEN ' . "?";
+						$this->_values[] = $val[$field];
+					}
+				}
+			}
+			$sql = "";
+			$cases = '';
+			foreach ($final as $k => $v) {
+				$cases .= $this->_protectIdentifier($k) . ' = CASE ' . "\n";
+				foreach ($v as $row) {
+					$cases .= $row . "\n";
+				}
+				$cases .= 'ELSE ' . $this->_protectIdentifier($k) . ' END, ';
+			}
+			$sql .= substr($cases, 0, -2);
+			return $sql;
+		}
+		return '';
+	}
+
+	public function set($key, $value, $wrap = true) {
+		$this->_sqlType = 'update';
 		$this->arSet[$key] = array($value, $wrap);
 		return $this;
 	}
@@ -485,10 +658,16 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 				return $this->_getSelectSql();
 			case 'update':
 				return $this->_getUpdateSql();
+			case 'updateBatch':
+				return $this->_getUpdateBatchSql();
 			case 'insert':
 				return $this->_getInsertSql();
+			case 'insertBatch':
+				return $this->_getInsertBatchSql();
 			case 'replace':
 				return $this->_getReplaceSql();
+			case 'replaceBatch':
+				return $this->_getReplaceBatchSql();
 			case 'delete':
 				return $this->_getDeleteSql();
 		}
@@ -504,16 +683,48 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		return implode(' ', $sql);
 	}
 
-	private function _getInsertSql() {
-		
+	private function _getUpdateBatchSql() {
+		$sql[] = "\n" . 'UPDATE ';
+		$sql[] = $this->_getFrom();
+		$sql[] = "\n" . 'SET';
+		$sql[] = $this->_compileUpdateBatch();
+		$sql[] = $this->_getWhere();
+		return implode(' ', $sql);
 	}
 
-	private function _getDeleteSql() {
-		
+	private function _getInsertSql() {
+		$sql[] = "\n" . 'INSERT INTO ';
+		$sql[] = $this->_getFrom();
+		$sql[] = $this->_compileInsert();
+		return implode(' ', $sql);
+	}
+
+	private function _getInsertBatchSql() {
+		$sql[] = "\n" . 'INSERT INTO ';
+		$sql[] = $this->_getFrom();
+		$sql[] = $this->_compileInsertBatch();
+		return implode(' ', $sql);
 	}
 
 	private function _getReplaceSql() {
-		
+		$sql[] = "\n" . 'REPLACE INTO ';
+		$sql[] = $this->_getFrom();
+		$sql[] = $this->_compileInsert();
+		return implode(' ', $sql);
+	}
+
+	private function _getReplaceBatchSql() {
+		$sql[] = "\n" . 'REPLACE INTO ';
+		$sql[] = $this->_getFrom();
+		$sql[] = $this->_compileInsertBatch();
+		return implode(' ', $sql);
+	}
+
+	private function _getDeleteSql() {
+		$sql[] = "\n" . 'DELETE FROM ';
+		$sql[] = $this->_getFrom();
+		$sql[] = $this->_getWhere();
+		return implode(' ', $sql);
 	}
 
 	private function _getSelectSql() {
@@ -705,12 +916,6 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		return $str;
 	}
 
-	private function _checkPrefixIdentifier($str) {
-		$prefix = $this->getTablePrefix();
-		$identifier = $this->getTablePrefixSqlIdentifier();
-		return $identifier && $prefix ? str_replace($identifier, $prefix, $str) : $str;
-	}
-
 	private function _protectIdentifier($str) {
 		if (stripos($str, '(')) {
 			return $str;
@@ -742,8 +947,22 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 
 	private function _getWhere() {
 		$where = '';
+		//如果where中存在空的in，说明搜索条件一定是假，那么用0代表where假条件
+		$hasEmptyIn = false;
 		foreach ($this->arWhere as $w) {
+			foreach ($w[0] as $value) {
+				if (is_array($value) && empty($value)) {
+					$hasEmptyIn = true;
+					break;
+				}
+			}
+			if ($hasEmptyIn) {
+				break;
+			}
 			$where.=call_user_func_array(array($this, '_compileWhere'), $w);
+		}
+		if ($hasEmptyIn) {
+			return '0';
 		}
 		$where = trim($where);
 		if ($where) {
@@ -762,6 +981,16 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 
 	public function __toString() {
 		return $this->getSql();
+	}
+
+}
+
+class Soter_Database_Resultset {
+
+	private $_resultSet = array();
+
+	public function __construct($resultSet) {
+		$this->_resultSet = $resultSet;
 	}
 
 }

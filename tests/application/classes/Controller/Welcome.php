@@ -162,9 +162,17 @@ class Controller_Welcome extends Soter_Controller {
 		$config = array(
 		    'driverType' => 'mysql',
 		    'database' => 'test',
-		    'tablePrefix' => 'weibo_',
-		    'debug' => false,
+		    'tablePrefix' => '',
+		    'debug' => true,
 		    'masters' => array(
+			array(
+			    'hostname' => '127.0.0.1',
+			    'port' => 3306,
+			    'username' => 'root',
+			    'password' => 'admin'
+			)
+		    ),
+		    'slaves' => array(
 			array(
 			    'hostname' => '127.0.0.1',
 			    'port' => 3306,
@@ -203,22 +211,34 @@ class Controller_Welcome extends Soter_Controller {
 //			->select('*')
 //			->execute(),$db->errorMsg());
 		
-		try {
-			$db->begin();
-			$db->update(array('key'=>'555'))
-				->from('account')
-				->where(array('id'=>1))
-				->execute();
-			$db->update()
-				->from('current')
-				->set('test', '22', TRUE)
-				->execute();
-			$db->commit();
-			echo 'okay';
-		} catch (Exception $exc) {
-			$db->rollback();
-			echo $exc->getMessage();
-		}
+//		try {
+//			$db->begin();
+//			$db->update(array('key'=>'555'))
+//				->from('account')
+//				->where(array('id'=>1))
+//				->execute();
+//			$db->update()
+//				->from('current')
+//				->set('test', '22', TRUE)
+//				->execute();
+//			$db->commit();
+//			echo 'okay';
+//		} catch (Exception $exc) {
+//			$db->rollback();
+//			echo $exc->getMessage();
+//		}
+//		 Sr::dump($db->updateBatch(array(array('catalog_id'=>1,'parent_id'=>5),array('catalog_id'=>2,'parent_id'=>6)),'catalog_id')
+//			 ->from('tests')
+//			 //->where(array('catalog_id'=>1))
+//			 ->getSql(),$db->error());
+//		Sr::dump($db->delete()->from('test1')->where(array('id >'=>2))
+//			->execute());
+//		Sr::dump($db->replace(array('id'=>  rand(100,1000)))->from('test1')->getSql());
+//		Sr::dump($db->replaceBatch(array(
+//		    array('parent_id'=>  rand(1000, 10000),'name'=> rand(1000, 10000)),
+//		    array('parent_id'=>  rand(1000, 10000),'name'=> rand(1000, 10000)),
+//		    array('parent_id'=>  rand(1000, 10000),'name'=> rand(1000, 10000))
+//		    ))->from('tests')->getSql(),$db->lastSql());
 	}
 
 }

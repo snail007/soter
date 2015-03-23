@@ -98,16 +98,20 @@ Soter::initialize()
 		),
 		'slaves' => array(
 //		    'slave01' => array(
+//			'hostname' => '127.0.0.1',
+//			'port' => 3306,
+//			'username' => 'root',
+//			'password' => '',
 //		    )
 		)
 	    ),
-	    'sqlite3'=>array(
+	    'sqlite3' => array(
 		'driverType' => 'sqlite',
 		'debug' => true,
 		'pconnect' => true,
 		'masters' => array(
 		    'master01' => array(
-			'hostname' => 'test.sqlite3',//sqlite3数据库路径
+			'hostname' => 'test.sqlite3', //sqlite3数据库路径
 		    )
 		),
 		'slaves' => array(
