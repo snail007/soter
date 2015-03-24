@@ -164,6 +164,9 @@ class Controller_Welcome extends Soter_Controller {
 		    'database' => 'test',
 		    'tablePrefix' => '',
 		    'debug' => true,
+		    'slowQueryTime' => 3000, //单位毫秒，1秒=1000毫秒
+		    'slowQueryHandle' => new Soter_Database_SlowQuery_Handle_Default(),
+		    'nonUsingIndexQueryHandle' => new Soter_Database_NonUsingIndexQuery_Handle_Default(),
 		    'masters' => array(
 			array(
 			    'hostname' => '127.0.0.1',
@@ -210,15 +213,10 @@ class Controller_Welcome extends Soter_Controller {
 //			->where(array('id >='=>1))
 //			->select('*')
 //			->execute(),$db->errorMsg());
-		
 //		try {
 //			$db->begin();
-//			$db->update(array('key'=>'555'))
-//				->from('account')
-//				->where(array('id'=>1))
-//				->execute();
-//			$db->update()
-//				->from('current')
+//			$db->update('account',array('key'=>'555'))->where(array('id'=>1))->execute();
+//			$db->update('current')
 //				->set('test', '22', TRUE)
 //				->execute();
 //			$db->commit();
@@ -227,18 +225,30 @@ class Controller_Welcome extends Soter_Controller {
 //			$db->rollback();
 //			echo $exc->getMessage();
 //		}
-//		 Sr::dump($db->updateBatch(array(array('catalog_id'=>1,'parent_id'=>5),array('catalog_id'=>2,'parent_id'=>6)),'catalog_id')
-//			 ->from('tests')
+//		 Sr::dump($db->updateBatch('tests',array(array('catalog_id'=>1,'parent_id'=>5),array('catalog_id'=>2,'parent_id'=>6)),'catalog_id')
 //			 //->where(array('catalog_id'=>1))
 //			 ->getSql(),$db->error());
-//		Sr::dump($db->delete()->from('test1')->where(array('id >'=>2))
-//			->execute());
-//		Sr::dump($db->replace(array('id'=>  rand(100,1000)))->from('test1')->getSql());
-//		Sr::dump($db->replaceBatch(array(
+//		Sr::dump($db->delete('test1',array('id >'=>2))->getSql());
+//		Sr::dump($db->insert('test1',array('id'=>  rand(100,1000)))->getSql());
+//		Sr::dump($db->insertBatch('tests',array(
 //		    array('parent_id'=>  rand(1000, 10000),'name'=> rand(1000, 10000)),
 //		    array('parent_id'=>  rand(1000, 10000),'name'=> rand(1000, 10000)),
 //		    array('parent_id'=>  rand(1000, 10000),'name'=> rand(1000, 10000))
-//		    ))->from('tests')->getSql(),$db->lastSql());
+//		    ))->getSql(),$db->lastId());
+//		Sr::dump($db->replace('test1',array('id'=>  rand(100,1000)))->getSql());
+//		Sr::dump($db->replaceBatch('tests',array(
+//		    array('parent_id'=>  rand(1000, 10000),'name'=> rand(1000, 10000)),
+//		    array('parent_id'=>  rand(1000, 10000),'name'=> rand(1000, 10000)),
+//		    array('parent_id'=>  rand(1000, 10000),'name'=> rand(1000, 10000))
+//		    ))->getSql(),$db->lastId());
+		Sr::dump(
+			Sr::db($config)
+				->select('*')
+				->from('test1')
+				->where(array('pid >' => 2))
+				->execute()
+				->rows()
+		);
 	}
 
 }

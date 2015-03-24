@@ -75,51 +75,7 @@ Soter::initialize()
 		// 'Demo' => 'demo'
 	))
 	//数据库连接信息，支持多主多从。如果只有一个数据库，只需要设置一个主即可。
-	->setDatabseConfig(array(
-	    //默认组
-	    'default_group' => 'mysql',
-	    //组名=>配置
-	    'mysql' => array(
-		'driverType' => 'mysql',
-		'debug' => true,
-		'pconnect' => true,
-		'charset' => 'utf8',
-		'collate' => 'utf8_general_ci',
-		'database' => '',
-		'tablePrefix' => '',
-		'tablePrefixSqlIdentifier' => '{tablePrefix}',
-		'masters' => array(
-		    'master01' => array(
-			'hostname' => '127.0.0.1',
-			'port' => 3306,
-			'username' => 'root',
-			'password' => '',
-		    )
-		),
-		'slaves' => array(
-//		    'slave01' => array(
-//			'hostname' => '127.0.0.1',
-//			'port' => 3306,
-//			'username' => 'root',
-//			'password' => '',
-//		    )
-		)
-	    ),
-	    'sqlite3' => array(
-		'driverType' => 'sqlite',
-		'debug' => true,
-		'pconnect' => true,
-		'masters' => array(
-		    'master01' => array(
-			'hostname' => 'test.sqlite3', //sqlite3数据库路径
-		    )
-		),
-		'slaves' => array(
-//		    'slave01' => array(
-//		    )
-		)
-	    )
-	))
+	->setDatabseConfigFile('database')
 	//加载项目自定义bootstrap.php配置,这一句一定要在最后，确保能覆盖上面的配置
 	->bootstrap()
 ;

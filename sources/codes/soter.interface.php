@@ -31,3 +31,13 @@ interface Soter_Maintain_Handle {
 
 	public function handle();
 }
+
+interface Soter_Database_SlowQuery_Handle {
+
+	public function handle($sql, $time);
+}
+
+interface Soter_Database_NonUsingIndexQuery_Handle {
+
+	public function handle($sql);
+}

@@ -266,16 +266,25 @@ class Soter_Config {
 		$isMaintainMode = false,
 		$maintainIpWhitelist = array(),
 		$maintainModeHandle,
+		$databseConfigFileName,
 		$databseConfig
 
 	;
 
-	public function getDatabseConfig($group = 'default') {
-		return $this->databseConfig[$group];
+	public function getDatabseConfig($group = null) {
+		if (!is_array($this->databseConfig)) {
+			$config = Sr::config($this->databseConfigFileName);
+			$this->databseConfig = is_array($config) ? $config : array();
+		}
+		if (is_null($group)) {
+			return $this->databseConfig;
+		} else {
+			return isset($this->databseConfig[$group]) ? $this->databseConfig[$group] : array();
+		}
 	}
 
-	public function setDatabseConfig($databseConfig) {
-		$this->databseConfig = $databseConfig;
+	public function setDatabseConfigFile($databseConfigFileName) {
+		$this->databseConfigFileName = $databseConfigFileName;
 		return $this;
 	}
 
@@ -1002,6 +1011,22 @@ class Soter_Exception_Handle_Default implements Soter_Exception_Handle {
 
 	public function handle(Soter_Exception $exception) {
 		$exception->render();
+	}
+
+}
+
+class Soter_Database_SlowQuery_Handle_Default implements Soter_Database_SlowQuery_Handle {
+
+	public function handle($sql, $time) {
+			
+	}
+
+}
+
+class Soter_Database_NonUsingIndexQuery_Handle_Default implements Soter_Database_NonUsingIndexQuery_Handle {
+
+	public function handle($sql) {
+		
 	}
 
 }

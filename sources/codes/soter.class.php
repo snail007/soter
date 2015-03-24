@@ -703,8 +703,43 @@ class Sr {
 		return is_null($key) ? $ips : $ips[$key];
 	}
 
+	/**
+	 * 获取数据库操作对象
+	 * @staticvar array $instances
+	 * @param type $group  数据库配置里面的组名称，默认是default组。也可以是一个数据库组配置的数组
+	 * @return \Soter_Database_ActiveRecord
+	 */
+	public static function &db($group = 'default') {
+		static $instances = array();
+		if (is_array($group)) {
+			ksort($group);
+			$key = md5(var_export($group, true));
+			if (!isset($instances[$key])) {
+				$instances[$key] = new Soter_Database_ActiveRecord($group);
+			}
+			return $instances[$key];
+		} else {
+			if (!isset($instances[$group])) {
+				$config = self::config()->getDatabseConfig($group);
+				$instances[$group] = new Soter_Database_ActiveRecord($config);
+			}
+			return $instances[$group];
+		}
+	}
+
 	public static function createSqlite3Database($path) {
 		return new PDO('sqlite:' . $path);
+	}
+
+	/**
+	 * 获取当前UNIX毫秒时间戳
+	 * @return type
+	 */
+	public static function microtime() {
+		// 获取当前毫秒时间戳
+		list ($s1, $s2) = explode(' ', microtime());
+		$currentTime = (float) sprintf('%.0f', (floatval($s1) + floatval($s2)) * 1000);
+		return $currentTime;
 	}
 
 }
