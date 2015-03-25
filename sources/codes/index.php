@@ -74,6 +74,8 @@ Soter::initialize()
 	->setHmvcModules(array(
 		// 'Demo' => 'demo'
 	))
+	//设置缓存类型
+	->setCacheHandle(new Soter_Cache_File(SOTER_APP_PATH . 'storage/cache/'))
 	//数据库连接信息，支持多主多从。如果只有一个数据库，只需要设置一个主即可。
 	->setDatabseConfigFile('database')
 	//加载项目自定义bootstrap.php配置,这一句一定要在最后，确保能覆盖上面的配置

@@ -267,9 +267,23 @@ class Soter_Config {
 		$maintainIpWhitelist = array(),
 		$maintainModeHandle,
 		$databseConfigFileName,
-		$databseConfig
+		$databseConfig,
+		$cacheHandle
 
 	;
+
+	/**
+	 * 
+	 * @return Soter_Cache
+	 */
+	public function getCacheHandle() {
+		return $this->cacheHandle;
+	}
+
+	public function setCacheHandle(Soter_Cache $cacheHandle) {
+		$this->cacheHandle = $cacheHandle;
+		return $this;
+	}
 
 	public function getDatabseConfig($group = null) {
 		if (!is_array($this->databseConfig)) {
@@ -1017,16 +1031,140 @@ class Soter_Exception_Handle_Default implements Soter_Exception_Handle {
 
 class Soter_Database_SlowQuery_Handle_Default implements Soter_Database_SlowQuery_Handle {
 
-	public function handle($sql, $time) {
-			
+	public function handle($sql, $explainString, $time) {
+		$dir = Sr::config()->getPrimaryApplicationDir() . 'storage/slow-query-debug/';
+		$file = $dir . 'slow-query-debug.php';
+		if (!is_dir($dir)) {
+			mkdir($dir, 0700, true);
+		}
+		$content = "\nSQL : " . $sql
+			. "\nExplain : " . $explainString
+			. "\nUsingTime : " . $time . " ms"
+			. "\nTime : " . date('Y-m-d H:i:s') . "\n";
+		if (!file_exists($file)) {
+			$content = '<?php defined("IN_SOTER") or exit();?>' . "\n" . $content;
+		}
+		file_put_contents($file, $content, LOCK_EX | FILE_APPEND);
 	}
 
 }
 
-class Soter_Database_NonUsingIndexQuery_Handle_Default implements Soter_Database_NonUsingIndexQuery_Handle {
+class Soter_Database_Index_Handle_Default implements Soter_Database_Index_Handle {
 
-	public function handle($sql) {
-		
+	public function handle($sql, $explainString, $time) {
+		$dir = Sr::config()->getPrimaryApplicationDir() . 'storage/index-debug/';
+		$file = $dir . 'index-debug.php';
+		if (!is_dir($dir)) {
+			mkdir($dir, 0700, true);
+		}
+		$content = "\nSQL : " . $sql
+			. "\nExplain : " . $explainString
+			. "\nUsingTime : " . $time . " ms"
+			. "\nTime : " . date('Y-m-d H:i:s') . "\n";
+		if (!file_exists($file)) {
+			$content = '<?php defined("IN_SOTER") or exit();?>' . "\n" . $content;
+		}
+		file_put_contents($file, $content, LOCK_EX | FILE_APPEND);
+	}
+
+}
+
+class Soter_Cache_File implements Soter_Cache {
+
+	private $_cacheDirPath;
+
+	public function __construct($cacheDirPath) {
+		$this->_cacheDirPath = Sr::realPath($cacheDirPath) . '/';
+		if (!is_dir($this->_cacheDirPath)) {
+			mkdir($this->_cacheDirPath, 0700, true);
+		}
+		if (!is_writable($this->_cacheDirPath)) {
+			throw new Soter_Exception_500('cache dir [ ' . Sr::safePath($this->_cacheDirPath) . ' ] not writable');
+		}
+	}
+
+	private function _hashKey($key) {
+		return md5($key);
+	}
+
+	private function _hashKeyPath($key) {
+		$key = md5($key);
+		$len = strlen($key);
+		return $this->_cacheDirPath . $key{$len - 1} . '/' . $key{$len - 2} . '/' . $key{$len - 3} . '/';
+	}
+
+	private function pack($userData, $cacheTime) {
+		return @serialize(array(
+			    'userData' => $userData,
+			    'expireTime' => time() + $cacheTime
+		));
+	}
+
+	private function unpack($cacheData) {
+		$cacheData = @unserialize($cacheData);
+		if (is_array($cacheData) && isset($cacheData['userData']) && isset($cacheData['expireTime'])) {
+			return $cacheData['expireTime'] > time() ? $cacheData['userData'] : NULL;
+		} else {
+			return NULL;
+		}
+	}
+
+	public function clean() {
+		Sr::rmdir($this->_cacheDirPath, false);
+	}
+
+	public function delete($key) {
+		if (empty($key)) {
+			return;
+		}
+		$key = $this->_hashKey($key);
+		$filePath = $this->_hashKeyPath($key) . $key;
+		if (file_exists($filePath)) {
+			@unlink($filePath);
+		}
+	}
+
+	/**
+	 * 成功返回数据，失败返回null
+	 * @param type $key
+	 * @return type
+	 */
+	public function get($key) {
+		if (empty($key)) {
+			return null;
+		}
+		$key = $this->_hashKey($key);
+		$filePath = $this->_hashKeyPath($key) . $key;
+		if (file_exists($filePath)) {
+			$cacheData = file_get_contents($filePath);
+			$userData = $this->unpack($cacheData);
+			return is_null($userData) ? null : $userData;
+		}
+		return NULL;
+	}
+
+	/**
+	 * 成功返回true，失败返回false
+	 * @param type $key       缓存key
+	 * @param type $value     缓存数据
+	 * @param type $cacheTime 缓存时间，单位秒
+	 * @return boolean
+	 */
+	public function set($key, $value, $cacheTime) {
+		if (empty($key)) {
+			return false;
+		}
+		$key = $this->_hashKey($key);
+		$cacheDir = $this->_hashKeyPath($key);
+		$filePath = $cacheDir . $key;
+		if (!is_dir($cacheDir)) {
+			mkdir($cacheDir, 0700, true);
+		}
+		$cacheData = $this->pack($value, $cacheTime);
+		if (empty($cacheData)) {
+			return false;
+		}
+		return file_put_contents($filePath, $cacheData, LOCK_EX);
 	}
 
 }

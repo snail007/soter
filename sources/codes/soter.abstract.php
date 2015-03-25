@@ -107,18 +107,7 @@ abstract class Soter_Exception extends Exception {
 	}
 
 	public function getErrorFile($safePath = FALSE) {
-		return $safePath ? $this->safePath($this->errorFile) : $this->errorFile;
-	}
-
-	private function safePath($path) {
-		if (!$path) {
-			return '';
-		}
-		$path = Sr::realPath($path);
-		$siteRoot = Sr::realPath(Sr::arrayGet($_SERVER, 'DOCUMENT_ROOT'));
-		$_path = str_replace($siteRoot, '', $path);
-		$relPath = str_replace($siteRoot, '', rtrim(Soter::getConfig()->getApplicationDir(), '/'));
-		return '~APPPATH~' . str_replace($relPath, '', $_path);
+		return $safePath ? Sr::safePath($this->errorFile) : $this->errorFile;
 	}
 
 	public function getErrorLine() {
@@ -170,7 +159,7 @@ abstract class Soter_Exception extends Exception {
 			if (!empty($e['class']) && stripos($e['class'], 'Soter_') === 0) {
 				break;
 			}
-			$file = $this->safePath(Sr::arrayGet($e, 'file'));
+			$file = Sr::safePath(Sr::arrayGet($e, 'file'));
 			$line = Sr::arrayGet($e, 'line');
 			$func = (!empty($e['class']) ? "{$e['class']}{$e['type']}{$e['function']}()" : "{$e['function']}()");
 			$str.="&rarr; {$func} " . ($line ? "[ line:{$line} {$file} ]" : '') . ($isCli ? "\n" : '<br/>');

@@ -742,4 +742,60 @@ class Sr {
 		return $currentTime;
 	}
 
+	/**
+	 * 屏蔽路径中系统的绝对路径部分，转换为安全的用于显示
+	 * @param type $path
+	 * @return string
+	 */
+	public static function safePath($path) {
+		if (!$path) {
+			return '';
+		}
+		$path = self::realPath($path);
+		$siteRoot = self::realPath(self::server('DOCUMENT_ROOT'));
+		$_path = str_replace($siteRoot, '', $path);
+		$relPath = str_replace($siteRoot, '', rtrim(self::config()->getApplicationDir(), '/'));
+		return '~APPPATH~' . str_replace($relPath, '', $_path);
+	}
+
+	/**
+	 * 获取缓存操作对象
+	 * @param type $cacheHandle
+	 * @return Soter_Cache
+	 */
+	public static function cache($cacheHandle = null) {
+		if ($cacheHandle) {
+			self::config()->setCacheHandle($cacheHandle);
+		}
+		return self::config()->getCacheHandle();
+	}
+
+	/**
+	 * 删除文件夹和子文件夹
+	 * @param string $dirPath   文件夹路径
+	 * @param type $includeSelf 是否保留最父层文件夹
+	 * @return boolean
+	 */
+	public static function rmdir($dirPath, $includeSelf = true) {
+		if (empty($dirPath)) {
+			return false;
+		}
+		$dirPath = self::realPath($dirPath) . '/';
+		foreach (scandir($dirPath) as $value) {
+			if ($value == '.' || $value == '..') {
+				continue;
+			}
+			$path = $dirPath . $value;
+			if (is_dir($path)) {
+				self::rmdir($path);
+				rmdir($path);
+			} else {
+				@unlink($path);
+			}
+		}
+		if ($includeSelf) {
+			rmdir($dirPath);
+		}
+	}
+
 }

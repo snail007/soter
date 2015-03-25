@@ -18,9 +18,24 @@ return array(
 	'database' => '',
 	'tablePrefix' => '',
 	'tablePrefixSqlIdentifier' => '_tablePrefix_',
+	//是否开启慢查询记录
+	'slowQueryDebug' => true,
 	'slowQueryTime' => 3000, //单位毫秒，1秒=1000毫秒
 	'slowQueryHandle' => new Soter_Database_SlowQuery_Handle_Default(),
-	'nonUsingIndexQueryHandle' => new Soter_Database_NonUsingIndexQuery_Handle_Default(),
+	/**
+	 * 是否开启没有满足设置的索引类型的查询记录
+	 */
+	'indexDebug' => true,
+	/**
+	 * 索引使用的最小情况，只有小于最小情况的时候才会记录sql到日志
+	 * minIndexType值从好到坏依次是:
+	 * system > const > eq_ref > ref > fulltext > ref_or_null 
+	 * > index_merge > unique_subquery > index_subquery > range 
+	 * > index > ALL 一般来说，得保证查询至少达到range级别，最好能达到ref
+	 * 避免ALL即全表扫描
+	 */
+	'minIndexType' => 'index',
+	'indexHandle' => new Soter_Database_Index_Handle_Default(),
 	'masters' => array(
 	    'master01' => array(
 		'hostname' => '127.0.0.1',
@@ -43,6 +58,12 @@ return array(
 	'driverType' => 'sqlite',
 	'debug' => true,
 	'pconnect' => true,
+	'tablePrefix' => '',
+	'tablePrefixSqlIdentifier' => '_tablePrefix_',
+	//是否开启慢查询记录
+	'slowQueryDebug' => true,
+	'slowQueryTime' => 3000, //单位毫秒，1秒=1000毫秒
+	'slowQueryHandle' => new Soter_Database_SlowQuery_Handle_Default(),
 	'masters' => array(
 	    'master01' => array(
 		'hostname' => 'test.sqlite3', //sqlite3数据库路径

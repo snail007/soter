@@ -164,9 +164,12 @@ class Controller_Welcome extends Soter_Controller {
 		    'database' => 'test',
 		    'tablePrefix' => '',
 		    'debug' => true,
-		    'slowQueryTime' => 3000, //单位毫秒，1秒=1000毫秒
+		    'slowQueryDebug' => true,
+		    'slowQueryTime' => 100, //单位毫秒，1秒=1000毫秒
 		    'slowQueryHandle' => new Soter_Database_SlowQuery_Handle_Default(),
-		    'nonUsingIndexQueryHandle' => new Soter_Database_NonUsingIndexQuery_Handle_Default(),
+		    'indexDebug' => true,
+		    'minIndexType' => 'index',
+		    'indexHandle' => new Soter_Database_Index_Handle_Default(),
 		    'masters' => array(
 			array(
 			    'hostname' => '127.0.0.1',
@@ -243,6 +246,7 @@ class Controller_Welcome extends Soter_Controller {
 //		    ))->getSql(),$db->lastId());
 		Sr::dump(
 			Sr::db($config)
+				->cache(60,'user-2')
 				->select('*')
 				->from('test1')
 				->where(array('pid >' => 2))

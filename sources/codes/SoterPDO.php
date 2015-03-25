@@ -51,7 +51,10 @@ abstract class Soter_Database {
 		$tablePrefixSqlIdentifier,
 		$slowQueryTime,
 		$slowQueryHandle,
-		$nonUsingIndexQueryHandle,
+		$slowQueryDebug,
+		$minIndexType,
+		$indexDebug,
+		$indexHandle,
 		$masters,
 		$slaves,
 		$connectionMasters,
@@ -60,7 +63,9 @@ abstract class Soter_Database {
 		$_lastSql,
 		$_isInTransaction = false,
 		$_config,
-		$_lastInsertId = 0
+		$_lastInsertId = 0,
+		$_cacheTime = 0,
+		$_cacheKey
 
 	;
 
@@ -76,6 +81,33 @@ abstract class Soter_Database {
 		return $this->_lastSql;
 	}
 
+	public function getSlowQueryDebug() {
+		return $this->slowQueryDebug;
+	}
+
+	public function getMinIndexType() {
+		return $this->minIndexType;
+	}
+
+	public function getIndexDebug() {
+		return $this->indexDebug;
+	}
+
+	public function setSlowQueryDebug($slowQueryDebug) {
+		$this->slowQueryDebug = $slowQueryDebug;
+		return $this;
+	}
+
+	public function setMinIndexType($minIndexType) {
+		$this->minIndexType = $minIndexType;
+		return $this;
+	}
+
+	public function setIndexDebug($indexDebug) {
+		$this->indexDebug = $indexDebug;
+		return $this;
+	}
+
 	public function getSlowQueryTime() {
 		return $this->slowQueryTime;
 	}
@@ -84,8 +116,8 @@ abstract class Soter_Database {
 		return $this->slowQueryHandle;
 	}
 
-	public function &getNonUsingIndexQueryHandle() {
-		return $this->nonUsingIndexQueryHandle;
+	public function &getIndexHandle() {
+		return $this->indexHandle;
 	}
 
 	public function setSlowQueryTime($slowQueryTime) {
@@ -98,8 +130,8 @@ abstract class Soter_Database {
 		return $this;
 	}
 
-	public function setNonUsingIndexQueryHandle(Soter_Database_NonUsingIndexQuery_Handle $nonUsingIndexQueryHandle) {
-		$this->nonUsingIndexQueryHandle = $nonUsingIndexQueryHandle;
+	public function setIndexHandle(Soter_Database_Index_Handle $indexHandle) {
+		$this->indexHandle = $indexHandle;
 		return $this;
 	}
 
@@ -121,6 +153,8 @@ abstract class Soter_Database {
 		$this->_lastSql = '';
 		$this->_isInTransaction = false;
 		$this->_lastInsertId = 0;
+		$this->_cacheKey = '';
+		$this->_cacheTime = 0;
 	}
 
 	public function getDriverType() {
@@ -223,7 +257,7 @@ abstract class Soter_Database {
 
 	public static function getDefaultConfig() {
 		return array(
-		    'driverType' => 'Mysql',
+		    'driverType' => 'mysql',
 		    'debug' => true,
 		    'pconnect' => true,
 		    'charset' => 'utf8',
@@ -231,9 +265,21 @@ abstract class Soter_Database {
 		    'database' => '',
 		    'tablePrefix' => '',
 		    'tablePrefixSqlIdentifier' => '_prefix_',
-		    'slowQueryTime' => 3000, //单位毫秒，1秒=1000毫秒
+		    //是否记录慢查询
+		    'slowQueryDebug' => false,
+		    'slowQueryTime' => 3000, //慢查询最小时间，单位毫秒，1秒=1000毫秒
 		    'slowQueryHandle' => null,
-		    'nonUsingIndexQueryHandle' => null,
+		    //是否记录没有满足设置的索引类型的查询
+		    'indexDebug' => true,
+		    /**
+		     * 索引使用的最小情况，只有小于最小情况的时候才会记录sql到日志
+		     * minIndexType值从好到坏依次是:
+		     * system > const > eq_ref > ref > fulltext > ref_or_null 
+		     * > index_merge > unique_subquery > index_subquery > range 
+		     * > index > ALL一般来说，得保证查询至少达到range级别，最好能达到ref
+		     */
+		    'minIndexType' => 'ALL',
+		    'indexHandle' => null,
 		    'masters' => array(
 			'master01' => array(
 			    'hostname' => '127.0.0.1',
@@ -326,6 +372,12 @@ abstract class Soter_Database {
 		}
 	}
 
+	public function cache($cacheTime, $cacheKey = '') {
+		$this->_cacheTime = (int) $cacheTime;
+		$this->_cacheKey = $cacheKey;
+		return $this;
+	}
+
 	private function _checkPrefixIdentifier($str) {
 		$prefix = $this->getTablePrefix();
 		$identifier = $this->getTablePrefixSqlIdentifier();
@@ -347,6 +399,21 @@ abstract class Soter_Database {
 		$sql = $sql ? $this->_checkPrefixIdentifier($sql) : $this->getSql();
 		$this->_lastSql = $sql;
 		$values = !empty($values) ? $values : $this->_getValues();
+
+		//读查询缓存
+		$cacheHandle = null;
+		if ($this->_cacheTime) {
+			$cacheHandle = Sr::config()->getCacheHandle();
+			if (empty($cacheHandle)) {
+				throw new Soter_Exception_500('no cache handle found , please set cache handle');
+			}
+			$key = empty($this->_cacheKey) ? md5($sql . var_export($values, true)) : $this->_cacheKey;
+			$return = $cacheHandle->get($key);
+			if (!is_null($return)) {
+				return $return;
+			}
+		}
+
 		$isWriteType = $this->_isWriteType($sql);
 		$isWritetRowsType = $this->_isWriteRowsType($sql);
 		$isWriteInsertType = $this->_isWriteInsertType($sql);
@@ -407,24 +474,62 @@ abstract class Soter_Database {
 					}
 				}
 			}
+			//查询消耗的时间
 			$usingTime = (Sr::microtime() - $startTime) . '';
-			if ($usingTime >= $this->getSlowQueryTime()) {
-				if ($this->slowQueryHandle instanceof Soter_Database_SlowQuery_Handle) {
-					$this->slowQueryHandle->handle($sql, $usingTime);
-				}
-			}
-			if ($this->nonUsingIndexQueryHandle instanceof Soter_Database_NonUsingIndexQuery_Handle) {
+
+			//explain查询
+			$explainRows = array();
+			if ($this->slowQueryDebug && $this->indexDebug) {
 				$sth = $this->connectionMasters[0]->prepare('EXPLAIN ' . $sql);
 				$sth->execute($this->_getValues());
-				$rows = $sth->fetchAll(PDO::FETCH_ASSOC);
-				$this->nonUsingIndexQueryHandle->handle($sql);
+				$explainRows = $sth->fetchAll(PDO::FETCH_ASSOC);
+			}
+			//慢查询记录
+			if ($this->slowQueryDebug && ($usingTime >= $this->getSlowQueryTime())) {
+				if ($this->slowQueryHandle instanceof Soter_Database_SlowQuery_Handle) {
+					$this->slowQueryHandle->handle($sql, var_export($explainRows, true), $usingTime);
+				}
+			}
+			//不满足索引条件的查询记录
+			if ($this->indexDebug && $this->indexHandle instanceof Soter_Database_Index_Handle) {
+				$badIndex = false;
+				if (strtolower($this->getDriverType()) == 'mysql') {
+					$order = array(
+					    'system' => 1, 'const' => 2, 'eq_ref' => 3, 'ref' => 4,
+					    'fulltext' => 5, 'ref_or_null' => 6, 'index_merge' => 7, 'unique_subquery' => 8,
+					    'index_subquery' => 9, 'range' => 10, 'index' => 11, 'all' => 12,
+					);
+					foreach ($explainRows as $row) {
+						if (isset($order[strtolower($row['type'])]) && isset($order[strtolower($this->getMinIndexType())])) {
+							$key = $order[strtolower($row['type'])];
+							$minKey = $order[strtolower($this->getMinIndexType())];
+							if ($key > $minKey) {
+								if (stripos($row['Extra'], 'optimized') === false) {
+									$badIndex = true;
+									break;
+								}
+							}
+						}
+					}
+				} elseif (strtolower($this->getDriverType()) == 'sqlite') {
+					
+				}
+				if ($badIndex) {
+					$this->indexHandle->handle($sql, var_export($explainRows, true), $usingTime);
+				}
 			}
 		} catch (Exception $exc) {
 			$this->_reset();
 			$this->_displayError($exc);
 		}
+		//写查询缓存
+		if ($this->_cacheTime) {
+			$key = empty($this->_cacheKey) ? md5($sql) : $this->_cacheKey;
+			$cacheHandle->set($key, $return, $this->_cacheTime);
+		}
+		$this->_cacheKey = '';
+		$this->_cacheTime = 0;
 		$this->_reset();
-
 		return $return;
 	}
 
