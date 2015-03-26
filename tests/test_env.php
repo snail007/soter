@@ -7,6 +7,13 @@ require_once('simpletest/browser.php');
 
 class TestEnv extends UnitTestCase {
 
+
+	public function clean() {
+		$this->assertTrue($this->db->execute('DROP TABLE if exists  test_a'));
+		$this->assertTrue($this->db->execute('DROP TABLE if exists  test_b'));
+		$this->assertTrue($this->db->execute('DROP TABLE if exists  test_c'));
+	}
+
 	public function TestEnv1() {
 		$browser = new SimpleBrowser();
 		$browser->get(testUrl('Welcome/envTestDevelopment.do'));

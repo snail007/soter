@@ -3,8 +3,6 @@
 require_once 'pluginfortest.php';
 //require_once('simpletest/web_tester.php');
 require_once('simpletest/autorun.php');
-@unlink('test.sqlite3');
-Sr::createSqlite3Database('test.sqlite3');
 
 //require_once('simpletest/browser.php');
 /**
@@ -15,8 +13,18 @@ class testDbSqlite extends UnitTestCase {
 
 	private $db;
 
-	public function init() {
+	public function setUp() {
+		parent::setUp();
+		Sr::createSqlite3Database('test.sqlite3');
+	}
 
+	public function tearDown() {
+		parent::tearDown();
+		unlink('test.sqlite3');
+	}
+
+	public function init() {
+		Sr::createSqlite3Database('test.sqlite3');
 		$config = array(
 		    'driverType' => 'sqlite',
 		    'debug' => true,
@@ -55,15 +63,16 @@ class testDbSqlite extends UnitTestCase {
 		$this->clean();
 	}
 
-//	public function testCreateBatch() {
-//		$this->init();
-//		$data[] = array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000));
-//		$data[] = array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000));
-//		$data[] = array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000));
-//		$this->db->insertBatch('a', $data);
-//		$this->assertEqual($this->db->execute(), 3);
-//		$this->clean();
-//	}
+	public function testCreateBatch() {
+		$this->init();
+		$data[] = array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000));
+		$data[] = array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000));
+		$data[] = array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000));
+		$this->db->insertBatch('a', $data);
+		$this->assertEqual($this->db->execute(), 3);
+		$this->clean();
+	}
+
 //
 	public function testDelete() {
 		$this->init();
@@ -104,33 +113,20 @@ class testDbSqlite extends UnitTestCase {
 		$datac[] = array('cname' => 'cname' . rand(1000, 10000));
 		$datac[] = array('cname' => 'cname' . rand(1000, 10000));
 		$datac[] = array('cname' => 'cname' . rand(1000, 10000));
-		$firstId = 0;
-		foreach ($datac as $key => $value) {
-			$this->assertEqual($this->db->insert('c', $value)->execute(), 1);
-			if (!$firstId) {
-				$firstId = $this->db->lastId();
-			}
-		}
+		$this->db->insertBatch('c', $datac);
+		$this->assertEqual($this->db->execute(), 3);
+		$firstId = $this->db->lastId();
 		$datab[] = array('gname' => 'gname' . rand(1000, 10000), 'cid' => $firstId);
 		$datab[] = array('gname' => 'gname' . rand(1000, 10000), 'cid' => ++$firstId);
 		$datab[] = array('gname' => 'gname' . rand(1000, 10000), 'cid' => ++$firstId);
-		$firstId = 0;
-		foreach ($datab as $key => $value) {
-			$this->assertEqual($this->db->insert('b', $value)->execute(), 1);
-			if (!$firstId) {
-				$firstId = $this->db->lastId();
-			}
-		}
+		$this->db->insertBatch('b', $datab);
+		$this->assertEqual($this->db->execute(), 3);
+		$firstId = $this->db->lastId();
 		$data[] = array('name' => 'name' . rand(1000, 10000), 'gid' => $firstId);
 		$data[] = array('name' => 'name' . rand(1000, 10000), 'gid' => ++$firstId);
 		$data[] = array('name' => 'name' . rand(1000, 10000), 'gid' => ++$firstId);
-		$firstId = 0;
-		foreach ($data as $key => $value) {
-			$this->assertEqual($this->db->insert('a', $value)->execute(), 1);
-			if (!$firstId) {
-				$firstId = $this->db->lastId();
-			}
-		}
+		$this->db->insertBatch('a', $data);
+		$this->assertEqual($this->db->execute(), 3);
 
 		$this->assertEqual($this->db->select('cname')->from('c')->execute()->total(), 3);
 		$this->assertEqual($this->db->select('cname')->from('c')

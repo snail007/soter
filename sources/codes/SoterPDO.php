@@ -259,7 +259,7 @@ abstract class Soter_Database {
 		return array(
 		    'driverType' => 'mysql',
 		    'debug' => true,
-		    'pconnect' => true,
+		    'pconnect' => false,
 		    'charset' => 'utf8',
 		    'collate' => 'utf8_general_ci',
 		    'database' => '',
@@ -340,7 +340,7 @@ abstract class Soter_Database {
 		if (!empty($this->connectionSlaves)) {
 			reset($this->connectionSlaves);
 		}
-		
+
 		return !(empty($this->connectionMasters) && empty($this->connectionSlaves));
 	}
 
@@ -395,7 +395,7 @@ abstract class Soter_Database {
 		if (!$this->_init()) {
 			return FALSE;
 		}
-		
+
 		$startTime = Sr::microtime();
 		$sql = $sql ? $this->_checkPrefixIdentifier($sql) : $this->getSql();
 		$this->_lastSql = $sql;
@@ -705,9 +705,6 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 	}
 
 	public function insertBatch($table, array $data) {
-		if(strtolower($this->getDriverType())=='sqlite'){
-			throw new Soter_Exception_Database('insertBatch can not using for sqlite3');
-		}
 		$this->_sqlType = 'insertBatch';
 		$this->arInsertBatch = $data;
 		$this->from($table);
@@ -725,18 +722,39 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		$keys = array();
 		$values = array();
 		if (!empty($this->arInsertBatch[0])) {
-			foreach ($this->arInsertBatch[0] as $key => $value) {
-				$keys[] = $this->_protectIdentifier($key);
-			}
-			foreach ($this->arInsertBatch as $row) {
-				$_values = array();
-				foreach ($row as $key => $value) {
-					$_values[] = '?';
+			if (strtolower($this->getDriverType()) == 'mysql') {
+				foreach ($this->arInsertBatch[0] as $key => $value) {
+					$keys[] = $this->_protectIdentifier($key);
+				}
+				foreach ($this->arInsertBatch as $row) {
+					$_values = array();
+					foreach ($row as $key => $value) {
+						$_values[] = '?';
+						$this->_values[] = $value;
+					}
+					$values[] = '(' . implode(',', $_values) . ')';
+				}
+				return '(' . implode(',', $keys) . ') ' . "\n VALUES " . implode(' , ', $values);
+			} elseif (strtolower($this->getDriverType()) == 'sqlite') {
+				$_first = array();
+				foreach ($this->arInsertBatch[0] as $key => $value) {
+					$key = $this->_protectIdentifier($key);
+					$keys[] = $key;
+					$_first[] = ' ? as ' . $key;
 					$this->_values[] = $value;
 				}
-				$values[] = '(' . implode(',', $_values) . ')';
+				array_shift($this->arInsertBatch);
+				$first = '(' . implode(',', $keys) . ')' . ' SELECT ' . implode(',', $_first) . "\n";
+				foreach ($this->arInsertBatch as $row) {
+					$_values = array();
+					foreach ($row as $key => $value) {
+						$_values[] = " ? ";
+						$this->_values[] = $value;
+					}
+					$values[] = 'UNION SELECT ' . implode(',', $_values) . "\n";
+				}
+				return $first . implode(' ', $values);
 			}
-			return '(' . implode(',', $keys) . ') ' . "\n VALUES " . implode(' , ', $values);
 		}
 		return '';
 	}
@@ -1096,12 +1114,11 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		if (stripos($str, '(')) {
 			return $str;
 		}
-		$isMysql = strtolower($this->getDriverType()) == 'mysql';
 		$_str = explode(' ', $str);
 		if (count($_str) == 3 && strtolower($_str[1]) == 'as') {
-			return $isMysql ? "`{$_str[0]}` AS `{$_str[2]}`" : $str;
+			return "`{$_str[0]}` AS `{$_str[2]}`";
 		} else {
-			return $isMysql ? "`$str`" : $str;
+			return "`$str`";
 		}
 	}
 

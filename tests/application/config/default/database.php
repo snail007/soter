@@ -12,7 +12,7 @@ return array(
     'mysql' => array(
 	'driverType' => 'mysql',
 	'debug' => true,
-	'pconnect' => true,
+	'pconnect' => false,
 	'charset' => 'utf8',
 	'collate' => 'utf8_general_ci',
 	'database' => '',
@@ -57,7 +57,7 @@ return array(
     'sqlite3' => array(
 	'driverType' => 'sqlite',
 	'debug' => true,
-	'pconnect' => true,
+	'pconnect' => false,
 	'tablePrefix' => '',
 	'tablePrefixSqlIdentifier' => '_tablePrefix_',
 	//是否开启慢查询记录
