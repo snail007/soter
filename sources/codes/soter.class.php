@@ -207,7 +207,7 @@ class Sr {
 		$args = func_get_args();
 		call_user_func_array('var_dump', $args);
 		$html = @ob_get_clean();
-		echo!self::isCli() ? htmlspecialchars($html) : $html;
+		echo!self::isCli() ? htmlentities($html) : $html;
 		echo!self::isCli() ? "</pre>" : "\n";
 	}
 

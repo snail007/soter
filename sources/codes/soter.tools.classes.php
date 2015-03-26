@@ -644,7 +644,6 @@ class Soter_Config {
 	}
 
 	public function setExceptionHandle($exceptionHandle) {
-		Soter::getConfig()->setShowError(FALSE);
 		$this->exceptionHandle = $exceptionHandle;
 		return $this;
 	}
@@ -957,17 +956,19 @@ class Soter_Logger_Writer_Dispatcher {
 	}
 
 	final public function dispatch(Soter_Exception $exception) {
-		$config = Soter::getConfig();
+		$config = Sr::config();
 		ini_set('display_errors', TRUE);
 		$loggerWriters = $config->getLoggerWriters();
 		foreach ($loggerWriters as $loggerWriter) {
 			$loggerWriter->write($exception);
 		}
-		$handle = $config->getExceptionHandle();
-		if ($handle instanceof Soter_Exception_Handle) {
-			$handle->handle($exception);
-		} elseif ($config->getShowError()) {
-			$exception->render();
+		if ($config->getShowError()) {
+			$handle = $config->getExceptionHandle();
+			if ($handle instanceof Soter_Exception_Handle) {
+				$handle->handle($exception);
+			} else {
+				$exception->render();
+			}
 		}
 		exit();
 	}
@@ -1004,7 +1005,7 @@ class Soter_Logger_FileWriter implements Soter_Logger_Writer {
 
 }
 
-class Soter_Maintain_Default_Handle implements Soter_Maintain_Handle {
+class Soter_Maintain_Handle_Default implements Soter_Maintain_Handle {
 
 	public function handle() {
 		header('Content-type: text/html;charset=utf-8');

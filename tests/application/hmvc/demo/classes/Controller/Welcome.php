@@ -55,7 +55,8 @@ class Controller_Welcome extends Soter_Controller {
 	 * 测试异常托管
 	 */
 	public function do_exceptionHandle() {
-		Sr::config()->setExceptionHandle(new Exception_Handle());
+		
+		Sr::config()->setShowError(true)->setExceptionHandle(new Exception_Handle());
 		none();
 	}
 

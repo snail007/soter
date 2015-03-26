@@ -41,7 +41,7 @@ Soter::initialize()
 	//宕机维护模式IP白名单
 	->setMaintainIpWhitelist(array('127.0.0.2', '192.168.0.2/32'))
 	//宕机维护模式处理方法
-	->setMaintainModeHandle(new Soter_Maintain_Default_Handle())
+	->setMaintainModeHandle(new Soter_Maintain_Handle_Default())
 	//初始化请求
 	->setRequest(new Soter_Request(Sr::arrayGet($_SERVER, 'REQUEST_URI')))
 	//注册默认pathinfo路由器
@@ -66,7 +66,7 @@ Soter::initialize()
 	->setDefaultController('Welcome')
 	//默认方法
 	->setDefaultMethod('index')
-	//方法前缀
+	//控制器方法前缀
 	->setMethodPrefix('do_')
 	//方法url后缀
 	->setMethodUriSubfix('.do')

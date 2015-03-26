@@ -331,7 +331,7 @@ abstract class Soter_Database {
 		} catch (Exception $e) {
 			$this->_displayError($e);
 		}
-		if (empty($slaves) && !empty($this->connectionMasters)) {
+		if (empty($this->connectionSlaves) && !empty($this->connectionMasters)) {
 			$this->connectionSlaves[0] = current($this->connectionMasters);
 		}
 		if (!empty($this->connectionMasters)) {
@@ -340,6 +340,7 @@ abstract class Soter_Database {
 		if (!empty($this->connectionSlaves)) {
 			reset($this->connectionSlaves);
 		}
+		
 		return !(empty($this->connectionMasters) && empty($this->connectionSlaves));
 	}
 
@@ -394,7 +395,7 @@ abstract class Soter_Database {
 		if (!$this->_init()) {
 			return FALSE;
 		}
-
+		
 		$startTime = Sr::microtime();
 		$sql = $sql ? $this->_checkPrefixIdentifier($sql) : $this->getSql();
 		$this->_lastSql = $sql;
@@ -634,16 +635,19 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 
 	public function from($from, $as = '') {
 		$this->arFrom = array($from, $as);
+		if ($as) {
+			$this->_asTable[$as] = 1;
+		}
 		return $this;
 	}
 
-	public function join($table, $on, $type = '', $leftWrap = '', $rightWrap = '', $as = '') {
-		$this->arJoin[] = array($table, $on, strtoupper($type), $leftWrap, $rightWrap, $as);
+	public function join($table, $on, $type = '') {
+		$this->arJoin[] = array($table, $on, strtoupper($type));
 		return $this;
 	}
 
 	public function where($where, $leftWrap = 'AND', $rightWrap = '') {
-		if (!empty($where)) {
+		if (!empty($where) && is_array($where)) {
 			$this->arWhere[] = array($where, $leftWrap, $rightWrap, count($this->arWhere));
 		}
 		return $this;
@@ -701,6 +705,9 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 	}
 
 	public function insertBatch($table, array $data) {
+		if(strtolower($this->getDriverType())=='sqlite'){
+			throw new Soter_Exception_Database('insertBatch can not using for sqlite3');
+		}
 		$this->_sqlType = 'insertBatch';
 		$this->arInsertBatch = $data;
 		$this->from($table);
@@ -759,8 +766,8 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 	/**
 	 * 批量更新
 	 * 
-	 * @param type $values 必须包含$index字段
-	 * @param type $index  唯一字段名称，一般是主键id
+	 * @param array $values 必须包含$index字段
+	 * @param string $index  唯一字段名称，一般是主键id
 	 * @return int
 	 */
 	public function updateBatch($table, array $values, $index) {
@@ -1045,7 +1052,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		return $this->_protectIdentifier($this->_checkPrefix($from)) . $as;
 	}
 
-	private function _compileJoin($table, $on, $type = '', $leftWrap = '', $rightWrap = '', $as = '') {
+	private function _compileJoin($table, $on, $type = '') {
 		if (is_array($table)) {
 			$this->_asTable[current($table)] = 1;
 			$table = $this->_protectIdentifier($this->_checkPrefix(key($table))) . ' AS ' . $this->_protectIdentifier(current($table)) . ' ';
@@ -1072,11 +1079,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 			$right = $this->_protectIdentifier($right);
 		}
 		$on = $left . ' = ' . $right;
-		if ($as) {
-			$this->_asTable[$as] = 1;
-			$as = ' AS ' . $this->_protectIdentifier($as);
-		}
-		return $leftWrap . ' ' . $type . ' JOIN ' . $table . ' ON ' . $on . ' ' . $rightWrap . ' ' . $as . ' ';
+		return ' ' . $type . ' JOIN ' . $table . ' ON ' . $on . ' ';
 	}
 
 	private function _checkPrefix($str) {
@@ -1103,15 +1106,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 	}
 
 	private function _getFrom() {
-		$firstJoin = array_shift($this->arJoin);
-		$leftWrap = '';
-		$_firstJoin = '';
-		if (!empty($firstJoin)) {
-			$leftWrap = $firstJoin[3];
-			$_firstJoin = call_user_func_array(array($this, '_compileJoin'), $firstJoin);
-		}
-		$_firstJoin = $leftWrap ? substr(ltrim($_firstJoin), strlen($leftWrap)) : $_firstJoin;
-		$table = $leftWrap . ' ' . call_user_func_array(array($this, '_compileFrom'), $this->arFrom) . ' ' . $_firstJoin;
+		$table = ' ' . call_user_func_array(array($this, '_compileFrom'), $this->arFrom) . ' ';
 		foreach ($this->arJoin as $join) {
 			$table.=call_user_func_array(array($this, '_compileJoin'), $join);
 		}
