@@ -73,7 +73,7 @@ class testDbSqlite extends UnitTestCase {
 		$this->clean();
 	}
 
-//
+
 	public function testDelete() {
 		$this->init();
 		$this->db->insert('a', array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000)))->execute();
