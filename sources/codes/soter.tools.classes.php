@@ -1301,7 +1301,7 @@ class Soter_Data_Checker {
 									$_args = array($_v);
 								}
 							}
-							$_v = self::callFunc($func, $_args);
+							$_v = self::call($func, $_args);
 						}
 						$return_data[$col] = $_v;
 					}
@@ -1327,18 +1327,18 @@ class Soter_Data_Checker {
 	 * 调用一个方法或者函数(无论方法是静态还是动态，是私有还是保护还是公有的都可以调用)
 	 * 所有示例：
 	 * 1.调用类的静态方法
-	 * $ret=$this->callFunc('UserModel::encodePassword', $args);
+	 * $ret=$this->call('UserModel::encodePassword', $args);
 	 * 2.调用类的方法
-	 * $ret=$this->callFunc(array('UserModel','checkPassword), $args);
+	 * $ret=$this->call(array('UserModel','checkPassword), $args);
 	 * 3.调用用户自定义方法
-	 * $ret=$this->callFunc('cleanJs', $args);
+	 * $ret=$this->call('cleanJs', $args);
 	 * 4.调用系统函数
-	 * $ret=$this->callFunc('var_dump', $args);
+	 * $ret=$this->call('var_dump', $args);
 	 * @param type $func
 	 * @param type $args
 	 * @return boolean
 	 */
-	public static function callFunc($func, $args) {
+	public static function call($func, $args) {
 		if (is_array($func)) {
 			return self::callMethod($func, $args);
 		} elseif (function_exists($func)) {
@@ -1544,7 +1544,7 @@ class Soter_Data_Checker {
 						$_args = isset($_args[0]) ? array($_args[0]) : array();
 					}
 				}
-				return self::callFunc($_rule, $_args);
+				return self::call($_rule, $_args);
 		}
 		return false;
 	}

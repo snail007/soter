@@ -332,7 +332,7 @@ abstract class Soter_Database {
 			$this->_displayError($e);
 		}
 		if (empty($this->connectionSlaves) && !empty($this->connectionMasters)) {
-			$this->connectionSlaves[0] = current($this->connectionMasters);
+			$this->connectionSlaves[0] = $this->connectionMasters[array_rand($this->connectionMasters)];
 		}
 		if (!empty($this->connectionMasters)) {
 			reset($this->connectionMasters);
