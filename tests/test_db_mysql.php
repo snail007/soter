@@ -106,6 +106,7 @@ class testDbMysql extends UnitTestCase {
 		$this->db->insertBatch('a', $data);
 		$this->assertEqual($this->db->execute(), 3);
 		$firstId = $this->db->lastId();
+		$this->assertEqual($firstId, 1);
 		$updata[] = array('id' => $firstId, 'name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000));
 		$updata[] = array('id' => ++$firstId, 'name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000));
 		$updata[] = array('id' => ++$firstId, 'name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000));
