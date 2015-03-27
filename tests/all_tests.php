@@ -1,40 +1,39 @@
 <?php
-
-define('IN_ALL_TESTS', true);
-require_once 'pluginfortest.php';
-require_once('simpletest/autorun.php');
-
-
-/**
- * MicroPHP
- *
- * An open source application development framework for PHP 5.2.0 or newer
- *
- * @package                MicroPHP
- * @author                 狂奔的蜗牛
- * @email                  672308444@163.com
- * @copyright              Copyright (c) 2013 - 2013, 狂奔的蜗牛, Inc.
- * @link                   http://git.oschina.net/snail/microphp
- * @since                  Version 1.0
- * @createdtime            2013-11-17 17:53:59
- */
-class AllTests extends TestSuite {
-
-    public function AllTests() {
-        $ignore_list = array();
-        $this->TestSuite('All tests');
-        $dir = dir(dirname(__FILE__));
-        while ($file = $dir->read()) {
-            if (stripos($file, 'test_') === 0) {
-                if (!in_array($file, $ignore_list)) {
-                    echo "<b style='color:darkgreen'>$file</b><br/>";
-                    $this->addFile($file);
-                } else {
-                    echo "ignore:$file<br/>";
-                }
-            }
-        }
-        $dir->close();
-    }
-
+$files = array();
+$ignore_list = array();
+$dir = dir(dirname(__FILE__));
+while ($file = $dir->read()) {
+	if (stripos($file, 'test_') === 0) {
+		if (!in_array($file, $ignore_list)) {
+			//echo "<b style='color:darkgreen'>$file</b><br/>";
+			//$this->addFile($file);
+			$files[] = $file;
+		} else {
+			//echo "ignore:$file<br/>";
+		}
+	}
 }
+$dir->close();
+echo '<script>var files=' . json_encode($files) . ';</script>';
+?>
+<script src="jq.js"></script>
+<div id="output"></div>
+<script>
+	$(function () {
+		function doTest() {
+			var $url = files.pop();
+			$('#testing').remove();
+			if ($url) {
+				$('#output').prepend('<div id="testing">testing ' + $url + '</div>');
+				$.get($url, function (data) {
+					$('#output').prepend(data);
+					doTest();
+				});
+			} else {
+				$('#output').prepend('<div style="font-weight:bold;font-size:2em;color:green;">testing done</div>');
+
+			}
+		}
+		doTest();
+	});
+</script>

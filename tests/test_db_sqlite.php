@@ -20,7 +20,7 @@ class testDbSqlite extends UnitTestCase {
 
 	public function tearDown() {
 		parent::tearDown();
-		unlink('test.sqlite3');
+		@unlink('test.sqlite3');
 	}
 
 	public function init() {

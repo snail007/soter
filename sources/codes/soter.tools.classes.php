@@ -1095,15 +1095,19 @@ class Soter_Cache_File implements Soter_Cache {
 	}
 
 	private function pack($userData, $cacheTime) {
+		$cacheTime=(int)$cacheTime;
 		return @serialize(array(
 			    'userData' => $userData,
-			    'expireTime' => time() + $cacheTime
+			    'expireTime' => ($cacheTime == 0 ? 0 : time() + $cacheTime)
 		));
 	}
 
 	private function unpack($cacheData) {
 		$cacheData = @unserialize($cacheData);
 		if (is_array($cacheData) && isset($cacheData['userData']) && isset($cacheData['expireTime'])) {
+			if ($cacheData['expireTime'] == 0) {
+				return $cacheData['userData'];
+			}
 			return $cacheData['expireTime'] > time() ? $cacheData['userData'] : NULL;
 		} else {
 			return NULL;

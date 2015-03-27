@@ -485,6 +485,11 @@ class Sr {
 		return $xssClean ? self::xssClean($value) : $value;
 	}
 
+	static function session($key = null, $default = null, $xssClean = false) {
+		$value = is_null($key) ? $_SESSION : self::arrayGet($_SESSION, $key, $default);
+		return $xssClean ? self::xssClean($value) : $value;
+	}
+
 	static function server($key = null, $default = null) {
 		return is_null($key) ? $_SERVER : self::arrayGet($_SERVER, strtoupper($key), $default);
 	}
