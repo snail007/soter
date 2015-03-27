@@ -70,7 +70,15 @@ abstract class Soter_Database {
 	;
 
 	public function lastId() {
-		return $this->_lastInsertId;
+		if (strtolower($this->getDriverType()) == 'sqlite') {
+			//sqlite3的insertBatch是模拟的，
+			//返回的最后插入id是这个批次最后一条记录的id，
+			//而不是这个批次第一条记录的id，应该是这个批次第一条记录的id
+			//这里通过计算得到这个批次第一条记录的id
+			return $this->_lastInsertBatchCount > 1 ? ($this->_lastInsertId - $this->_lastInsertBatchCount + 1) : $this->_lastInsertId;
+		} else {
+			return $this->_lastInsertId;
+		}
 	}
 
 	public function error() {
@@ -315,7 +323,7 @@ abstract class Soter_Database {
 						$options[PDO::ATTR_PERSISTENT] = $this->getPconnect();
 						if (strtolower($this->getDriverType()) == 'mysql') {
 							$options[PDO::MYSQL_ATTR_INIT_COMMAND] = 'SET NAMES ' . $this->getCharset() . ' COLLATE ' . $this->getCollate();
-							$options[PDO::ATTR_EMULATE_PREPARES] = empty($slaves) && count($masters) == 1;
+							$options[PDO::ATTR_EMULATE_PREPARES] = empty($slaves) && (count($masters) == 1);
 							$dsn = 'mysql:host=' . $config['hostname'] . ';port=' . $config['port'] . ';dbname=' . $this->getDatabase() . ';charset=' . $this->getCharset();
 							$connections[$key] = new Soter_PDO($dsn, $config['username'], $config['password'], $options);
 							$connections[$key]->exec('SET NAMES ' . $this->getCharset());
@@ -334,13 +342,6 @@ abstract class Soter_Database {
 		if (empty($this->connectionSlaves) && !empty($this->connectionMasters)) {
 			$this->connectionSlaves[0] = $this->connectionMasters[array_rand($this->connectionMasters)];
 		}
-		if (!empty($this->connectionMasters)) {
-			reset($this->connectionMasters);
-		}
-		if (!empty($this->connectionSlaves)) {
-			reset($this->connectionSlaves);
-		}
-
 		return !(empty($this->connectionMasters) && empty($this->connectionSlaves));
 	}
 
@@ -595,6 +596,8 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		, $_asColumn
 		, $_values
 		, $_sqlType
+	;
+	protected $_lastInsertBatchCount = 0
 
 	;
 
@@ -679,6 +682,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 	public function insert($table, array $data) {
 		$this->_sqlType = 'insert';
 		$this->arInsert = $data;
+		$this->_lastInsertBatchCount = 0;
 		$this->from($table);
 		return $this;
 	}
@@ -707,6 +711,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 	public function insertBatch($table, array $data) {
 		$this->_sqlType = 'insertBatch';
 		$this->arInsertBatch = $data;
+		$this->_lastInsertBatchCount = count($data);
 		$this->from($table);
 		return $this;
 	}

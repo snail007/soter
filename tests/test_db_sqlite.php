@@ -24,7 +24,6 @@ class testDbSqlite extends UnitTestCase {
 	}
 
 	public function init() {
-		Sr::createSqlite3Database('test.sqlite3');
 		$config = array(
 		    'driverType' => 'sqlite',
 		    'debug' => true,
@@ -70,9 +69,21 @@ class testDbSqlite extends UnitTestCase {
 		$data[] = array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000));
 		$this->db->insertBatch('a', $data);
 		$this->assertEqual($this->db->execute(), 3);
+		$this->assertEqual($this->db->lastId(), 1);
+		$this->clean();
+		
+		$this->init();
+		$data2[] = array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000));
+		$this->db->insertBatch('a', $data2);
+		$this->assertEqual($this->db->execute(), 1);
+		$this->assertEqual($this->db->lastId(), 1);
+		$this->db->insert('a', array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000)));
+		$this->assertEqual($this->db->execute(), 1);
+		$this->assertEqual($this->db->lastId(), 2);
+		$this->db->insertBatch('a', $data)->execute();
+		$this->assertEqual($this->db->lastId(), 3);
 		$this->clean();
 	}
-
 
 	public function testDelete() {
 		$this->init();
@@ -93,13 +104,9 @@ class testDbSqlite extends UnitTestCase {
 		$data[] = array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000));
 		$data[] = array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000));
 		$data[] = array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000));
-		$firstId = 0;
-		foreach ($data as $key => $value) {
-			$this->assertEqual($this->db->insert('a', $value)->execute(), 1);
-			if (!$firstId) {
-				$firstId = $this->db->lastId();
-			}
-		}
+		$this->db->insertBatch('a', $data);
+		$this->assertEqual($this->db->execute(), 3);
+		$firstId = $this->db->lastId();
 		$updata[] = array('id' => $firstId, 'name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000));
 		$updata[] = array('id' => ++$firstId, 'name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000));
 		$updata[] = array('id' => ++$firstId, 'name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000));
