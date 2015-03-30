@@ -19,13 +19,13 @@ return array(
 	'tablePrefix' => '',
 	'tablePrefixSqlIdentifier' => '_tablePrefix_',
 	//是否开启慢查询记录
-	'slowQueryDebug' => true,
-	'slowQueryTime' => 3000, //单位毫秒，1秒=1000毫秒
+	'slowQueryDebug' => false,
+	'slowQueryTime' => 3000, //慢查询最小时间,单位毫秒，1秒=1000毫秒
 	'slowQueryHandle' => new Soter_Database_SlowQuery_Handle_Default(),
 	/**
 	 * 是否开启没有满足设置的索引类型的查询记录
 	 */
-	'indexDebug' => true,
+	'indexDebug' => false,
 	/**
 	 * 索引使用的最小情况，只有小于最小情况的时候才会记录sql到日志
 	 * minIndexType值从好到坏依次是:

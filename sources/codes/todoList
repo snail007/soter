@@ -4,8 +4,13 @@
 -> 便捷输出的设计
 -> 视图设计
 -> Controller父类设计
--> 各种缓存无缝切换设计（memcache redis mongodb file apc）
+-> 各种缓存无缝切换设计（memcache memcached redis mongodb file apc）
    1.file文件缓存 
+   2.memcache文件缓存 
+   3.memcached文件缓存 
+   4.redis文件缓存 
+   5.mongodb文件缓存 
+   6.apc文件缓存 
    
 -> session托管（memcache redis mysql）
 -> 命令行各种代码生成器[表beans，view，Dao层，控制器，task]

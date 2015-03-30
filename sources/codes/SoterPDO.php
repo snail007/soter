@@ -1009,6 +1009,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 			$leftWrap = '';
 		}
 		foreach ($where as $key => $value) {
+			$key = trim($key);
 			$_key = explode(' ', $key, 2);
 			$op = count($_key) == 2 ? $_key[1] : '';
 			$key = explode('.', $_key[0]);
@@ -1177,7 +1178,10 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 
 class Soter_Database_Resultset {
 
-	private $_resultSet = array();
+	private $_resultSet = array(),
+		$_rowsKey = ''
+
+	;
 
 	public function __construct($resultSet) {
 		$this->_resultSet = $resultSet;
@@ -1188,14 +1192,32 @@ class Soter_Database_Resultset {
 	}
 
 	public function rows($isAssoc = true) {
-		if ($isAssoc) {
-			return $this->_resultSet;
-		} else {
-			$rows = array();
-			foreach ($this->_resultSet as $row) {
-				$rows[] = array_values($row);
+		$key = $this->_rowsKey;
+		$this->_rowsKey = '';
+		if ($key) {
+			if ($isAssoc) {
+				$rows = array();
+				foreach ($this->_resultSet as $row) {
+					$rows[$row[$key]] = $row;
+				}
+				return $rows;
+			} else {
+				$rows = array();
+				foreach ($this->_resultSet as $row) {
+					$rows[$row[$key]] = array_values($row);
+				}
+				return $rows;
 			}
-			return $rows;
+		} else {
+			if ($isAssoc) {
+				return $this->_resultSet;
+			} else {
+				$rows = array();
+				foreach ($this->_resultSet as $row) {
+					$rows[] = array_values($row);
+				}
+				return $rows;
+			}
 		}
 	}
 
@@ -1208,7 +1230,7 @@ class Soter_Database_Resultset {
 		}
 	}
 
-	public function keys($columnName = null) {
+	public function values($columnName = null) {
 		$columns = array();
 		foreach ($this->_resultSet as $row) {
 			if (isset($row[$columnName])) {
@@ -1220,9 +1242,14 @@ class Soter_Database_Resultset {
 		return $columns;
 	}
 
-	public function key($columnName = null, $default = null, $index = null) {
+	public function value($columnName = null, $default = null, $index = null) {
 		$row = $this->row($index);
 		return ($columnName && isset($row[$columnName])) ? $row[$columnName] : $default;
+	}
+
+	public function key($columnName) {
+		$this->_rowsKey = $columnName;
+		return $this;
 	}
 
 }

@@ -714,7 +714,7 @@ class Sr {
 	 * @param type $group  数据库配置里面的组名称，默认是default组。也可以是一个数据库组配置的数组
 	 * @return \Soter_Database_ActiveRecord
 	 */
-	public static function &db($group = 'default') {
+	public static function &db($group = '') {
 		static $instances = array();
 		if (is_array($group)) {
 			ksort($group);
@@ -724,6 +724,10 @@ class Sr {
 			}
 			return $instances[$key];
 		} else {
+			if(empty($group)){
+				$config = self::config()->getDatabseConfig();
+				$group=$config['default_group'];
+			}
 			if (!isset($instances[$group])) {
 				$config = self::config()->getDatabseConfig($group);
 				$instances[$group] = new Soter_Database_ActiveRecord($config);
@@ -801,6 +805,7 @@ class Sr {
 		if ($includeSelf) {
 			rmdir($dirPath);
 		}
+		return true;
 	}
 
 }

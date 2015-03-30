@@ -70,7 +70,7 @@ class testDbMysql extends UnitTestCase {
 		$this->assertEqual($this->db->execute(), 3);
 		$this->assertEqual($this->db->lastId(), 1);
 		$this->clean();
-		
+
 		$this->init();
 		$data2[] = array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000));
 		$this->db->insertBatch('a', $data2);
@@ -170,8 +170,8 @@ class testDbMysql extends UnitTestCase {
 			->limit(0, 2)
 			->execute();
 		$this->assertEqual($rs->total(), 2);
-		$this->assertEqual($rs->key('id'), 3);
-		$this->assertEqual(count($rs->keys('id')), 2);
+		$this->assertEqual($rs->value('id'), 3);
+		$this->assertEqual(count($rs->values('id')), 2);
 		$this->clean();
 	}
 
@@ -179,7 +179,7 @@ class testDbMysql extends UnitTestCase {
 		$this->init();
 		try {
 			$this->db->begin();
-			$datac=array();
+			$datac = array();
 			$datac[] = array('cname' => 'cname' . rand(1000, 10000));
 			$datac[] = array('cname' => 'cname' . rand(1000, 10000));
 			$datac[] = array('cname' => 'cname' . rand(1000, 10000));
@@ -191,11 +191,11 @@ class testDbMysql extends UnitTestCase {
 			$this->db->rollback();
 			$this->assertEqual($this->db->from('c')->execute()->total(), 0);
 		}
-		
+
 		$this->init();
 		try {
 			$this->db->begin();
-			$datac=array();
+			$datac = array();
 			$datac[] = array('cname' => 'cname' . rand(1000, 10000));
 			$datac[] = array('cname' => 'cname' . rand(1000, 10000));
 			$datac[] = array('cname' => 'cname' . rand(1000, 10000));
@@ -208,6 +208,16 @@ class testDbMysql extends UnitTestCase {
 			//不应该会到这里
 			$this->assertTrue(false);
 		}
+		$this->clean();
+	}
+
+	public function testKey() {
+		$this->init();
+		$this->db->insert('a', array('id' => 5, 'name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000)));
+		$this->assertEqual($this->db->execute(), 1);
+		$rows = $this->db->from('a')->execute()->key('id')->rows();
+		$key = key($rows);
+		$this->assertEqual($key, 5);
 		$this->clean();
 	}
 

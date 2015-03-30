@@ -71,7 +71,7 @@ class testDbSqlite extends UnitTestCase {
 		$this->assertEqual($this->db->execute(), 3);
 		$this->assertEqual($this->db->lastId(), 1);
 		$this->clean();
-		
+
 		$this->init();
 		$data2[] = array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000));
 		$this->db->insertBatch('a', $data2);
@@ -171,8 +171,8 @@ class testDbSqlite extends UnitTestCase {
 			->limit(0, 2)
 			->execute();
 		$this->assertEqual($rs->total(), 2);
-		$this->assertEqual($rs->key('id'), 3);
-		$this->assertEqual(count($rs->keys('id')), 2);
+		$this->assertEqual($rs->value('id'), 3);
+		$this->assertEqual(count($rs->values('id')), 2);
 		$this->clean();
 	}
 
@@ -203,6 +203,16 @@ class testDbSqlite extends UnitTestCase {
 			//不应该会到这里
 			$this->assertTrue(false);
 		}
+		$this->clean();
+	}
+
+	public function testKey() {
+		$this->init();
+		$this->db->insert('a', array('id' => 5, 'name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000)));
+		$this->assertEqual($this->db->execute(), 1);
+		$rows = $this->db->from('a')->execute()->key('id')->rows();
+		$key = key($rows);
+		$this->assertEqual($key, 5);
 		$this->clean();
 	}
 

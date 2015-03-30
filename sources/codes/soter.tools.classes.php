@@ -290,7 +290,7 @@ class Soter_Config {
 			$config = Sr::config($this->databseConfigFileName);
 			$this->databseConfig = is_array($config) ? $config : array();
 		}
-		if (is_null($group)) {
+		if (empty($group)) {
 			return $this->databseConfig;
 		} else {
 			return isset($this->databseConfig[$group]) ? $this->databseConfig[$group] : array();
@@ -1115,18 +1115,19 @@ class Soter_Cache_File implements Soter_Cache {
 	}
 
 	public function clean() {
-		Sr::rmdir($this->_cacheDirPath, false);
+		return Sr::rmdir($this->_cacheDirPath, false);
 	}
 
 	public function delete($key) {
 		if (empty($key)) {
-			return;
+			return false;
 		}
 		$key = $this->_hashKey($key);
 		$filePath = $this->_hashKeyPath($key) . $key;
 		if (file_exists($filePath)) {
-			@unlink($filePath);
+			return @unlink($filePath);
 		}
+		return true;
 	}
 
 	/**
