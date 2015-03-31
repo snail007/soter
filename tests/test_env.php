@@ -9,8 +9,7 @@ class TestEnv extends UnitTestCase {
 
 	public function testC() {
 		 
-		$where=array('id >'=>100);
-		echo Sr::db()->delete('a',$where);
+		
 	
 	}
 
