@@ -35,6 +35,12 @@ class testDbMysql extends UnitTestCase {
 			)
 		    ),
 		    'slaves' => array(
+			array(
+			    'hostname' => '127.0.0.1',
+			    'port' => 3306,
+			    'username' => 'root',
+			    'password' => 'admin'
+			)
 		    )
 		);
 		$this->db = new Soter_Database_ActiveRecord($config);
@@ -166,16 +172,16 @@ class testDbMysql extends UnitTestCase {
 		$this->assertEqual($rs->total(), 2);
 		$this->assertEqual($rs->value('id'), 3);
 		$this->assertEqual(count($rs->values('id')), 2);
-
-
+		
+		
 		$this->db->insert('c', array('cname' => 'cname1'))->execute();
-		$rs = $this->db->select('count(' . $this->db->wrap('id') . ') as total,id')->from('c')
+		$rs = $this->db->select('count('.$this->db->wrap('id').') as total,id')->from('c')
 			->groupBy('cname')
-			->having(array('total >=' => 1))
+			->having(array('total >='=>1))
 			->orderBy('total', 'desc')
 			->execute();
-
-		$this->assertEqual($rs->total(), 3);
+		
+		$this->assertEqual($rs->total(),3);
 		$this->assertEqual($rs->value('total'), 2);
 		$this->assertEqual(count($rs->values('total')), 3);
 		$this->clean();
@@ -232,9 +238,9 @@ class testDbMysql extends UnitTestCase {
 		$this->db->lock();
 		$this->db->insert('a', array('id' => 5, 'name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000)));
 		$this->assertEqual($this->db->execute(), 1);
-		$db1 = $this->db->getLastPdoInstance();
+		$db1=  $this->db->getLastPdoInstance();
 		$rows = $this->db->from('a')->execute()->key('id')->rows();
-		$db2 = $this->db->getLastPdoInstance();
+		$db2=  $this->db->getLastPdoInstance();
 		$this->assertReference($db2, $db1);
 		$key = key($rows);
 		$this->assertEqual($key, 5);
