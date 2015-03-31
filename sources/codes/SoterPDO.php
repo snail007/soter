@@ -5,7 +5,7 @@
  */
 class Soter_PDO extends PDO {
 
-	protected $transactionCount = 0;
+	protected $transactionCounter = 0;
 	private $isLast;
 
 	public function isInTransaction() {
@@ -61,13 +61,48 @@ abstract class Soter_Database {
 		$connectionSlaves,
 		$_errorMsg,
 		$_lastSql,
+		$_lastPdoInstance,
 		$_isInTransaction = false,
 		$_config,
 		$_lastInsertId = 0,
 		$_cacheTime = 0,
-		$_cacheKey
+		$_cacheKey,
+		$_masterPdo = null,
+		$_locked = false
 
 	;
+
+	public function __construct(Array $config = array()) {
+		$this->setConfig($config);
+	}
+
+	public function &getLastPdoInstance() {
+		return $this->_lastPdoInstance;
+	}
+
+	/**
+	 * 锁定数据库连接，后面的读写都使用同一个主数据库连接
+	 */
+	public function lock() {
+		$this->_locked = true;
+		return $this;
+	}
+
+	/**
+	 * 解锁数据库连接，后面的读写使用不同的数据库连接
+	 */
+	public function unlock() {
+		$this->_locked = false;
+		return $this;
+	}
+
+	/**
+	 * 数据库连接是否处于锁定状态
+	 * @return bool
+	 */
+	public function isLocked() {
+		return $this->_locked;
+	}
 
 	public function lastId() {
 		if (strtolower($this->getDriverType()) == 'sqlite') {
@@ -143,10 +178,6 @@ abstract class Soter_Database {
 		return $this;
 	}
 
-	public function __construct(Array $config = array()) {
-		$this->setConfig($config);
-	}
-
 	public function getConfig() {
 		return $this->_config;
 	}
@@ -161,8 +192,11 @@ abstract class Soter_Database {
 		$this->_lastSql = '';
 		$this->_isInTransaction = false;
 		$this->_lastInsertId = 0;
+		$this->_lastPdoInstance = NULL;
 		$this->_cacheKey = '';
 		$this->_cacheTime = 0;
+		$this->_masterPdo = '';
+		$this->_locked = false;
 	}
 
 	public function getDriverType() {
@@ -300,6 +334,14 @@ abstract class Soter_Database {
 		);
 	}
 
+	private function _isSqlite() {
+		return strtolower($this->getDriverType()) == 'sqlite';
+	}
+
+	private function _isMysql() {
+		return strtolower($this->getDriverType()) == 'mysql';
+	}
+
 	private function _init() {
 		$info = array(
 		    'master' => array(
@@ -321,37 +363,40 @@ abstract class Soter_Database {
 					if (!isset($connections[$key])) {
 						$options[PDO::ATTR_ERRMODE] = PDO::ERRMODE_EXCEPTION;
 						$options[PDO::ATTR_PERSISTENT] = $this->getPconnect();
-						if (strtolower($this->getDriverType()) == 'mysql') {
+						if ($this->_isMysql()) {
 							$options[PDO::MYSQL_ATTR_INIT_COMMAND] = 'SET NAMES ' . $this->getCharset() . ' COLLATE ' . $this->getCollate();
 							$options[PDO::ATTR_EMULATE_PREPARES] = empty($slaves) && (count($masters) == 1);
 							$dsn = 'mysql:host=' . $config['hostname'] . ';port=' . $config['port'] . ';dbname=' . $this->getDatabase() . ';charset=' . $this->getCharset();
 							$connections[$key] = new Soter_PDO($dsn, $config['username'], $config['password'], $options);
 							$connections[$key]->exec('SET NAMES ' . $this->getCharset());
-						} elseif (strtolower($this->getDriverType()) == 'sqlite') {
-							if (!file_exists($config['hostname'])) {
-								$this->_displayError('sqlite3 database file [' . Sr::realPath($config['hostname']) . '] not found');
+						} elseif ($this->_isSqlite()) {
+							if (!file_exists($this->getDatabase())) {
+								$this->_displayError('sqlite3 database file [' . Sr::realPath($this->getDatabase()) . '] not found');
 							}
-							$connections[$key] = new Soter_PDO('sqlite:' . $config['hostname'], null, null, $options);
+							$connections[$key] = new Soter_PDO('sqlite:' . $this->getDatabase(), null, null, $options);
+						} else {
+							throw new Soter_Exception_Database('unknown driverType [ ' . $this->getDriverType() . ' ]');
 						}
 					}
 				}
 			}
+			if (empty($this->connectionSlaves) && !empty($this->connectionMasters)) {
+				$this->connectionSlaves[0] = $this->connectionMasters[array_rand($this->connectionMasters)];
+			}
+			if (empty($this->_masterPdo) && !empty($this->connectionMasters)) {
+				$this->_masterPdo = $this->connectionMasters[array_rand($this->connectionMasters)];
+			}
+			return !(empty($this->connectionMasters) && empty($this->connectionSlaves));
 		} catch (Exception $e) {
 			$this->_displayError($e);
 		}
-		if (empty($this->connectionSlaves) && !empty($this->connectionMasters)) {
-			$this->connectionSlaves[0] = $this->connectionMasters[array_rand($this->connectionMasters)];
-		}
-		return !(empty($this->connectionMasters) && empty($this->connectionSlaves));
 	}
 
 	public function begin() {
 		if (!$this->_init()) {
 			return FALSE;
 		}
-		foreach ($this->connectionMasters as &$pdo) {
-			$pdo->beginTransaction();
-		}
+		$this->_masterPdo->beginTransaction();
 		$this->_isInTransaction = TRUE;
 	}
 
@@ -359,19 +404,15 @@ abstract class Soter_Database {
 		if (!$this->_init()) {
 			return FALSE;
 		}
-		foreach ($this->connectionMasters as &$pdo) {
-			$pdo->commit();
-			$this->_isInTransaction = !$pdo->isInTransaction();
-		}
+		$this->_masterPdo->commit();
+		$this->_isInTransaction = $this->_masterPdo->isInTransaction();
 	}
 
 	public function rollback() {
 		if (!$this->_init()) {
 			return FALSE;
 		}
-		foreach ($this->connectionMasters as &$pdo) {
-			$pdo->rollback();
-		}
+		$this->_masterPdo->rollback();
 	}
 
 	public function cache($cacheTime, $cacheKey = '') {
@@ -421,59 +462,49 @@ abstract class Soter_Database {
 		$isWriteInsertType = $this->_isWriteInsertType($sql);
 		$return = false;
 		try {
-			//事务模式，使用主数据库组进行写和读
 			if ($this->_isInTransaction) {
-				$pdoArr = &$this->connectionMasters;
-				foreach ($pdoArr as &$pdo) {
+				//事务模式
+				$pdo = &$this->_masterPdo; //使用一个固定的随机的主数据库，init方法里面被初始化一次
+				$this->_lastPdoInstance = &$pdo;
+				if ($sth = $pdo->prepare($sql)) {
 					if ($isWriteType) {
-						if ($sth = $pdo->prepare($sql)) {
-							$status = $sth->execute($values);
-							$return = $isWritetRowsType ? $sth->rowCount() : $status;
-							$this->_lastInsertId = $isWriteInsertType ? $pdo->lastInsertId() : 0;
-						} else {
-							$errorInfo = $sth->errorInfo();
-							$this->_displayError($errorInfo[2], $errorInfo[1]);
-						}
+						$status = $sth->execute($values);
+						$return = $isWritetRowsType ? $sth->rowCount() : $status;
+						$this->_lastInsertId = $isWriteInsertType ? $pdo->lastInsertId() : 0;
 					} else {
-						$key = array_rand($this->connectionSlaves);
-						$pdo = &$this->connectionSlaves[$key];
-						if ($sth = $pdo->prepare($sql)) {
-							$return = $sth->execute($this->_getValues()) ? $sth->fetchAll(PDO::FETCH_ASSOC) : array();
-							$return = new Soter_Database_Resultset($return);
-						} else {
-							$errorInfo = $sth->errorInfo();
-							$this->_displayError($errorInfo[2], $errorInfo[1]);
-						}
-					}
-				}
-			} else {
-				//非事务模式，使用主数据库组进行写，随机选择一个从数据库进行读
-				if ($isWriteType) {
-					$pdoArr = &$this->connectionMasters;
-				} else {
-					$pdoArr = &$this->connectionSlaves;
-				}
-				if ($isWriteType) {
-					foreach ($pdoArr as &$pdo) {
-						if ($sth = $pdo->prepare($sql)) {
-							$status = $sth->execute($values);
-							$return = $isWritetRowsType ? $sth->rowCount() : $status;
-							$this->_lastInsertId = $isWriteInsertType ? $pdo->lastInsertId() : 0;
-						} else {
-							$errorInfo = $sth->errorInfo();
-							$this->_displayError($errorInfo[2], $errorInfo[1]);
-						}
-					}
-				} else {
-					$key = array_rand($this->connectionSlaves);
-					$pdo = &$this->connectionSlaves[$key];
-					if ($sth = $pdo->prepare($sql)) {
 						$return = $sth->execute($this->_getValues()) ? $sth->fetchAll(PDO::FETCH_ASSOC) : array();
 						$return = new Soter_Database_Resultset($return);
-					} else {
-						$errorInfo = $sth->errorInfo();
-						$this->_displayError($errorInfo[2], $errorInfo[1]);
 					}
+				} else {
+					$errorInfo = $pdo->errorInfo();
+					$this->_displayError($errorInfo[2], $errorInfo[1]);
+				}
+			} else {
+				//非事务模式
+				if ($this->isLocked()) {
+					//锁定状态使用固定的一个主数据库
+					$pdo = $this->_masterPdo;
+				} else {
+					//非锁定状态，使用随机选择一个主数据库进行写，随机选择一个从数据库进行读
+					if ($isWriteType) {
+						$pdo = &$this->connectionMasters[array_rand($this->connectionMasters)];
+					} else {
+						$pdo = &$this->connectionSlaves[array_rand($this->connectionSlaves)];
+					}
+				}
+				$this->_lastPdoInstance = &$pdo;
+				if ($sth = $pdo->prepare($sql)) {
+					if ($isWriteType) {
+						$status = $sth->execute($values);
+						$return = $isWritetRowsType ? $sth->rowCount() : $status;
+						$this->_lastInsertId = $isWriteInsertType ? $pdo->lastInsertId() : 0;
+					} else {
+						$return = $sth->execute($this->_getValues()) ? $sth->fetchAll(PDO::FETCH_ASSOC) : array();
+						$return = new Soter_Database_Resultset($return);
+					}
+				} else {
+					$errorInfo = $pdo->errorInfo();
+					$this->_displayError($errorInfo[2], $errorInfo[1]);
 				}
 			}
 			//查询消耗的时间
@@ -664,7 +695,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		return $this;
 	}
 
-	public function having(Array $having, $leftWrap = 'AND', $rightWrap = '') {
+	public function having($having, $leftWrap = 'AND', $rightWrap = '') {
 		$this->arHaving[] = array($having, $leftWrap, $rightWrap, count($this->arHaving));
 		return $this;
 	}
@@ -1007,6 +1038,9 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		$_where = array();
 		if ($index == 0 && strtoupper(trim($leftWrap)) == 'AND') {
 			$leftWrap = '';
+		}
+		if(is_string($where)){
+			return ' ' . $leftWrap . ' ' . $where . $rightWrap . ' ';
 		}
 		foreach ($where as $key => $value) {
 			$key = trim($key);

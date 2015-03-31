@@ -30,19 +30,11 @@ class testDbSqlite extends UnitTestCase {
 		    'pconnect' => true,
 		    'tablePrefix' => 'test_',
 		    'tablePrefixSqlIdentifier' => '_tablePrefix_',
+		    'database' => 'test.sqlite3', //sqlite3数据库路径
 		    //是否开启慢查询记录
 		    'slowQueryDebug' => FALSE,
 		    'slowQueryTime' => 3000, //单位毫秒，1秒=1000毫秒
-		    'slowQueryHandle' => new Soter_Database_SlowQuery_Handle_Default(),
-		    'masters' => array(
-			'master01' => array(
-			    'hostname' => 'test.sqlite3', //sqlite3数据库路径
-			)
-		    ),
-		    'slaves' => array(
-//		    'slave01' => array(
-//		    )
-		    )
+		    'slowQueryHandle' => new Soter_Database_SlowQuery_Handle_Default()
 		);
 		$this->db = new Soter_Database_ActiveRecord($config);
 		$aSql = 'CREATE TABLE `test_a` (`id` INTEGER  PRIMARY KEY AUTOINCREMENT,`name` varchar(10) NOT NULL,`gid` int(11) NOT NULL)';
@@ -118,7 +110,7 @@ class testDbSqlite extends UnitTestCase {
 
 	public function testSelect() {
 		$this->init();
-		$datac[] = array('cname' => 'cname' . rand(1000, 10000));
+		$datac[] = array('cname' => 'cname1');
 		$datac[] = array('cname' => 'cname' . rand(1000, 10000));
 		$datac[] = array('cname' => 'cname' . rand(1000, 10000));
 		$this->db->insertBatch('c', $datac);
@@ -158,7 +150,7 @@ class testDbSqlite extends UnitTestCase {
 				->execute()->total(), 2);
 
 		$this->assertEqual($this->db->select('cname')->from('c')
-				->where(array('id <=' => 2, 'id !=' => 3), '(', ')')
+				->where(array('id <=' => 2, 'id <>' => 3), '(', ')')
 				->where(array('id >=' => 0))
 				->execute()->total(), 2);
 
@@ -173,6 +165,17 @@ class testDbSqlite extends UnitTestCase {
 		$this->assertEqual($rs->total(), 2);
 		$this->assertEqual($rs->value('id'), 3);
 		$this->assertEqual(count($rs->values('id')), 2);
+		
+		$this->db->insert('c', array('cname' => 'cname1'))->execute();
+		$rs = $this->db->select('count('.$this->db->wrap('id').') as total,id')->from('c')
+			->groupBy('cname')
+			->having('total >= 1')
+			->orderBy('total', 'desc')
+			->execute();
+		$this->assertEqual($rs->total(),3);
+		$this->assertEqual($rs->value('total'), 2);
+		$this->assertEqual(count($rs->values('total')), 3);
+		
 		$this->clean();
 	}
 
@@ -213,6 +216,22 @@ class testDbSqlite extends UnitTestCase {
 		$rows = $this->db->from('a')->execute()->key('id')->rows();
 		$key = key($rows);
 		$this->assertEqual($key, 5);
+		$this->clean();
+	}
+
+	public function testLock() {
+		$this->init();
+		$this->db->lock();
+		$this->db->insert('a', array('id' => 5, 'name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000)));
+		$this->assertEqual($this->db->execute(), 1);
+		$db1 = $this->db->getLastPdoInstance();
+		$rows = $this->db->from('a')->execute()->key('id')->rows();
+		$db2 = $this->db->getLastPdoInstance();
+		$this->assertReference($db2, $db1);
+		$key = key($rows);
+		$this->assertEqual($key, 5);
+		$this->assertEqual($this->db->isLocked(), true);
+		$this->db->unlock();
 		$this->clean();
 	}
 

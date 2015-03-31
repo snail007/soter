@@ -7,11 +7,11 @@ require_once('simpletest/browser.php');
 
 class TestEnv extends UnitTestCase {
 
-
-	public function clean() {
-		$this->assertTrue($this->db->execute('DROP TABLE if exists  test_a'));
-		$this->assertTrue($this->db->execute('DROP TABLE if exists  test_b'));
-		$this->assertTrue($this->db->execute('DROP TABLE if exists  test_c'));
+	public function testC() {
+		 
+		$where=array('id >'=>100);
+		echo Sr::db()->delete('a',$where);
+	
 	}
 
 	public function TestEnv1() {
