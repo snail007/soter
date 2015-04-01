@@ -104,19 +104,19 @@ class Soter_Default_Router_Get extends Soter_Router {
 		$query = end($uri);
 		parse_str($query, $get);
 		$controllerName = Sr::arrayGet($get, $config->getRouterUrlControllerKey(), '');
-		$hmvcMethodName = Sr::arrayGet($get, $config->getRouterUrlMethodKey(), '');
+		$methodName = Sr::arrayGet($get, $config->getRouterUrlMethodKey(), '');
 		$hmvcModuleName = Sr::arrayGet($get, $config->getRouterUrlModuleKey(), '');
 		//hmvc检测
 		$hmvcModuleDirName = Soter::checkHmvc($hmvcModuleName, false);
 		if ($controllerName) {
 			$controllerName = $config->getControllerDirName() . '_' . $controllerName;
 		}
-		if ($hmvcMethodName) {
-			$hmvcMethodName = $config->getMethodPrefix() . $hmvcMethodName;
+		if ($methodName) {
+			$methodName = $config->getMethodPrefix() . $methodName;
 		}
 		return $this->route->setHmvcModuleName($hmvcModuleName)
 				->setController($controllerName)
-				->setMethod($hmvcMethodName)
+				->setMethod($methodName)
 				->setFound($hmvcModuleDirName || $controllerName);
 	}
 
