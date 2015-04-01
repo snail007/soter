@@ -365,7 +365,7 @@ abstract class Soter_Database {
 						$options[PDO::ATTR_PERSISTENT] = $this->getPconnect();
 						if ($this->_isMysql()) {
 							$options[PDO::MYSQL_ATTR_INIT_COMMAND] = 'SET NAMES ' . $this->getCharset() . ' COLLATE ' . $this->getCollate();
-							$options[PDO::ATTR_EMULATE_PREPARES] = empty($slaves) && (count($masters) == 1);
+							$options[PDO::ATTR_EMULATE_PREPARES] = TRUE; //empty($slaves) && (count($masters) == 1);
 							$dsn = 'mysql:host=' . $config['hostname'] . ';port=' . $config['port'] . ';dbname=' . $this->getDatabase() . ';charset=' . $this->getCharset();
 							$connections[$key] = new Soter_PDO($dsn, $config['username'], $config['password'], $options);
 							$connections[$key]->exec('SET NAMES ' . $this->getCharset());
@@ -602,6 +602,10 @@ abstract class Soter_Database {
 				throw new Soter_Exception_Database($message . $sql, $code);
 			}
 		}
+	}
+
+	public function getSqlValues() {
+		return $this->_getValues();
 	}
 
 	public abstract function getSql();
@@ -1039,7 +1043,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		if ($index == 0 && strtoupper(trim($leftWrap)) == 'AND') {
 			$leftWrap = '';
 		}
-		if(is_string($where)){
+		if (is_string($where)) {
 			return ' ' . $leftWrap . ' ' . $where . $rightWrap . ' ';
 		}
 		foreach ($where as $key => $value) {
@@ -1264,7 +1268,7 @@ class Soter_Database_Resultset {
 		}
 	}
 
-	public function values($columnName = null) {
+	public function values($columnName) {
 		$columns = array();
 		foreach ($this->_resultSet as $row) {
 			if (isset($row[$columnName])) {
@@ -1276,7 +1280,7 @@ class Soter_Database_Resultset {
 		return $columns;
 	}
 
-	public function value($columnName = null, $default = null, $index = null) {
+	public function value($columnName, $default = null, $index = null) {
 		$row = $this->row($index);
 		return ($columnName && isset($row[$columnName])) ? $row[$columnName] : $default;
 	}
