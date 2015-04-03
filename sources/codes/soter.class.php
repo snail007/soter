@@ -136,7 +136,11 @@ class Soter {
 		if (!empty($hmvcModuleName)) {
 			self::checkHmvc($hmvcModuleName);
 		}
-		$taskName = Soter::getConfig()->getTaskDirName() . '_' . $task;
+		if (strpos($task, 'Soter_') === 0) {
+			$taskName = $task;
+		} else {
+			$taskName = Soter::getConfig()->getTaskDirName() . '_' . $task;
+		}
 		if (!class_exists($taskName)) {
 			throw new Soter_Exception_404('class [ ' . $taskName . ' ] not found');
 		}
@@ -724,9 +728,9 @@ class Sr {
 			}
 			return $instances[$key];
 		} else {
-			if(empty($group)){
+			if (empty($group)) {
 				$config = self::config()->getDatabseConfig();
-				$group=$config['default_group'];
+				$group = $config['default_group'];
 			}
 			if (!isset($instances[$group])) {
 				$config = self::config()->getDatabseConfig($group);

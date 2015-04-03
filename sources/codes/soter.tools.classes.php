@@ -89,7 +89,7 @@ class Soter_Route {
 		return $this;
 	}
 
-	public function setArgs($args) {
+	public function setArgs(array $args) {
 		$this->args = $args;
 		return $this;
 	}
@@ -1548,6 +1548,51 @@ class Soter_Data_Checker {
 				return self::call($_rule, $_args);
 		}
 		return false;
+	}
+
+}
+
+class Soter_Generator extends Soter_Task {
+
+	public function execute(Soter_CliArgs $args) {
+		$config = Sr::config();
+		$name = $args->get('name');
+		$type = $args->get('type');
+		$force = $args->get('overwrite');
+		if (empty($name)) {
+			exit('name required , please use : --name=<Name>');
+		}
+		if (empty($type)) {
+			exit('type required , please use : --type=<Type>');
+		}
+		$classesDir = $config->getPrimaryApplicationDir() . $config->getClassesDirName() . '/';
+		switch ($type) {
+			case 'controller':
+				$classname = $config->getControllerDirName() . '_' . $name;
+				$file = $classesDir . str_replace('_', '/', $classname) . '.php';
+				if (file_exists($file)) {
+					if ($force) {
+						$this->writeController($classname, $file);
+					} else {
+						exit('[ Error ]' . "\n" . 'Controller [ ' . $classname . ' ] already exists ' . "\n" . 'you can use --overwrite to overwrite the file.');
+					}
+				} else {
+					$this->writeController($classname, $file);
+				}
+				break;
+		}
+	}
+
+	private function writeController($classname, $file) {
+		$prefix=Sr::config()->getMethodPrefix();
+		$dir = dirname($file);
+		if (!is_dir($dir)) {
+			mkdir($dir, 0755, true);
+		}
+		$code = "<?php\nclass  {$classname} extends Soter_Controller {\n	public function {$prefix}index() {\n		\n	}\n}";
+		if (file_put_contents($file, $code)) {
+			echo "[ Successfull ]\nController [ $classname ] created successfully \n" . $file;
+		}
 	}
 
 }
