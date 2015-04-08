@@ -112,7 +112,7 @@
    6.生成Bean： (只支持mysql)
      php index.php --task=Soter_Generator_Mysql --type=bean --name=MyFirstBean --table=test
    提示：
-    1. 5和6数据连接使用的是默认组，如果要指定数据库配置组，可以使用参数--db=配置组名称,
+    1. 5和6数据连接使用的是默认组，表名称 --name不需要加前缀，如果要指定数据库配置组，可以使用参数--db=配置组名称,
         比如：--db=www_mysql
     2. 默认情况下当文件存在1-6的操作不再新建文件。可以使用参数 --overwrite 覆盖已经存在的文件
 -> Controller父类设计
