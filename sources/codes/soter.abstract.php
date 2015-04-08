@@ -9,10 +9,19 @@ abstract class Soter_Model {
 }
 
 abstract class Soter_Dao {
-	
+
+	public abstract function getTable();
+
+	public abstract function getPrimaryKey();
+
+	public abstract function getColumns();
 }
 
 abstract class Soter_Business {
+	
+}
+
+abstract class Soter_Bean {
 	
 }
 

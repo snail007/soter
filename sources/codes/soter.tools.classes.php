@@ -231,6 +231,7 @@ class Soter_Config {
 		$controllerDirName = 'Controller',
 		$businessDirName = 'Business',
 		$daoDirName = 'Dao',
+		$beanDirName = 'Bean',
 		$modelDirName = 'Model',
 		$taskDirName = 'Task',
 		$defaultController = 'Welcome',
@@ -449,6 +450,15 @@ class Soter_Config {
 
 	public function setModelDirName($modelDirName) {
 		$this->modelDirName = $modelDirName;
+		return $this;
+	}
+
+	public function getBeanDirName() {
+		return $this->beanDirName;
+	}
+
+	public function setBeanDirName($beanDirName) {
+		$this->beanDirName = $beanDirName;
 		return $this;
 	}
 
@@ -1566,33 +1576,181 @@ class Soter_Generator extends Soter_Task {
 			exit('type required , please use : --type=<Type>');
 		}
 		$classesDir = $config->getPrimaryApplicationDir() . $config->getClassesDirName() . '/';
-		switch ($type) {
-			case 'controller':
-				$classname = $config->getControllerDirName() . '_' . $name;
-				$file = $classesDir . str_replace('_', '/', $classname) . '.php';
-				if (file_exists($file)) {
-					if ($force) {
-						$this->writeController($classname, $file);
-					} else {
-						exit('[ Error ]' . "\n" . 'Controller [ ' . $classname . ' ] already exists ' . "\n" . 'you can use --overwrite to overwrite the file.');
-					}
-				} else {
-					$this->writeController($classname, $file);
-				}
-				break;
+		$info = array(
+		    'controller' => array(
+			'dir' => $config->getControllerDirName(),
+			'parentClass' => 'Soter_Controller',
+			'methodName' => Sr::config()->getMethodPrefix() . 'index()',
+			'nameTip' => 'Controller'
+		    ),
+		    'business' => array(
+			'dir' => $config->getBusinessDirName(),
+			'parentClass' => 'Soter_Business',
+			'methodName' => 'business()',
+			'nameTip' => 'Business'
+		    ),
+		    'model' => array(
+			'dir' => $config->getModelDirName(),
+			'parentClass' => 'Soter_Model',
+			'methodName' => 'model()',
+			'nameTip' => 'Model'
+		    ),
+		    'task' => array(
+			'dir' => $config->getTaskDirName(),
+			'parentClass' => 'Soter_Task',
+			'methodName' => 'execute(Soter_CliArgs $args)',
+			'nameTip' => 'Task'
+		    )
+		);
+		if (!isset($info[$type])) {
+			exit('[ Error ]' . "\n" . 'Type : [ ' . $type . ' ]');
+		}
+		$classname = $info[$type]['dir'] . '_' . $name;
+		$file = $classesDir . str_replace('_', '/', $classname) . '.php';
+		$method = $info[$type]['methodName'];
+		$parentClass = $info[$type]['parentClass'];
+		$tip = $info[$type]['nameTip'];
+		if (file_exists($file)) {
+			if ($force) {
+				$this->writeFile($classname, $method, $parentClass, $file, $tip);
+			} else {
+				exit('[ Error ]' . "\n" . $tip . ' [ ' . $classname . ' ] already exists ' . "\n" . 'you can use --overwrite to overwrite the file.');
+			}
+		} else {
+			$this->writeFile($classname, $method, $parentClass, $file, $tip);
 		}
 	}
 
-	private function writeController($classname, $file) {
-		$prefix=Sr::config()->getMethodPrefix();
+	private function writeFile($classname, $method, $parentClass, $file, $tip) {
 		$dir = dirname($file);
 		if (!is_dir($dir)) {
 			mkdir($dir, 0755, true);
 		}
-		$code = "<?php\nclass  {$classname} extends Soter_Controller {\n	public function {$prefix}index() {\n		\n	}\n}";
+		$code = "<?php\nclass  {$classname} extends {$parentClass} {\n	public function {$method} {\n		\n	}\n}";
 		if (file_put_contents($file, $code)) {
-			echo "[ Successfull ]\nController [ $classname ] created successfully \n" . $file;
+			echo "[ Successfull ]\n{$tip} [ $classname ] created successfully \n" . $file;
 		}
+	}
+
+}
+
+class Soter_Generator_Mysql extends Soter_Task {
+
+	public function execute(Soter_CliArgs $args) {
+		$config = Sr::config();
+		$name = $args->get('name');
+		$type = $args->get('type');
+		$force = $args->get('overwrite');
+		$table = $args->get('table');
+		$dbGroup = $args->get('db');
+		if (empty($name)) {
+			exit('name required , please use : --name=<Name>');
+		}
+		if (empty($table)) {
+			exit('table name required , please use : --table=<Table Name>');
+		}
+		if (empty($type)) {
+			exit('type required , please use : --type=<Type>');
+		}
+		$columns = self::getTableFieldsInfo($table, $dbGroup);
+		$primaryKey = '';
+
+		$classesDir = $config->getPrimaryApplicationDir() . $config->getClassesDirName() . '/';
+		$info = array(
+		    'bean' => array(
+			'dir' => $config->getBeanDirName(),
+			'parentClass' => 'Soter_Bean',
+			'nameTip' => 'Bean'
+		    ),
+		    'dao' => array(
+			'dir' => $config->getDaoDirName(),
+			'parentClass' => 'Soter_Dao',
+			'nameTip' => 'Dao'
+		    ),
+		);
+		if (!isset($info[$type])) {
+			exit('[ Error ]' . "\n" . 'Type : [ ' . $type . ' ]');
+		}
+		$classname = $info[$type]['dir'] . '_' . $name;
+		$file = $classesDir . str_replace('_', '/', $classname) . '.php';
+		$parentClass = $info[$type]['parentClass'];
+		$tip = $info[$type]['nameTip'];
+		$dir = dirname($file);
+		if (!is_dir($dir)) {
+			mkdir($dir, 0755, true);
+		}
+		if ($type == 'bean') {
+			$methods = array();
+			$fields = array();
+			$fieldTemplate = "	//{comment}\n	private \${column0};";
+			$methodTemplate = "	public function get{column}() {\n		return \$this->{column0};\n	}\n\n	public function set{column}(\${column0}) {\n		\$this->{column0} = \${column0};\n		return \$this;\n	}";
+			foreach ($columns as $value) {
+				$column = ucfirst($value['name']);
+				$column0 = $value['name'];
+				$fields[] = str_replace(array('{column0}','{comment}'), array($column0,$value['comment']), $fieldTemplate);
+				$methods[] = str_replace(array('{column}', '{column0}'), array($column, $column0), $methodTemplate);
+			}
+			$code = "<?php\n\nclass {$classname} extends {$parentClass} {\n\n{fields}\n\n{methods}\n\n}";
+			$code = str_replace(array('{fields}', '{methods}'), array(implode("\n\n", $fields), implode("\n\n", $methods)), $code);
+		} else {
+			$columnsString = '';
+			$_columns = array();
+			foreach ($columns as $value) {
+				if ($value['primary']) {
+					$primaryKey = $value['name'];
+				}
+				$_columns[] = '\'' . $value['name'] . "'//" . $value['comment'] . "\n				";
+			}
+			$columnsString = "array(\n				" . implode(',', $_columns) . ')';
+			$code = "<?php\n\nclass {$classname} extends {$parentClass} {\n\n	public function getColumns() {\n		return {columns};\n	}\n\n	public function getPrimaryKey() {\n		return '{primaryKey}';\n	}\n\n	public function getTable() {\n		return '{table}';\n	}\n\n}\n";
+			$code = str_replace(array('{columns}', '{primaryKey}', '{table}'), array($columnsString, $primaryKey, $table), $code);
+		}
+		if (file_exists($file)) {
+			if ($force) {
+				if (file_put_contents($file, $code)) {
+					echo "[ Successfull ]\n{$tip} [ $classname ] created successfully \n" . $file;
+				}
+			} else {
+				exit('[ Error ]' . "\n" . $tip . ' [ ' . $classname . ' ] already exists ' . "\n" . 'you can use --overwrite to overwrite the file.');
+			}
+		} else {
+			if (file_put_contents($file, $code)) {
+				echo "[ Successfull ]\n{$tip} [ $classname ] created successfully \n" . $file;
+			}
+		}
+	}
+
+	/**
+	 * 获取表字段信息，并返回
+	 * 提示：
+	 * 只适用于mysql数据库
+	 * @param type $tableName   不含前缀的表名称
+	 * @param type $db           数据库组配置名称，或者数据库对象，或者数据库配置数组
+	 * @return array $info
+	 */
+	public static function getTableFieldsInfo($tableName, $db) {
+		if (!is_object($db)) {
+			$db = Sr::db($db);
+		}
+		if ($db->getDriverType() != 'mysql') {
+			throw new Soter_Exception_500('getTableFieldsInfo() only for mysql database');
+		}
+		$info = array();
+		$result = $db->execute('SHOW FULL COLUMNS FROM ' . $db->getTablePrefix() . $tableName)->rows();
+		if ($result) {
+			foreach ($result as $val) {
+				$info[$val['Field']] = array(
+				    'name' => $val['Field'],
+				    'type' => $val['Type'],
+				    'comment' => $val['Comment'] ? $val['Comment'] : $val['Field'],
+				    'notnull' => $val['Null'] == 'NO' ? 1 : 0,
+				    'default' => $val['Default'],
+				    'primary' => (strtolower($val['Key']) == 'pri'),
+				    'autoinc' => (strtolower($val['Extra']) == 'auto_increment'),
+				);
+			}
+		}
+		return $info;
 	}
 
 }

@@ -335,6 +335,10 @@ class Sr {
 	 * @throws Soter_Exception_404
 	 */
 	static function factory($className) {
+		if (Sr::strEndsWith(strtolower($className), '.php')) {
+			$className = substr($className, 0, strlen($className) - 4);
+		}
+		$className = str_replace('/', '_', $className);
 		if (Sr::isPluginMode()) {
 			throw new Soter_Exception_500('Sr::factory() only in web or cli mode');
 		}
@@ -734,6 +738,9 @@ class Sr {
 			}
 			if (!isset($instances[$group])) {
 				$config = self::config()->getDatabseConfig($group);
+				if(empty($config)){
+					throw new Soter_Exception_Database('unknown database config group [ '.$group.' ]');
+				}
 				$instances[$group] = new Soter_Database_ActiveRecord($config);
 			}
 			return $instances[$group];
@@ -811,5 +818,7 @@ class Sr {
 		}
 		return true;
 	}
+
+	
 
 }

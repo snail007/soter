@@ -16,7 +16,7 @@ return
 		'pconnect' => false,
 		'charset' => 'utf8',
 		'collate' => 'utf8_general_ci',
-		'database' => '',
+		'database' => 'test',
 		'tablePrefix' => '',
 		'tablePrefixSqlIdentifier' => '_tablePrefix_',
 		//是否开启慢查询记录
@@ -42,7 +42,7 @@ return
 			'hostname' => '127.0.0.1',
 			'port' => 3306,
 			'username' => 'root',
-			'password' => '',
+			'password' => 'admin',
 		    )
 		),
 		'slaves' => array(
