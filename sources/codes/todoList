@@ -13,7 +13,7 @@
      
 -> session托管（memcache redis mysql）
 -> Dao模型父类设计
-
+-> PDO_RESULT增加返回对象支持
 
 
 

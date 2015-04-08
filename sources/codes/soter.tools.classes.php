@@ -1614,7 +1614,7 @@ class Soter_Generator extends Soter_Task {
 			if ($force) {
 				$this->writeFile($classname, $method, $parentClass, $file, $tip);
 			} else {
-				exit('[ Error ]' . "\n" . $tip . ' [ ' . $classname . ' ] already exists ' . "\n" . 'you can use --overwrite to overwrite the file.');
+				exit('[ Error ]' . "\n" . $tip . ' [ ' . $classname . ' ] already exists , ' . "{$file}\n" . 'you can use --overwrite to overwrite the file.');
 			}
 		} else {
 			$this->writeFile($classname, $method, $parentClass, $file, $tip);
@@ -1711,7 +1711,7 @@ class Soter_Generator_Mysql extends Soter_Task {
 					echo "[ Successfull ]\n{$tip} [ $classname ] created successfully \n" . $file;
 				}
 			} else {
-				exit('[ Error ]' . "\n" . $tip . ' [ ' . $classname . ' ] already exists ' . "\n" . 'you can use --overwrite to overwrite the file.');
+				exit('[ Error ]' . "\n" . $tip . ' [ ' . $classname . ' ] already exists , ' . "{$file}\n" . 'you can use --overwrite to overwrite the file.');
 			}
 		} else {
 			if (file_put_contents($file, $code)) {

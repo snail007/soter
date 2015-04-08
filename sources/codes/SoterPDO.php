@@ -1264,8 +1264,48 @@ class Soter_Database_Resultset {
 			return $isAssoc ? $this->_resultSet[$index] : array_values($this->_resultSet[$index]);
 		} else {
 			$row = current($this->_resultSet);
-			return $isAssoc ? $row : array_values($row);
+			return $isAssoc ? (is_array($row) ? $row : array()) : array_values($row);
 		}
+	}
+
+	public function object($beanClassName, $index = null) {
+		$beanDirName = Sr::config()->getBeanDirName();
+		if (stripos($beanClassName, $beanDirName . '_') === false) {
+			$beanClassName = $beanDirName . '_' . $beanClassName;
+		}
+
+		$object = new $beanClassName();
+		if (!($object instanceof Soter_Bean)) {
+			throw new Soter_Exception_500('error class [ ' . $beanClassName . ' ] , need instanceof Soter_Bean');
+		}
+		$row = $this->row($index);
+		foreach ($row as $key => $value) {
+			$method = "set" . ucfirst($key) . "";
+			$object->{$method}($value);
+		}
+		return $object;
+	}
+
+	public function objects($beanClassName) {
+		$beanDirName = Sr::config()->getBeanDirName();
+		if (stripos($beanClassName, $beanDirName . '_') === false) {
+			$beanClassName = $beanDirName . '_' . $beanClassName;
+		}
+		$object = new $beanClassName();
+		if (!($object instanceof Soter_Bean)) {
+			throw new Soter_Exception_500('error class [ ' . $beanClassName . ' ] , need instanceof Soter_Bean');
+		}
+		$objects = array();
+		$rows = $this->rows();
+		foreach ($rows as $row) {
+			$object = new $beanClassName();
+			foreach ($row as $key => $value) {
+				$method = "set" . ucfirst($key);
+				$object->{$method}($value);
+			}
+			$objects[] = $object;
+		}
+		return $objects;
 	}
 
 	public function values($columnName) {

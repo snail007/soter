@@ -165,20 +165,40 @@ class testDbSqlite extends UnitTestCase {
 		$this->assertEqual($rs->total(), 2);
 		$this->assertEqual($rs->value('id'), 3);
 		$this->assertEqual(count($rs->values('id')), 2);
-		
+
 		$this->db->insert('c', array('cname' => 'cname1'))->execute();
-		$rs = $this->db->select('count('.$this->db->wrap('id').') as total,id')->from('c')
+		$rs = $this->db->select('count(' . $this->db->wrap('id') . ') as total,id')->from('c')
 			->groupBy('cname')
 			->having('total >= 1')
 			->orderBy('total', 'desc')
 			->execute();
-		$this->assertEqual($rs->total(),3);
+		$this->assertEqual($rs->total(), 3);
 		$this->assertEqual($rs->value('total'), 2);
 		$this->assertEqual(count($rs->values('total')), 3);
-		
+
 		$this->clean();
 	}
 
+	public function testBean() {
+		$this->init();
+		$firstId=1;
+		$data[] = array('name' => 'name' . rand(1000, 10000), 'gid' => $firstId);
+		$data[] = array('name' => 'name' . rand(1000, 10000), 'gid' => ++$firstId);
+		$data[] = array('name' => 'name' . rand(1000, 10000), 'gid' => ++$firstId);
+		$this->db->insertBatch('a', $data);
+		$this->assertEqual($this->db->execute(), 3);
+		$object = $this->db->from('a')->where(array('id' => 1))->execute()->object('TestA');
+		$this->assertIsA($object, 'Soter_Bean');
+		$this->assertEqual($object->getId(), 1);
+		$object = $this->db->from('a')->where(array('id >' => 0))->execute()->object('Bean_TestA', 2);
+		$this->assertEqual($object->getId(), 3);
+		$this->assertIsA($object, 'Soter_Bean');
+		$objects = $this->db->from('a')->execute()->objects('TestA');
+		foreach ($objects as $object) {
+			$this->assertIsA($object, 'Soter_Bean');
+		}
+		$this->clean();
+	}
 	public function testTransactions() {
 		$this->init();
 		try {
