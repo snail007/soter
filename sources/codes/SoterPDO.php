@@ -631,6 +631,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		, $_asColumn
 		, $_values
 		, $_sqlType
+		, $_currentSql
 	;
 	protected $_lastInsertBatchCount = 0
 
@@ -662,6 +663,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		$this->_asColumn = array();
 		$this->_values = array();
 		$this->_sqlType = 'select';
+		$this->_currentSql = '';
 	}
 
 	public function select($select) {
@@ -754,6 +756,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 	public function replaceBatch($table, array $data) {
 		$this->_sqlType = 'replaceBatch';
 		$this->arInsertBatch = $data;
+		$this->_lastInsertBatchCount = count($data);
 		$this->from($table);
 		return $this;
 	}
@@ -762,39 +765,18 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		$keys = array();
 		$values = array();
 		if (!empty($this->arInsertBatch[0])) {
-			if (strtolower($this->getDriverType()) == 'mysql') {
-				foreach ($this->arInsertBatch[0] as $key => $value) {
-					$keys[] = $this->_protectIdentifier($key);
-				}
-				foreach ($this->arInsertBatch as $row) {
-					$_values = array();
-					foreach ($row as $key => $value) {
-						$_values[] = '?';
-						$this->_values[] = $value;
-					}
-					$values[] = '(' . implode(',', $_values) . ')';
-				}
-				return '(' . implode(',', $keys) . ') ' . "\n VALUES " . implode(' , ', $values);
-			} elseif (strtolower($this->getDriverType()) == 'sqlite') {
-				$_first = array();
-				foreach ($this->arInsertBatch[0] as $key => $value) {
-					$key = $this->_protectIdentifier($key);
-					$keys[] = $key;
-					$_first[] = ' ? as ' . $key;
+			foreach ($this->arInsertBatch[0] as $key => $value) {
+				$keys[] = $this->_protectIdentifier($key);
+			}
+			foreach ($this->arInsertBatch as $row) {
+				$_values = array();
+				foreach ($row as $key => $value) {
+					$_values[] = '?';
 					$this->_values[] = $value;
 				}
-				array_shift($this->arInsertBatch);
-				$first = '(' . implode(',', $keys) . ')' . ' SELECT ' . implode(',', $_first) . "\n";
-				foreach ($this->arInsertBatch as $row) {
-					$_values = array();
-					foreach ($row as $key => $value) {
-						$_values[] = " ? ";
-						$this->_values[] = $value;
-					}
-					$values[] = 'UNION SELECT ' . implode(',', $_values) . "\n";
-				}
-				return $first . implode(' ', $values);
+				$values[] = '(' . implode(',', $_values) . ')';
 			}
+			return '(' . implode(',', $keys) . ') ' . "\n VALUES " . implode(' , ', $values);
 		}
 		return '';
 	}
@@ -891,24 +873,38 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 	}
 
 	public function getSql() {
+		//在没有execute之前，防止多次调用导致values重复添加，这里在execute之前只编译一次，以后直接返回
+		//execute之后$this->_currentSql会被_reset为空
+		if ($this->_currentSql) {
+			return $this->_currentSql;
+		}
 		switch ($this->_sqlType) {
 			case 'select':
-				return $this->_getSelectSql();
+				$this->_currentSql = $this->_getSelectSql();
+				break;
 			case 'update':
-				return $this->_getUpdateSql();
+				$this->_currentSql = $this->_getUpdateSql();
+				break;
 			case 'updateBatch':
-				return $this->_getUpdateBatchSql();
+				$this->_currentSql = $this->_getUpdateBatchSql();
+				break;
 			case 'insert':
-				return $this->_getInsertSql();
+				$this->_currentSql = $this->_getInsertSql();
+				break;
 			case 'insertBatch':
-				return $this->_getInsertBatchSql();
+				$this->_currentSql = $this->_getInsertBatchSql();
+				break;
 			case 'replace':
-				return $this->_getReplaceSql();
+				$this->_currentSql = $this->_getReplaceSql();
+				break;
 			case 'replaceBatch':
-				return $this->_getReplaceBatchSql();
+				$this->_currentSql = $this->_getReplaceBatchSql();
+				break;
 			case 'delete':
-				return $this->_getDeleteSql();
+				$this->_currentSql = $this->_getDeleteSql();
+				break;
 		}
+		return $this->_currentSql;
 	}
 
 	private function _getUpdateSql() {
@@ -941,6 +937,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		$sql[] = "\n" . 'INSERT INTO ';
 		$sql[] = $this->_getFrom();
 		$sql[] = $this->_compileInsertBatch();
+
 		return implode(' ', $sql);
 	}
 

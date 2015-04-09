@@ -6,13 +6,7 @@ require_once('simpletest/autorun.php');
 require_once('simpletest/browser.php');
 
 class TestEnv extends UnitTestCase {
-
-	public function testC() {
-		 
-		
-	
-	}
-
+ 
 	public function TestEnv1() {
 		$browser = new SimpleBrowser();
 		$browser->get(testUrl('Welcome/envTestDevelopment.do'));

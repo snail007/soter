@@ -77,6 +77,36 @@ class testDbSqlite extends UnitTestCase {
 		$this->clean();
 	}
 
+	public function testReplace() {
+		$this->init();
+		$this->db->replace('a', array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000)));
+		$this->assertEqual($this->db->execute(), 1);
+		$this->clean();
+	}
+
+	public function testReplaceBatch() {
+		$this->init();
+		$data[] = array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000));
+		$data[] = array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000));
+		$data[] = array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000));
+		$this->db->replaceBatch('a', $data);
+		$this->assertEqual($this->db->execute(), 3);
+		$this->assertEqual($this->db->lastId(), 1);
+		$this->clean();
+
+		$this->init();
+		$data2[] = array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000));
+		$this->db->replaceBatch('a', $data2);
+		$this->assertEqual($this->db->execute(), 1);
+		$this->assertEqual($this->db->lastId(), 1);
+		$this->db->replace('a', array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000)));
+		$this->assertEqual($this->db->execute(), 1);
+		$this->assertEqual($this->db->lastId(), 2);
+		$this->db->replaceBatch('a', $data)->execute();
+		$this->assertEqual($this->db->lastId(), 3);
+		$this->clean();
+	}
+
 	public function testDelete() {
 		$this->init();
 		$this->db->insert('a', array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000)))->execute();
@@ -181,7 +211,7 @@ class testDbSqlite extends UnitTestCase {
 
 	public function testBean() {
 		$this->init();
-		$firstId=1;
+		$firstId = 1;
 		$data[] = array('name' => 'name' . rand(1000, 10000), 'gid' => $firstId);
 		$data[] = array('name' => 'name' . rand(1000, 10000), 'gid' => ++$firstId);
 		$data[] = array('name' => 'name' . rand(1000, 10000), 'gid' => ++$firstId);
@@ -195,10 +225,12 @@ class testDbSqlite extends UnitTestCase {
 		$this->assertIsA($object, 'Soter_Bean');
 		$objects = $this->db->from('a')->execute()->objects('TestA');
 		foreach ($objects as $object) {
+			$this->assertEqual($object->getId(), $object->getGid());
 			$this->assertIsA($object, 'Soter_Bean');
 		}
 		$this->clean();
 	}
+
 	public function testTransactions() {
 		$this->init();
 		try {
