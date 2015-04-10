@@ -215,7 +215,7 @@ class Sr {
 		echo!self::isCli() ? "</pre>" : "\n";
 	}
 
-	public static function includeOnce($filePath) {
+	static function includeOnce($filePath) {
 		static $includeFiles = array();
 		$key = self::realPath($filePath);
 		if (!isset($includeFiles[$key])) {
@@ -350,7 +350,7 @@ class Sr {
 
 	/**
 	 * 插件模式下的超级工厂类
-	 * @param type $className      可以是控制器类名，模型类名，类库类名
+	 * @param type $className      可以是完整的控制器类名，模型类名，类库类名
 	 * @param type $hmvcModuleName hmvc模块名称，是配置里面的数组的键名
 	 * @return \className
 	 * @throws Soter_Exception_404
@@ -722,7 +722,7 @@ class Sr {
 	 * @param type $group  数据库配置里面的组名称，默认是default组。也可以是一个数据库组配置的数组
 	 * @return \Soter_Database_ActiveRecord
 	 */
-	public static function &db($group = '') {
+	static function &db($group = '') {
 		static $instances = array();
 		if (is_array($group)) {
 			ksort($group);
@@ -738,8 +738,8 @@ class Sr {
 			}
 			if (!isset($instances[$group])) {
 				$config = self::config()->getDatabseConfig($group);
-				if(empty($config)){
-					throw new Soter_Exception_Database('unknown database config group [ '.$group.' ]');
+				if (empty($config)) {
+					throw new Soter_Exception_Database('unknown database config group [ ' . $group . ' ]');
 				}
 				$instances[$group] = new Soter_Database_ActiveRecord($config);
 			}
@@ -747,7 +747,7 @@ class Sr {
 		}
 	}
 
-	public static function createSqlite3Database($path) {
+	static function createSqlite3Database($path) {
 		return new PDO('sqlite:' . $path);
 	}
 
@@ -755,7 +755,7 @@ class Sr {
 	 * 获取当前UNIX毫秒时间戳
 	 * @return type
 	 */
-	public static function microtime() {
+	static function microtime() {
 		// 获取当前毫秒时间戳
 		list ($s1, $s2) = explode(' ', microtime());
 		$currentTime = (float) sprintf('%.0f', (floatval($s1) + floatval($s2)) * 1000);
@@ -767,7 +767,7 @@ class Sr {
 	 * @param type $path
 	 * @return string
 	 */
-	public static function safePath($path) {
+	static function safePath($path) {
 		if (!$path) {
 			return '';
 		}
@@ -783,7 +783,7 @@ class Sr {
 	 * @param type $cacheHandle
 	 * @return Soter_Cache
 	 */
-	public static function cache($cacheHandle = null) {
+	static function cache($cacheHandle = null) {
 		if ($cacheHandle) {
 			self::config()->setCacheHandle($cacheHandle);
 		}
@@ -796,7 +796,7 @@ class Sr {
 	 * @param type $includeSelf 是否保留最父层文件夹
 	 * @return boolean
 	 */
-	public static function rmdir($dirPath, $includeSelf = true) {
+	static function rmdir($dirPath, $includeSelf = true) {
 		if (empty($dirPath)) {
 			return false;
 		}
@@ -818,7 +818,5 @@ class Sr {
 		}
 		return true;
 	}
-
-	
 
 }
