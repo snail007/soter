@@ -819,4 +819,56 @@ class Sr {
 		return true;
 	}
 
+	static function view() {
+		static $view;
+		if (!$view) {
+			$view = new Soter_View();
+		}
+		return $view;
+	}
+
+	/**
+	 * 获取入口文件所在目录url路径。
+	 * 只能在web访问时使用，在命令行下面会抛出异常。
+	 * @param type $subpath  子路径或者文件路径，如果非空就会被附加在入口文件所在目录的后面
+	 * @return type           
+	 * @throws Exception     
+	 */
+	static function urlPath($subpath = null) {
+		if (self::isCli()) {
+			throw new Soter_Exception_500('urlPath() can not be used in cli mode');
+		} else {
+			$old_path = getcwd();
+			$root = str_replace(array("/", "\\"), '/', self::server('DOCUMENT_ROOT'));
+			chdir($root);
+			$root = getcwd();
+			$root = str_replace(array("/", "\\"), '/', $root);
+			chdir($old_path);
+			$path = str_replace(array("/", "\\"), '/', realpath('.') . ($subpath ? '/' . trim($subpath, '/\\') : ''));
+			$path = self::realPath($path) . '/';
+			return str_replace($root, '', $path);
+		}
+	}
+
+	/**
+	 * 生成控制器方法的url
+	 * @param type $action   控制器方法
+	 * @param type $getData  get传递的参数数组，键值对，键是参数名，值是参数值
+	 * @return string
+	 */
+	static function url($action = '', $getData = array()) {
+		$index = self::config()->getIsRewrite() ? '' : self::config()->getIndexName() . '/';
+		$url = self::urlPath($index . $action);
+		$url = rtrim($url, '/');
+		$url = $index ? $url : ($action ? $url : $url . '/');
+		if (!empty($getData)) {
+			$url = $url . '?';
+			foreach ($getData as $k => $v) {
+				$url.= $k . '=' . urlencode($v) . '&';
+			}
+			$url = rtrim($url, '&');
+		}
+		return $url;
+	}
+
 }

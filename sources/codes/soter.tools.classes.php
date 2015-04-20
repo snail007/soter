@@ -19,6 +19,70 @@ class Soter_Request {
 
 }
 
+class Soter_View {
+
+	private static $vars = array();
+
+	public   function add($key, $value = array()) {
+		if (is_array($key)) {
+			foreach ($key as $k => $v) {
+				if (!isset(self::$vars[$k])) {
+					self::$vars[$k] = $v;
+				}
+			}
+		} else {
+			if (!isset(self::$vars[$key])) {
+				self::$vars[$key] = $value;
+			}
+		}
+		return $this;
+	}
+
+	public   function set($key, $value = array()) {
+		if (is_array($key)) {
+			foreach ($key as $k => $v) {
+				self::$vars[$k] = $v;
+			}
+		} else {
+			self::$vars[$key] = $value;
+		}
+		return $this;
+	}
+
+	private   function _load($path, $data = array(), $return = false) {
+		if (!file_exists($path)) {
+			throw new Soter_Exception_500('view file : [ ' . $path . ' ] not found');
+		}
+		$data = array_merge(self::$vars, $data);
+		if (!empty($data)) {
+			extract($data);
+		}
+		if ($return) {
+			@ob_start();
+			include $path;
+			$html = ob_get_contents();
+			@ob_end_clean();
+			return $html;
+		} else {
+			include $path;
+			return;
+		}
+	}
+
+	public   function load($viewName, $data = array(), $return = false) {
+		$config = Sr::config();
+		$path = $config->getApplicationDir() . $config->getViewsDirName() . '/' . $viewName . '.php';
+		return $this->_load($path, $data, $return);
+	}
+
+	public   function loadParent($viewName, $data = array(), $return = false) {
+		$config = Sr::config();
+		$path = $config->getPrimaryApplicationDir() . $config->getViewsDirName() . '/' . $viewName . '.php';
+		return $this->_load($path, $data, $return);
+	}
+
+}
+
 class Soter_Response {
 	
 }
@@ -224,6 +288,7 @@ class Soter_Config {
 		$hmvcDirName = 'hmvc',
 		$libraryDirName = 'library',
 		$functionsDirName = 'functions',
+		$viewsDirName = 'views',
 		$configDirName = 'config',
 		$configTestingDirName = 'testing',
 		$configProductionDirName = 'production',
@@ -272,6 +337,15 @@ class Soter_Config {
 		$cacheHandle
 
 	;
+
+	public function getViewsDirName() {
+		return $this->viewsDirName;
+	}
+
+	public function setViewsDirName($viewsDirName) {
+		$this->viewsDirName = $viewsDirName;
+		return $this;
+	}
 
 	/**
 	 * 
@@ -1687,7 +1761,7 @@ class Soter_Generator_Mysql extends Soter_Task {
 			foreach ($columns as $value) {
 				$column = ucfirst($value['name']);
 				$column0 = $value['name'];
-				$fields[] = str_replace(array('{column0}','{comment}'), array($column0,$value['comment']), $fieldTemplate);
+				$fields[] = str_replace(array('{column0}', '{comment}'), array($column0, $value['comment']), $fieldTemplate);
 				$methods[] = str_replace(array('{column}', '{column0}'), array($column, $column0), $methodTemplate);
 			}
 			$code = "<?php\n\nclass {$classname} extends {$parentClass} {\n\n{fields}\n\n{methods}\n\n}";

@@ -3,7 +3,12 @@
 class Controller_Welcome extends Soter_Controller {
 
 	public function do_index() {
+		$data=array('a'=>'vvv','d'=>'ddd');
+		//Sr::config()->setIsRewrite(true);
+		echo Sr::url('Welcome/index.do',$data);
+		Sr::view()->add('a','ccc');
 		
+		return Sr::view()->set($data)->load('test',$data);
 	}
 
 	/**

@@ -44,6 +44,9 @@ Soter::initialize()
 	->setMaintainModeHandle(new Soter_Maintain_Handle_Default())
 	//初始化请求
 	->setRequest(new Soter_Request(Sr::arrayGet($_SERVER, 'REQUEST_URI')))
+	//网站是否开启了nginx或者apache的url重写，开启了这里设置为true，
+	//这样Sr::url方法在生成url的时候就加上入口文件名称
+	->setIsRewrite(FALSE)
 	//注册默认pathinfo路由器
 	->addRouter(new Soter_Default_Router_PathInfo())
 	//pathinfo路由器,注册uri重写
