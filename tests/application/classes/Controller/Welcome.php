@@ -3,12 +3,12 @@
 class Controller_Welcome extends Soter_Controller {
 
 	public function do_index() {
-		$data=array('a'=>'vvv','d'=>'ddd');
+		$data = array('a' => 'vvv', 'd' => 'ddd');
 		//Sr::config()->setIsRewrite(true);
-		echo Sr::url('Welcome/index.do',$data);
-		Sr::view()->add('a','ccc');
-		
-		return Sr::view()->set($data)->load('test',$data);
+		echo Sr::url('Welcome/index.do', $data);
+		Sr::view()->add('a', 'ccc');
+
+		return Sr::view()->set($data)->load('test', $data);
 	}
 
 	/**
@@ -156,6 +156,70 @@ class Controller_Welcome extends Soter_Controller {
 		echo $type . $id;
 	}
 
+	public function do_url() {
+		echo Sr::url('Welcome/index.do');
+	}
+
+	public function do_urlArgs() {
+		$data = array('a' => 'v', 'd' => 'd');
+		echo Sr::url('Welcome/index.do', $data);
+	}
+
+	public function do_urlRewrite() {
+		Sr::config()->setIsRewrite(true);
+		echo Sr::url('Welcome/index.do');
+	}
+
+	public function do_urlRewriteArgs() {
+		$data = array('a' => 'v', 'd' => 'd');
+		Sr::config()->setIsRewrite(true);
+		echo Sr::url('Welcome/index.do', $data);
+	}
+
+	public function do_urlPath() {
+		echo Sr::urlPath('public');
+	}
+
+	public function do_urlPathRes() {
+		echo Sr::urlPath('public/css/style.css', false);
+	}
+
+	public function do_viewLoad() {
+		//Sr::dump(Sr::config()->getRoute()->getHmvcModuleName());
+		Sr::view()->load('test_load');
+	}
+
+	public function do_viewLoadData() {
+		$data['a'] = 'b';
+		Sr::view()->load('test_load_data', $data);
+	}
+
+	public function do_viewLoadDataReturn() {
+		$data['a'] = 'b';
+		echo Sr::view()->load('test_load_data_return', $data, true);
+	}
+
+	public function do_viewSet() {
+		Sr::view()->set('a', 'b');
+		Sr::view()->load('test_load_data');
+	}
+
+	public function do_viewAdd() {
+		Sr::view()->add('a', 'b');
+		Sr::view()->load('test_load_data');
+	}
+
+	public function do_viewAddSet() {
+		Sr::view()->set('a', 'b');
+		Sr::view()->add('a', 'c');
+		Sr::view()->load('test_load_data');
+	}
+
+	public function do_viewSetAdd() {
+		Sr::view()->add('a', 'b');
+		Sr::view()->set('a', 'c');
+		Sr::view()->load('test_load_data');
+	}
 	public function do_db() {
 //		$pdo = new PDO("mysql:dbname=test;host=127.0.0.1;port=3306", "root", "admin", array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES \'UTF8\''));
 //		$query = new SoterPDO($pdo);
@@ -251,7 +315,7 @@ class Controller_Welcome extends Soter_Controller {
 //		    ))->getSql(),$db->lastId());
 		Sr::dump(
 			Sr::db($config)
-				->cache(60,'user-2')
+				->cache(60, 'user-2')
 				->select('*')
 				->from('test1')
 				->where(array('pid >' => 2))

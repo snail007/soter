@@ -23,7 +23,7 @@ class Soter_View {
 
 	private static $vars = array();
 
-	public   function add($key, $value = array()) {
+	public function add($key, $value = array()) {
 		if (is_array($key)) {
 			foreach ($key as $k => $v) {
 				if (!isset(self::$vars[$k])) {
@@ -38,7 +38,7 @@ class Soter_View {
 		return $this;
 	}
 
-	public   function set($key, $value = array()) {
+	public function set($key, $value = array()) {
 		if (is_array($key)) {
 			foreach ($key as $k => $v) {
 				self::$vars[$k] = $v;
@@ -49,7 +49,7 @@ class Soter_View {
 		return $this;
 	}
 
-	private   function _load($path, $data = array(), $return = false) {
+	private function _load($path, $data = array(), $return = false) {
 		if (!file_exists($path)) {
 			throw new Soter_Exception_500('view file : [ ' . $path . ' ] not found');
 		}
@@ -69,13 +69,43 @@ class Soter_View {
 		}
 	}
 
-	public   function load($viewName, $data = array(), $return = false) {
+	/**
+	 * 加载一个视图<br/>
+	 * @param string $viewName 视图名称
+	 * @param array  $data     视图中可以使用的数据
+	 * @param bool   $return   是否返回视图内容
+	 * @return string
+	 */
+	public function load($viewName, $data = array(), $return = false) {
 		$config = Sr::config();
 		$path = $config->getApplicationDir() . $config->getViewsDirName() . '/' . $viewName . '.php';
+		$hmvcModules = $config->getHmvcModules();
+		$hmvcDirName = Sr::arrayGet($hmvcModules, $config->getRoute()->getHmvcModuleName(), '');
+		//当load方法在主项目的视图中被调用，然后hmvc主项目load了这个视图，那么这个视图里面的load应该使用的是主项目视图。
+		//hmvc访问
+		if ($hmvcDirName) {
+			$trace = debug_backtrace();
+			$calledFilePath = array_shift($trace);
+			$calledFilePath = Sr::realPath(Sr::arrayGet($calledFilePath, 'file'));
+			$hmvcPath = $config->getPrimaryApplicationDir() . $config->getHmvcDirName() . '/' . $hmvcDirName;
+			$calledIsInHmvc = $calledFilePath && $hmvcDirName && (strpos($calledFilePath, $hmvcPath) === 0);
+			//发现load是在主项目中被调用的，使用主项目视图
+			if (!$calledIsInHmvc) {
+				$path = $config->getPrimaryApplicationDir() . $config->getViewsDirName() . '/' . $viewName . '.php';
+			}
+		}
 		return $this->_load($path, $data, $return);
 	}
 
-	public   function loadParent($viewName, $data = array(), $return = false) {
+	/**
+	 * 加载主项目的视图<br/>
+	 * 这个一般是在hmvc模块中使用到，用于复用主项目的视图文件，比如通用的header等。<br/>
+	 * @param string $viewName 主项目视图名称
+	 * @param array  $data     视图中可以使用的数据
+	 * @param bool   $return   是否返回视图内容
+	 * @return string
+	 */
+	public function loadParent($viewName, $data = array(), $return = false) {
 		$config = Sr::config();
 		$path = $config->getPrimaryApplicationDir() . $config->getViewsDirName() . '/' . $viewName . '.php';
 		return $this->_load($path, $data, $return);

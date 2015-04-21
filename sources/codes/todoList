@@ -106,7 +106,7 @@
 -> * 查询可以设置自动explain记录没有使用索引的sql语句
 -> * 数据库查询支持查询缓存
 -> * 慢查询记录
--> 命令行各种代码生成器[表beans（绑定表），Dao层（绑定表），business层，model层，控制器，task]
+-> * 命令行各种代码生成器[表beans（绑定表），Dao层（绑定表），business层，model层，控制器，task]
    1.生成控制器：
      php index.php --task=Soter_Generator --type=controller --name=MyFirstController
    2.生成模型：
@@ -123,7 +123,8 @@
     1. 5和6数据连接使用的是默认组，表名称 --name不需要加前缀，如果要指定数据库配置组，可以使用参数--db=配置组名称,
         比如：--db=www_mysql
     2. 默认情况下当文件存在1-6的操作不再新建文件。可以使用参数 --overwrite 覆盖已经存在的文件
--> Controller父类设计
--> Business模型父类设计
--> Model模型父类设计
+-> * Controller父类设计
+-> * Business模型父类设计
+-> * Model模型父类设计
 -> 视图设计
+-> * pathinfo url生成

@@ -834,7 +834,7 @@ class Sr {
 	 * @return type           
 	 * @throws Exception     
 	 */
-	static function urlPath($subpath = null) {
+	static function urlPath($subpath = null, $addSlash = true) {
 		if (self::isCli()) {
 			throw new Soter_Exception_500('urlPath() can not be used in cli mode');
 		} else {
@@ -845,7 +845,7 @@ class Sr {
 			$root = str_replace(array("/", "\\"), '/', $root);
 			chdir($old_path);
 			$path = str_replace(array("/", "\\"), '/', realpath('.') . ($subpath ? '/' . trim($subpath, '/\\') : ''));
-			$path = self::realPath($path) . '/';
+			$path = self::realPath($path) . ($addSlash ? '/' : '');
 			return str_replace($root, '', $path);
 		}
 	}

@@ -3,8 +3,8 @@
 class Controller_Welcome extends Soter_Controller {
 
 	public function do_index() {
-		
-		return  Sr::view()->load('test');
+
+		return Sr::view()->load('test');
 	}
 
 	/**
@@ -51,7 +51,7 @@ class Controller_Welcome extends Soter_Controller {
 	 * 测试异常托管
 	 */
 	public function do_exceptionHandle() {
-		
+
 		Sr::config()->setShowError(true)->setExceptionHandle(new Exception_Handle());
 		none();
 	}
@@ -69,6 +69,84 @@ class Controller_Welcome extends Soter_Controller {
 	 */
 	public function do_args($type = 'system', $id = '002') {
 		echo $type . $id;
+	}
+
+	public function do_url() {
+		echo Sr::url('Welcome/index.do');
+	}
+
+	public function do_urlArgs() {
+		$data = array('a' => 'v', 'd' => 'd');
+		echo Sr::url('Welcome/index.do', $data);
+	}
+
+	public function do_urlRewrite() {
+		Sr::config()->setIsRewrite(true);
+		echo Sr::url('Welcome/index.do');
+	}
+
+	public function do_urlRewriteArgs() {
+		$data = array('a' => 'v', 'd' => 'd');
+		Sr::config()->setIsRewrite(true);
+		echo Sr::url('Welcome/index.do', $data);
+	}
+
+	public function do_urlPath() {
+		echo Sr::urlPath('public');
+	}
+
+	public function do_urlPathRes() {
+		echo Sr::urlPath('public/css/style.css', false);
+	}
+
+	public function do_viewLoadParent() {
+		Sr::view()->loadParent('test_load');
+	}
+
+	public function do_viewLoadParentData() {
+		$data['a'] = 'b';
+		Sr::view()->loadParent('test_load_data', $data);
+	}
+
+	public function do_viewLoadParentDataReturn() {
+		$data['a'] = 'b';
+		echo Sr::view()->loadParent('test_load_data_return', $data, true);
+	}
+
+	public function do_viewLoad() {
+		Sr::view()->load('hmvc_test_load');
+	}
+
+	public function do_viewLoadData() {
+		$data['a'] = 'bb';
+		Sr::view()->load('hmvc_test_load_data', $data);
+	}
+
+	public function do_viewLoadDataReturn() {
+		$data['a'] = 'bb';
+		echo Sr::view()->load('hmvc_test_load_data_return', $data, true);
+	}
+
+	public function do_viewSet() {
+		Sr::view()->set('a', 'bb');
+		Sr::view()->load('hmvc_test_load_data');
+	}
+
+	public function do_viewAdd() {
+		Sr::view()->add('a', 'bb');
+		Sr::view()->load('hmvc_test_load_data');
+	}
+
+	public function do_viewAddSet() {
+		Sr::view()->set('a', 'bb');
+		Sr::view()->add('a', 'cc');
+		Sr::view()->load('hmvc_test_load_data');
+	}
+
+	public function do_viewSetAdd() {
+		Sr::view()->add('a', 'bb');
+		Sr::view()->set('a', 'cc');
+		Sr::view()->load('hmvc_test_load_data');
 	}
 
 }
