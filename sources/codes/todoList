@@ -3,9 +3,9 @@
 -> 数据验证功能
 -> 便捷输出的设计 *
 -> 各种缓存无缝切换设计（memcache memcached redis mongodb file apc）
-   1.file文件缓存 
-   2.memcache缓存 
-   3.memcached缓存 
+   1.file文件缓存   *
+   2.memcache缓存   *
+   3.memcached缓存  *
    4.redis缓存 
    5.mongodb缓存 
    6.apc缓存 
