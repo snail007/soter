@@ -1,7 +1,7 @@
 @todo
 
 -> 数据验证功能
--> 便捷输出的设计
+-> 便捷输出的设计 *
 -> 各种缓存无缝切换设计（memcache memcached redis mongodb file apc）
    1.file文件缓存 
    2.memcache缓存 
@@ -126,5 +126,5 @@
 -> * Controller父类设计
 -> * Business模型父类设计
 -> * Model模型父类设计
--> 视图设计
+-> * 视图设计
 -> * pathinfo url生成

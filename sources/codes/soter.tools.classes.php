@@ -1139,6 +1139,15 @@ class Soter_Uri_Rewriter_Default implements Soter_Uri_Rewriter {
 class Soter_Exception_Handle_Default implements Soter_Exception_Handle {
 
 	public function handle(Soter_Exception $exception) {
+		if ($exception instanceof Soter_Exception_404) {
+			exit('404 error');
+		} elseif ($exception instanceof Soter_Exception_500) {
+			exit('500 error');
+		} elseif ($exception instanceof Soter_Exception_Database) {
+			exit('db error');
+		} else {
+			exit('404');
+		}
 		$exception->render();
 	}
 
@@ -1285,6 +1294,96 @@ class Soter_Cache_File implements Soter_Cache {
 			return false;
 		}
 		return file_put_contents($filePath, $cacheData, LOCK_EX);
+	}
+
+}
+
+class Soter_Cache_Memcached implements Soter_Cache {
+
+	private $config, $handle;
+
+	public function __construct($configFileName) {
+		if (is_array($configFileName)) {
+			$this->config = $configFileName;
+		} else {
+			$this->config = Sr::config($configFileName);
+		}
+	}
+
+	private function _init() {
+		if (empty($this->handle)) {
+			$this->handle = new Memcached();
+			foreach ($this->config as $server) {
+				if ($server[2] > 0) {
+					$this->handle->addServer($server[0], $server[1], $server[2]);
+				} else {
+					$this->handle->addServer($server[0], $server[1]);
+				}
+			}
+		}
+	}
+
+	public function clean() {
+		$this->_init();
+		$this->handle->flush();
+	}
+
+	public function delete($key) {
+		$this->_init();
+		$this->handle->delete($key);
+	}
+
+	public function get($key) {
+		$this->_init();
+		return ($data = $this->handle->get($key)) ? $data : null;
+	}
+
+	public function set($key, $value, $cacheTime) {
+		$this->_init();
+		return $this->handle->set($key, $value, $cacheTime > 0 ? (time() + $cacheTime) : 0);
+	}
+
+}
+
+class Soter_Cache_Memcache implements Soter_Cache {
+
+	private $config, $handle;
+
+	public function __construct($configFileName) {
+		if (is_array($configFileName)) {
+			$this->config = $configFileName;
+		} else {
+			$this->config = Sr::config($configFileName);
+		}
+	}
+
+	private function _init() {
+		if (empty($this->handle)) {
+			$this->handle = new Memcached();
+			foreach ($this->config as $server) {
+				$this->handle->addserver($server[0], $server[1]);
+			}
+		}
+	}
+
+	public function clean() {
+		$this->_init();
+		$this->handle->flush();
+	}
+
+	public function delete($key) {
+		$this->_init();
+		$this->handle->delete($key);
+	}
+
+	public function get($key) {
+		$this->_init();
+		return ($data = $this->handle->get($key)) ? $data : null;
+	}
+
+	public function set($key, $value, $cacheTime) {
+		$this->_init();
+		return $this->handle->set($key, $value,false, $cacheTime);
 	}
 
 }
