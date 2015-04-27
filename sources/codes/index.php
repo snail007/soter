@@ -77,8 +77,11 @@ Soter::initialize()
 	->setHmvcModules(array(
 		// 'Demo' => 'demo'
 	))
-	//设置缓存类型，Soter_Cache_File类默认会把数据缓存到目录：application/storage/cache/
-	//可以通过传入参数cache/file，使用配置文件application/config/default/cache/file.php改变目录
+	/**
+	 * 设置缓存类型
+	 * 1.setCacheHandle可以直接传入Soter_Cache缓存类对象
+	 * 2.setCacheHandle也可以传入配置文件名称，配置文件里面要返回一个Soter_Cache缓存类对象。
+	 */
 	->setCacheHandle(new Soter_Cache_File())
 	//数据库连接信息，支持多主多从。如果只有一个数据库，只需要设置一个主即可。
 	->setDatabseConfigFile('database')
@@ -88,5 +91,3 @@ Soter::initialize()
 
 //启动，噪起来
 Soter::run();
-
-

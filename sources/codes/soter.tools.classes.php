@@ -385,8 +385,12 @@ class Soter_Config {
 		return $this->cacheHandle;
 	}
 
-	public function setCacheHandle(Soter_Cache $cacheHandle) {
-		$this->cacheHandle = $cacheHandle;
+	public function setCacheHandle($cacheHandle) {
+		if ($cacheHandle instanceof Soter_Cache) {
+			$this->cacheHandle = $cacheHandle;
+		} else {
+			$this->cacheHandle = Sr::config($cacheHandle);
+		}
 		return $this;
 	}
 

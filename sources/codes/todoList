@@ -2,12 +2,7 @@
 
 -> 数据验证功能
 -> 便捷输出的设计 *
--> 各种缓存无缝切换设计（memcache memcached redis  file apc）
-   1.file文件缓存    *
-   2.memcache缓存   *
-   3.memcached缓存  *
-   4.redis缓存      *
-   5.apc缓存        *
+
      
 -> session托管（memcache redis mysql mongodb）
 -> Dao模型父类设计
@@ -127,3 +122,9 @@
 -> * Model模型父类设计
 -> * 视图设计
 -> * pathinfo url生成
+-> 各种缓存无缝切换设计（memcache memcached redis  file apc）
+   1.file文件缓存
+   2.memcache缓存
+   3.memcached缓存
+   4.redis缓存
+   5.apc缓存
