@@ -224,7 +224,7 @@ class Sr {
 		}
 	}
 
-	static function realPath($path) {
+	static function realPath($path, $addSlash = false) {
 		//是linux系统么？
 		$unipath = PATH_SEPARATOR == ':';
 		//检测一下是否是相对路径，windows下面没有:,linux下面没有/开头
@@ -250,7 +250,7 @@ class Sr {
 		$path = $unipath ? (strlen($path) && $path{0} != '/' ? '/' . $path : $path) : $path;
 		//最后统一分隔符为/，windows兼容/
 		$path = str_replace(array('/', '\\'), '/', $path);
-		return $path;
+		return $path . ($addSlash ? '/' : '');
 	}
 
 	static function isCli() {

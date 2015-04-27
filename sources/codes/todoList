@@ -7,8 +7,7 @@
    2.memcache缓存   *
    3.memcached缓存  *
    4.redis缓存 
-   5.mongodb缓存 
-   6.apc缓存 
+   5.apc缓存        *
      
 -> session托管（memcache redis mysql）
 -> Dao模型父类设计

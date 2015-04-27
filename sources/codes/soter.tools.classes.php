@@ -488,7 +488,7 @@ class Soter_Config {
 	}
 
 	public function setPrimaryApplicationDir($primaryApplicationDir) {
-		$this->primaryApplicationDir = $primaryApplicationDir;
+		$this->primaryApplicationDir = Sr::realPath($primaryApplicationDir) . '/';
 		return $this;
 	}
 
@@ -1197,7 +1197,8 @@ class Soter_Cache_File implements Soter_Cache {
 
 	private $_cacheDirPath;
 
-	public function __construct($cacheDirPath) {
+	public function __construct($cacheFileName = '') {
+		$cacheDirPath = empty($cacheFileName) ? Sr::config()->getPrimaryApplicationDir() . 'storage/cache/' : Sr::config($cacheFileName);
 		$this->_cacheDirPath = Sr::realPath($cacheDirPath) . '/';
 		if (!is_dir($this->_cacheDirPath)) {
 			mkdir($this->_cacheDirPath, 0700, true);
@@ -1383,7 +1384,118 @@ class Soter_Cache_Memcache implements Soter_Cache {
 
 	public function set($key, $value, $cacheTime) {
 		$this->_init();
-		return $this->handle->set($key, $value,false, $cacheTime);
+		return $this->handle->set($key, $value, false, $cacheTime);
+	}
+
+}
+
+class Soter_Cache_Apc implements Soter_Cache {
+
+	public function clean() {
+		@apc_clear_cache();
+		@apc_clear_cache("user");
+	}
+
+	public function delete($key) {
+		return apc_delete($key);
+	}
+
+	public function get($key) {
+		$data = apc_fetch($key, $bo);
+		if ($bo === false) {
+			return null;
+		}
+		return $data;
+	}
+
+	public function set($key, $value, $cacheTime) {
+		return apc_store($key, $value, $cacheTime);
+	}
+
+}
+
+class Soter_Cache_Redis implements Soter_Cache {
+
+	private $config, $handle;
+
+	private function _init() {
+		if (empty($this->handle)) {
+			$this->handle = new Memcached();
+			foreach (array('masters', 'slaves') as $type) {
+				foreach ($this->config[$type] as $k => $config) {
+					$this->handle[$type][$k] = new Redis();
+					if ($config['type'] == 'sock') {
+						$this->handle[$type][$k]->connect($config['sock']);
+					} else {
+						$this->handle[$type][$k]->connect($config['host'], $config['port'], $config['timeout'], NULL, $config['retry']);
+					}
+					if (!is_null($config['password'])) {
+						$this->handle[$type][$k]->auth($config['password']);
+					}
+					if (!is_null($config['prefix'])) {
+						if ($config['prefix']{strlen($config['prefix']) - 1} != ':') {
+							$config['prefix'].=':';
+						}
+						$this->handle[$type][$k]->setOption(Redis::OPT_PREFIX, $config['prefix']);
+					}
+				}
+			}
+		}
+	}
+
+	public function __construct($configFileName) {
+		if (is_array($configFileName)) {
+			$this->config = $configFileName;
+		} else {
+			$this->config = Sr::config($configFileName);
+		}
+	}
+
+	public function clean() {
+		$this->_init();
+		$value = serialize($value);
+		$status = true;
+		foreach ($this->handle['masters'] as &$handle) {
+			$status = $status & $handle->flushDB();
+		}
+		return $status;
+	}
+
+	public function delete($key) {
+		$this->_init();
+		$value = serialize($value);
+		$status = true;
+		foreach ($this->handle['masters'] as &$handle) {
+			$status = $status & $handle->delete($key);
+		}
+		return $status;
+	}
+
+	public function get($key) {
+		$this->_init();
+		if ($this->handle['slaves']) {
+			$handle = &$this->handle['masters'][key($this->handle['masters'])];
+		} else {
+			$k = array_rand($this->handle['slaves']);
+			$handle = &$this->handle['slaves'][$k];
+		}
+		if ($data = $handle->get($key)) {
+			return @unserialize($data);
+		} else {
+			return null;
+		}
+	}
+
+	public function set($key, $value, $cacheTime) {
+		$this->_init();
+		$value = serialize($value);
+		foreach ($this->handle['masters'] as &$handle) {
+			if ($cacheTime) {
+				return $handle->setex($key, $cacheTime, $value);
+			} else {
+				return $handle->set($key, $value);
+			}
+		}
 	}
 
 }
