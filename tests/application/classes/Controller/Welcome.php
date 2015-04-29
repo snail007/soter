@@ -3,12 +3,20 @@
 class Controller_Welcome extends Soter_Controller {
 
 	public function do_index() {
-		$data = array('a' => 'vvv', 'd' => 'ddd');
-		//Sr::config()->setIsRewrite(true);
-		echo Sr::url('Welcome/index.do', $data);
-		Sr::view()->add('a', 'ccc');
-
-		return Sr::view()->set($data)->load('test', $data);
+		 $data['userId']=123;
+		 $data['name']=' <b>dd</b> ';
+		 $rules=array(
+		     'name'=>array(
+			 'functions[trim]'=>'',
+			 'required'=>'名称不能为空',
+			 'functions[htmlspecialchars]'=>'',
+		     ),
+		 );
+		 if(!Sr::checkData($data, $rules, $returnData, $errorMessage)){
+			 Sr::dump($errorMessage);
+		 }else{
+			 Sr::dump($returnData);
+		 }
 	}
 
 	/**

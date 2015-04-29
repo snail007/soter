@@ -1143,15 +1143,6 @@ class Soter_Uri_Rewriter_Default implements Soter_Uri_Rewriter {
 class Soter_Exception_Handle_Default implements Soter_Exception_Handle {
 
 	public function handle(Soter_Exception $exception) {
-		if ($exception instanceof Soter_Exception_404) {
-			exit('404 error');
-		} elseif ($exception instanceof Soter_Exception_500) {
-			exit('500 error');
-		} elseif ($exception instanceof Soter_Exception_Database) {
-			exit('db error');
-		} else {
-			exit('404');
-		}
 		$exception->render();
 	}
 
@@ -1364,7 +1355,7 @@ class Soter_Cache_Memcache implements Soter_Cache {
 
 	private function _init() {
 		if (empty($this->handle)) {
-			$this->handle = new Memcached();
+			$this->handle = new Memcache();
 			foreach ($this->config as $server) {
 				$this->handle->addserver($server[0], $server[1]);
 			}
@@ -1373,12 +1364,12 @@ class Soter_Cache_Memcache implements Soter_Cache {
 
 	public function clean() {
 		$this->_init();
-		$this->handle->flush();
+		return $this->handle->flush();
 	}
 
 	public function delete($key) {
 		$this->_init();
-		$this->handle->delete($key);
+		return $this->handle->delete($key);
 	}
 
 	public function get($key) {
@@ -1424,14 +1415,14 @@ class Soter_Cache_Redis implements Soter_Cache {
 
 	private function _init() {
 		if (empty($this->handle)) {
-			$this->handle = new Memcached();
+			$this->handle = array();
 			foreach (array('masters', 'slaves') as $type) {
 				foreach ($this->config[$type] as $k => $config) {
 					$this->handle[$type][$k] = new Redis();
 					if ($config['type'] == 'sock') {
 						$this->handle[$type][$k]->connect($config['sock']);
 					} else {
-						$this->handle[$type][$k]->connect($config['host'], $config['port'], $config['timeout'], NULL, $config['retry']);
+						$this->handle[$type][$k]->connect($config['host'], $config['port'], $config['timeout'], $config['retry']);
 					}
 					if (!is_null($config['password'])) {
 						$this->handle[$type][$k]->auth($config['password']);
@@ -1443,6 +1434,10 @@ class Soter_Cache_Redis implements Soter_Cache {
 						$this->handle[$type][$k]->setOption(Redis::OPT_PREFIX, $config['prefix']);
 					}
 				}
+			}
+			if (empty($this->handle['slaves']) && !empty($this->handle['masters'])) {
+				$this->handle['slaves'] = array();
+				$this->handle['slaves'][0] = &$this->handle['masters'][key($this->handle['masters'])];
 			}
 		}
 	}
@@ -1457,7 +1452,6 @@ class Soter_Cache_Redis implements Soter_Cache {
 
 	public function clean() {
 		$this->_init();
-		$value = serialize($value);
 		$status = true;
 		foreach ($this->handle['masters'] as &$handle) {
 			$status = $status & $handle->flushDB();
@@ -1467,7 +1461,6 @@ class Soter_Cache_Redis implements Soter_Cache {
 
 	public function delete($key) {
 		$this->_init();
-		$value = serialize($value);
 		$status = true;
 		foreach ($this->handle['masters'] as &$handle) {
 			$status = $status & $handle->delete($key);
@@ -1477,12 +1470,8 @@ class Soter_Cache_Redis implements Soter_Cache {
 
 	public function get($key) {
 		$this->_init();
-		if ($this->handle['slaves']) {
-			$handle = &$this->handle['masters'][key($this->handle['masters'])];
-		} else {
-			$k = array_rand($this->handle['slaves']);
-			$handle = &$this->handle['slaves'][$k];
-		}
+		$k = array_rand($this->handle['slaves']);
+		$handle = &$this->handle['slaves'][$k];
 		if ($data = $handle->get($key)) {
 			return @unserialize($data);
 		} else {
@@ -1500,383 +1489,6 @@ class Soter_Cache_Redis implements Soter_Cache {
 				return $handle->set($key, $value);
 			}
 		}
-	}
-
-}
-
-class Soter_Data_Checker {
-
-	/**
-	 * $source_data和$map的key一致，$map的value是返回数据的key
-	 * 根据$map的key读取$source_data中的数据，结果是以map的value为key的数数组
-	 * 
-	 * @param Array $map 字段映射数组,格式：array('表单name名称'=>'表字段名称',...)
-	 */
-	public static function readData(Array $map, $source_data = null) {
-		$data = array();
-		$formdata = is_null($source_data) ? Sr::post() : $source_data;
-		foreach ($formdata as $form_key => $val) {
-			if (isset($map[$form_key])) {
-				$data[$map[$form_key]] = $val;
-			}
-		}
-		return $data;
-	}
-
-	public static function checkData(Array $rule, Array $data = NULL, &$return_data = NULL, $db = null) {
-		if (is_null($data)) {
-			$data = Sr::post();
-		}
-		$return_data = $data;
-		/**
-		 * 验证前默认值规则处理
-		 */
-		foreach ($rule as $col => $val) {
-			//提取出默认值
-			foreach ($val as $_rule => $msg) {
-				if (stripos($_rule, 'default[') === 0) {
-					//删除默认值规则
-					unset($rule[$col][$_rule]);
-					$matches = self::getCheckRuleInfo($_rule);
-					$_r = $matches[1];
-					$args = $matches[2];
-					$return_data[$col] = isset($args[0]) ? $args[0] : '';
-				}
-			}
-		}
-		/**
-		 * 验证前默认值规则处理,没有默认值就补空
-		 * 并标记最后要清理的key
-		 */
-		$unset_keys = array();
-		foreach ($rule as $col => $val) {
-			if (!isset($return_data[$col])) {
-				$return_data[$col] = '';
-				$unset_keys[] = $col;
-			}
-		}
-		/**
-		 * 验证前set处理
-		 */
-		self::checkSetData('set', $rule, $return_data);
-		/**
-		 * 验证规则
-		 */
-		foreach ($rule as $col => $val) {
-			foreach ($val as $_rule => $msg) {
-				if (!empty($_rule)) {
-					/**
-					 * 可以为空规则检测
-					 */
-					if (empty($return_data[$col]) && isset($val['optional'])) {
-						//当前字段，验证通过
-						break;
-					} else {
-						$matches = self::getCheckRuleInfo($_rule);
-						$_r = $matches[1];
-						$args = $matches[2];
-						if ($_r == 'set' || $_r == 'set_post' || $_r == 'optional') {
-							continue;
-						}
-						if (!self::checkRule($_rule, $return_data[$col], $return_data, $db)) {
-							/**
-							 * 清理没有传递的key
-							 */
-							foreach ($unset_keys as $key) {
-								unset($return_data[$key]);
-							}
-							return $msg;
-						}
-					}
-				}
-			}
-		}
-		/**
-		 * 验证后set_post处理
-		 */
-		self::checkSetData('set_post', $rule, $return_data);
-
-		/**
-		 * 清理没有传递的key
-		 */
-		foreach ($unset_keys as $key) {
-			unset($return_data[$key]);
-		}
-		return NULL;
-	}
-
-	private static function checkSetData($type, Array $rule, &$return_data = NULL) {
-		foreach ($rule as $col => $val) {
-			foreach (array_keys($val) as $_rule) {
-				if (!empty($_rule)) {
-					#有规则而且不是非必须的，但是没有数据，就补上空数据，然后进行验证
-					if (!isset($return_data[$col])) {
-						if (isset($_rule['optional'])) {
-							break;
-						} else {
-							$return_data[$col] = '';
-						}
-					}
-					$matches = self::getCheckRuleInfo($_rule);
-					$_r = $matches[1];
-					$args = $matches[2];
-					if ($_r == $type) {
-						$_v = $return_data[$col];
-						$_args = array($_v, $return_data);
-						foreach ($args as $func) {
-							if (function_exists($func)) {
-								$reflection = new ReflectionFunction($func);
-								//如果是系统函数
-								if ($reflection->isInternal()) {
-									$_args = array($_v);
-								}
-							}
-							$_v = self::call($func, $_args);
-						}
-						$return_data[$col] = $_v;
-					}
-				}
-			}
-		}
-	}
-
-	private static function getCheckRuleInfo($_rule) {
-		$matches = array();
-		preg_match('|([^\[]+)(?:\[(.*)\](.?))?|', $_rule, $matches);
-		$matches[1] = isset($matches[1]) ? $matches[1] : '';
-		$matches[3] = !empty($matches[3]) ? $matches[3] : ',';
-		if ($matches[1] != 'reg') {
-			$matches[2] = isset($matches[2]) ? explode($matches[3], $matches[2]) : array();
-		} else {
-			$matches[2] = isset($matches[2]) ? array($matches[2]) : array();
-		}
-		return $matches;
-	}
-
-	/**
-	 * 调用一个方法或者函数(无论方法是静态还是动态，是私有还是保护还是公有的都可以调用)
-	 * 所有示例：
-	 * 1.调用类的静态方法
-	 * $ret=$this->call('UserModel::encodePassword', $args);
-	 * 2.调用类的方法
-	 * $ret=$this->call(array('UserModel','checkPassword), $args);
-	 * 3.调用用户自定义方法
-	 * $ret=$this->call('cleanJs', $args);
-	 * 4.调用系统函数
-	 * $ret=$this->call('var_dump', $args);
-	 * @param type $func
-	 * @param type $args
-	 * @return boolean
-	 */
-	public static function call($func, $args) {
-		if (is_array($func)) {
-			return self::callMethod($func, $args);
-		} elseif (function_exists($func)) {
-			return call_user_func_array($func, $args);
-		} elseif (stripos($func, '::')) {
-			$_func = explode('::', $func);
-			return self::callMethod($_func, $args);
-		}
-		return null;
-	}
-
-	private static function callMethod($_func, $args) {
-		$class = $_func[0];
-		$method = $_func[1];
-		if (is_object($class)) {
-			$class = new ReflectionClass(get_class($class));
-		} else {
-			$class = new ReflectionClass($class);
-		}
-		$obj = $class->newInstanceArgs();
-		$method = $class->getMethod($method);
-		$method->setAccessible(true);
-		return $method->invokeArgs($obj, $args);
-	}
-
-	private static function checkRule($_rule, $val, $data, $db = null) {
-		if (!$db) {
-			$db = MpLoader::instance()->database();
-		}
-		$matches = self::getCheckRuleInfo($_rule);
-		$_rule = $matches[1];
-		$args = $matches[2];
-		switch ($_rule) {
-			case 'required':
-				return !empty($val);
-			case 'match':
-				return isset($args[0]) && isset($data[$args[0]]) ? $val && ($val == $data[$args[0]]) : false;
-			case 'equal':
-				return isset($args[0]) ? $val && ($val == $args[0]) : false;
-			case 'enum':
-				return in_array($val, $args);
-			case 'unique':#比如unique[user.name] , unique[user.name,id:1]
-				if (!$val || !count($args)) {
-					return false;
-				}
-				$_info = explode('.', $args[0]);
-				if (count($_info) != 2) {
-					return false;
-				}
-				$table = $_info[0];
-				$col = $_info[1];
-				if (isset($args[1])) {
-					$_id_info = explode(':', $args[1]);
-					if (count($_id_info) != 2) {
-						return false;
-					}
-					$id_col = $_id_info[0];
-					$id = $_id_info[1];
-					$id = stripos($id, '#') === 0 ? MpInput::get_post(substr($id, 1)) : $id;
-					$where = array($col => $val, "$id_col <>" => $id);
-				} else {
-					$where = array($col => $val);
-				}
-				return !$db->where($where)->from($table)->count_all_results();
-			case 'exists':#比如exists[user.name] , exists[user.name,type:1], exists[user.name,type:1,sex:#sex]
-				if (!$val || !count($args)) {
-					return false;
-				}
-				$_info = explode('.', $args[0]);
-				if (count($_info) != 2) {
-					return false;
-				}
-				$table = $_info[0];
-				$col = $_info[1];
-				$where = array($col => $val);
-				if (count($args) > 1) {
-					foreach (array_slice($args, 1) as $v) {
-						$_id_info = explode(':', $v);
-						if (count($_id_info) != 2) {
-							continue;
-						}
-						$id_col = $_id_info[0];
-						$id = $_id_info[1];
-						$id = stripos($id, '#') === 0 ? MpInput::get_post(substr($id, 1)) : $id;
-						$where[$id_col] = $id;
-					}
-				}
-
-				return $db->where($where)->from($table)->count_all_results();
-			case 'min_len':
-				return isset($args[0]) ? (mb_strlen($val, 'UTF-8') >= intval($args[0])) : false;
-			case 'max_len':
-				return isset($args[0]) ? (mb_strlen($val, 'UTF-8') <= intval($args[0])) : false;
-			case 'range_len':
-				return count($args) == 2 ? (mb_strlen($val, 'UTF-8') >= intval($args[0])) && (mb_strlen($val, 'UTF-8') <= intval($args[1])) : false;
-			case 'len':
-				return isset($args[0]) ? (mb_strlen($val, 'UTF-8') == intval($args[0])) : false;
-			case 'min':
-				return isset($args[0]) && is_numeric($val) ? $val >= $args[0] : false;
-			case 'max':
-				return isset($args[0]) && is_numeric($val) ? $val <= $args[0] : false;
-			case 'range':
-				return (count($args) == 2) && is_numeric($val) ? $val >= $args[0] && $val <= $args[1] : false;
-			case 'alpha':#纯字母
-				return !preg_match('/[^A-Za-z]+/', $val);
-			case 'alpha_num':#纯字母和数字
-				return !preg_match('/[^A-Za-z0-9]+/', $val);
-			case 'alpha_dash':#纯字母和数字和下划线和-
-				return !preg_match('/[^A-Za-z0-9_-]+/', $val);
-			case 'alpha_start':#以字母开头
-				return preg_match('/^[A-Za-z]+/', $val);
-			case 'num':#纯数字
-				return !preg_match('/[^0-9]+/', $val);
-			case 'int':#整数
-				return preg_match('/^([-+]?[1-9]\d*|0)$/', $val);
-			case 'float':#小数
-				return preg_match('/^([1-9]\d*|0)\.\d+$/', $val);
-			case 'numeric':#数字-1，1.2，+3，4e5
-				return is_numeric($val);
-			case 'natural':#自然数0，1，2，3，12，333
-				return preg_match('/^([1-9]\d*|0)$/', $val);
-			case 'natural_no_zero':#自然数不包含0
-				return preg_match('/^[1-9]\d*$/', $val);
-			case 'email':
-				$args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
-				return !empty($val) ? preg_match('/^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/', $val) : $args[0];
-			case 'url':
-				$args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
-				return !empty($val) ? preg_match('/^http[s]?:\/\/[A-Za-z0-9]+\.[A-Za-z0-9]+[\/=\?%\-&_~`@[\]\':+!]*([^<>\"])*$/', $val) : $args[0];
-			case 'qq':
-				$args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
-				return !empty($val) ? preg_match('/^[1-9][0-9]{4,}$/', $val) : $args[0];
-			case 'phone':
-				$args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
-				return !empty($val) ? preg_match('/^(?:\d{3}-?\d{8}|\d{4}-?\d{7})$/', $val) : $args[0];
-			case 'mobile':
-				$args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
-				return !empty($val) ? preg_match('/^(((13[0-9]{1})|(15[0-9]{1})|(18[0-9]{1})|(14[0-9]{1}))+\d{8})$/', $val) : $args[0];
-			case 'zipcode':
-				$args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
-				return !empty($val) ? preg_match('/^[1-9]\d{5}(?!\d)$/', $val) : $args[0];
-			case 'idcard':
-				$args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
-				return !empty($val) ? preg_match('/^\d{14}(\d{4}|(\d{3}[xX])|\d{1})$/', $val) : $args[0];
-			case 'ip':
-				$args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
-				return !empty($val) ? preg_match('/^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$/', $val) : $args[0];
-			case 'chs':
-				$count = implode(',', array_slice($args, 1, 2));
-				$count = empty($count) ? '1,' : $count;
-				$can_empty = isset($args[0]) && $args[0] == 'true';
-				return !empty($val) ? preg_match('/^[\x{4e00}-\x{9fa5}]{' . $count . '}$/u', $val) : $can_empty;
-			case 'date':
-				$args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
-				return !empty($val) ? preg_match('/^[0-9]{4}-(((0[13578]|(10|12))-(0[1-9]|[1-2][0-9]|3[0-1]))|(02-(0[1-9]|[1-2][0-9]))|((0[469]|11)-(0[1-9]|[1-2][0-9]|30)))$/', $val) : $args[0];
-			case 'time':
-				$args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
-				return !empty($val) ? preg_match('/^(([0-1][0-9])|([2][0-3])):([0-5][0-9])(:([0-5][0-9]))$/', $val) : $args[0];
-			case 'datetime':
-				$args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
-				return !empty($val) ? preg_match('/^[0-9]{4}-(((0[13578]|(10|12))-(0[1-9]|[1-2][0-9]|3[0-1]))|(02-(0[1-9]|[1-2][0-9]))|((0[469]|11)-(0[1-9]|[1-2][0-9]|30))) (([0-1][0-9])|([2][0-3])):([0-5][0-9])(:([0-5][0-9]))$/', $val) : $args[0];
-
-			case 'reg':#正则表达式验证,reg[/^[\]]$/i]
-				/**
-				 * 模式修正符说明:
-				  i	表示在和模式进行匹配进不区分大小写
-				  m	将模式视为多行，使用^和$表示任何一行都可以以正则表达式开始或结束
-				  s	如果没有使用这个模式修正符号，元字符中的"."默认不能表示换行符号,将字符串视为单行
-				  x	表示模式中的空白忽略不计
-				  e	正则表达式必须使用在preg_replace替换字符串的函数中时才可以使用(讲这个函数时再说)
-				  A	以模式字符串开头，相当于元字符^
-				  Z	以模式字符串结尾，相当于元字符$
-				  U	正则表达式的特点：就是比较“贪婪”，使用该模式修正符可以取消贪婪模式
-				 */
-				return !empty($args[0]) ? preg_match($args[0], $val) : false;
-			/**
-			 * set set_post不参与验证，返回true跳过
-			 * 
-			 * 说明：
-			 * set用于设置在验证数据前对数据进行处理的函数或者方法
-			 * set_post用于设置在验证数据后对数据进行处理的函数或者方法
-			 * 如果设置了set，数据在验证的时候验证的是处理过的数据
-			 * 如果设置了set_post，可以通过第三个参数$data接收数据：$this->checkData($rule, $_POST, $data)，$data是验证通过并经过set_post处理后的数据
-			 * set和set_post后面是一个或者多个函数或者方法，多个逗号分割
-			 * 注意：
-			 * 1.无论是函数或者方法都必须有一个字符串返回
-			 * 2.如果是系统函数，系统会传递当前值给系统函数，因此系统函数必须是至少接受一个字符串参数，比如md5，trim
-			 * 3.如果是自定义的函数，系统会传递当前值和全部数据给自定义的函数，因此自定义函数可以接收两个参数第一个是值，第二个是全部数据$data
-			 * 4.如果是类的方法写法是：类名称::方法名 （方法静态动态都可以，public，private，都可以）
-			 */
-			case 'set':
-			case 'set_post':
-				return true;
-			default:
-				$_args = array_merge(array($val, $data), $args);
-				$matches = self::getCheckRuleInfo($_rule);
-				$func = $matches[1];
-				$args = $matches[2];
-				if (function_exists($func)) {
-					$reflection = new ReflectionFunction($func);
-					//如果是系统函数
-					if ($reflection->isInternal()) {
-						$_args = isset($_args[0]) ? array($_args[0]) : array();
-					}
-				}
-				return self::call($_rule, $_args);
-		}
-		return false;
 	}
 
 }

@@ -1,6 +1,6 @@
 {
 	"name":        "snail/soter",
-	"description": "micro php framework",
+	"description": "tiny php framework",
 	"homepage":    "http://soter.microphp.us",
 	"license":     "MIT",
 	"keywords":    ["snail", "framework","soter","php"],
@@ -16,6 +16,6 @@
 		"source":   "http://github.com/snail007/soter"
 	},
 	"require": {
-		"php":        ">=5.2.0"
+		"php":        ">=5.3.0"
 	}
 }

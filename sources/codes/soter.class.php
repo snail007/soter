@@ -808,13 +808,13 @@ class Sr {
 			$path = $dirPath . $value;
 			if (is_dir($path)) {
 				self::rmdir($path);
-				rmdir($path);
+				@rmdir($path);
 			} else {
 				@unlink($path);
 			}
 		}
 		if ($includeSelf) {
-			rmdir($dirPath);
+			@rmdir($dirPath);
 		}
 		return true;
 	}
@@ -869,6 +869,46 @@ class Sr {
 			$url = rtrim($url, '&');
 		}
 		return $url;
+	}
+
+	static function checkData($data, $rules, &$returnData, &$errorMessage) {
+		static $checkRules;
+		if (empty($checkRules)) {
+			$checkRules = Sr::config('rules');
+		}
+		$getCheckRuleInfo = function($_rule) {
+			$matches = array();
+			preg_match('|([^\[]+)(?:\[(.*)\](.?))?|', $_rule, $matches);
+			$matches[1] = isset($matches[1]) ? $matches[1] : '';
+			$matches[3] = !empty($matches[3]) ? $matches[3] : ',';
+			$matches[2] = isset($matches[2]) ? explode($matches[3], $matches[2]) : array();
+			return $matches;
+		};
+		$returnData = $data;
+		foreach ($rules as $key => $keyRules) {
+			foreach ($keyRules as $rule => $message) {
+				$matches = $getCheckRuleInfo($rule);
+				$_v = self::arrayGet($returnData, $key);
+				$_r = $matches[1];
+				$args = $matches[2];
+				if (!isset($checkRules[$_r]) || !is_callable($checkRules[$_r])) {
+					throw new Soter_Exception_500('error rule [ ' . $_r . ' ]');
+				}
+				$ruleFunction = $checkRules[$_r];
+				$isOkay = $ruleFunction($key, $_v, $data, $args, $returnValue, $break);
+				if (!$isOkay) {
+					$errorMessage = $message;
+					return false;
+				}
+				if (!is_null($returnValue)) {
+					$returnData[$key] = $returnValue;
+				}
+				if ($break) {
+					break;
+				}
+			}
+		}
+		return true;
 	}
 
 }
