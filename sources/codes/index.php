@@ -10,6 +10,8 @@ define('SOTER_APP_PATH', Sr::realPath(dirname(__FILE__) . '/../../tests/applicat
 define('SOTER_PACKAGES_PATH', SOTER_APP_PATH . 'packages/');
 //初始化系统配置
 Soter::initialize()
+	//时区设置
+	->setTimeZone('PRC')
 	//项目目录路径
 	->setApplicationDir(SOTER_APP_PATH)
 	//注册项目包
@@ -26,6 +28,7 @@ Soter::initialize()
 	->setEnvironment(($env = (($cliEnv = Sr::getOpt('env')) ? $cliEnv : Sr::arrayGet($_SERVER, 'ENVIRONMENT'))) ? Sr::config()->getServerEnvironment($env) : Sr::ENV_DEVELOPMENT)
 	//系统错误显示设置，非产品环境才显示
 	->setShowError(Sr::config()->getEnvironment() != Sr::ENV_PRODUCTION)
+
 	/**
 	 * 下面配置中可以使用：
 	 * 1.主项目的claseses目录，主项目类库目录，主项目拓展包里面的类
@@ -83,6 +86,20 @@ Soter::initialize()
 	 * 2.setCacheHandle也可以传入配置文件名称，配置文件里面要返回一个Soter_Cache缓存类对象。
 	 */
 	->setCacheHandle(new Soter_Cache_File())
+	//设置session信息
+	->setSessionConfig(array(
+	    'autostart' => true,
+	    'cookie_path' => '/',
+	    'cookie_domain' => Sr::server('HTTP_HOST'),
+	    'session_name' => 'SOTER',
+	    'lifetime' => 3600,
+	))
+	/**
+	 * 设置session托管类型
+	 * 1.setSessionHandle可以直接传入Soter_Session类对象
+	 * 2.setSessionHandle也可以传入配置文件名称，配置文件里面要返回一个Soter_Session类对象。
+	 */
+	->setSessionHandle('session')
 	//数据库连接信息，支持多主多从。如果只有一个数据库，只需要设置一个主即可。
 	->setDatabseConfigFile('database')
 	//加载项目自定义bootstrap.php配置,这一句一定要在最后，确保能覆盖上面的配置

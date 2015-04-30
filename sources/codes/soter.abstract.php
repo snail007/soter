@@ -217,3 +217,18 @@ abstract class Soter_Exception extends Exception {
 	}
 
 }
+
+abstract class Soter_Session {
+
+	protected $config;
+
+	public function __construct($configFileName) {
+		if (is_array($configFileName)) {
+			$this->config = $configFileName;
+		} else {
+			$this->config = Sr::config($configFileName);
+		}
+	}
+
+	public abstract function init();
+}

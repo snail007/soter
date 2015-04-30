@@ -313,7 +313,6 @@ class Soter_Config {
 		$primaryApplicationDir = '', //主项目目录
 		$indexDir = '', //入口文件目录
 		$indexName = '', //入口文件名称
-		$timeZone = 'PRC',
 		$classesDirName = 'classes',
 		$hmvcDirName = 'hmvc',
 		$libraryDirName = 'library',
@@ -364,7 +363,9 @@ class Soter_Config {
 		$maintainModeHandle,
 		$databseConfigFileName,
 		$databseConfig,
-		$cacheHandle
+		$cacheHandle,
+		$sessionConfig,
+		$sessionHandle
 
 	;
 
@@ -390,6 +391,46 @@ class Soter_Config {
 			$this->cacheHandle = $cacheHandle;
 		} else {
 			$this->cacheHandle = Sr::config($cacheHandle);
+		}
+		return $this;
+	}
+
+	/**
+	 * 
+	 * @return Soter_Session
+	 */
+	public function getSessionHandle() {
+		return $this->sessionHandle;
+	}
+
+	public function setSessionHandle($sessionHandle) {
+
+		if ($sessionHandle instanceof Soter_Session) {
+			$this->sessionHandle = $sessionHandle;
+		} else {
+			$this->sessionHandle = Sr::config($sessionHandle);
+		}
+		return $this;
+	}
+
+	public function getSessionConfig() {
+		if (empty($this->sessionConfig)) {
+			$this->sessionConfig = array(
+			    'autostart' => false,
+			    'cookie_path' => '/',
+			    'cookie_domain' => Sr::server('HTTP_HOST'),
+			    'session_name' => 'SOTER',
+			    'lifetime' => 3600,
+			);
+		}
+		return $this->sessionConfig;
+	}
+
+	public function setSessionConfig($sessionConfig) {
+		if (is_array($sessionConfig)) {
+			$this->sessionConfig = $sessionConfig;
+		} else {
+			$this->sessionConfig = Sr::config($sessionConfig);
 		}
 		return $this;
 	}
@@ -1007,16 +1048,14 @@ class Soter_Config {
 		return $this->loggerWriterContainer;
 	}
 
-	public function getTimeZone() {
-		return $this->timeZone;
-	}
+			
 
 	public function getIsRewrite() {
 		return $this->isRewrite;
 	}
 
 	public function setTimeZone($timeZone) {
-		$this->timeZone = $timeZone;
+		date_default_timezone_set($timeZone);
 		return $this;
 	}
 
@@ -1682,6 +1721,221 @@ class Soter_Generator_Mysql extends Soter_Task {
 			}
 		}
 		return $info;
+	}
+
+}
+
+class Soter_Session_Redis extends Soter_Session {
+
+	public function init() {
+		ini_set('session.save_handler', 'redis');
+		ini_set('session.save_path', $this->config['path']);
+	}
+
+}
+
+class Soter_Session_Memcached extends Soter_Session {
+
+	public function init() {
+		ini_set('session.save_handler', 'memcached');
+		ini_set('session.save_path', $this->config['path']);
+	}
+
+}
+
+class Soter_Session_Memcache extends Soter_Session {
+
+	public function init() {
+		ini_set('session.save_handler', 'memcache');
+		ini_set('session.save_path', $this->config['path']);
+	}
+
+}
+
+class Soter_Session_Mongodb extends Soter_Session {
+
+	private $__mongo_collection = NULL;
+	private $__current_session = NULL;
+	private $__mongo_conn = NULL;
+
+	public function __construct($configFileName) {
+		parent::__construct($configFileName);
+		$cfg = Sr::config()->getSessionConfig();
+		$this->config['lifetime'] = $cfg['lifetime'];
+	}
+
+	public function connect() {
+		if (is_object($this->__mongo_collection)) {
+			return;
+		}
+		$connection_string = sprintf('mongodb://%s:%s', $this->config['host'], $this->config['port']);
+		if ($this->config['user'] != null && $this->config['password'] != null) {
+			$connection_string = sprintf('mongodb://%s:%s@%s:%s/%s', $this->config['user'], $this->config['password'], $this->config['host'], $this->config['port'], $this->config['database']);
+		}
+		$opts = array('connect' => true);
+		if ($this->config['persistent'] && !empty($this->config['persistentId'])) {
+			$opts['persist'] = $this->config['persistentId'];
+		}
+		if ($this->config['replicaSet']) {
+			$opts['replicaSet'] = $this->config['replicaSet'];
+		}
+		$class = 'MongoClient';
+		if (!class_exists($class)) {
+			$class = 'Mongo';
+		}
+		$this->__mongo_conn = $object_conn = new $class($connection_string, $opts);
+		$object_mongo = $object_conn->{$this->config['database']};
+		$this->__mongo_collection = $object_mongo->{$this->config['collection']};
+		if ($this->__mongo_collection == NULL) {
+			throw new Soter_Exception_500('can not connect to mongodb server');
+		}
+	}
+
+	public function init() {
+		session_set_save_handler(array(&$this, 'open'), array(&$this, 'close'), array(&$this, 'read'), array(&$this, 'write'), array(&$this, 'destroy'), array(&$this, 'gc'));
+	}
+
+	public function open($session_path, $session_name) {
+		$this->connect();
+		return true;
+	}
+
+	public function close() {
+		$this->__mongo_conn->close();
+		return true;
+	}
+
+	public function read($session_id) {
+		$result = NULL;
+		$ret = '';
+		$expiry = time();
+		$query['_id'] = $session_id;
+		$query['expiry'] = array('$gte' => $expiry);
+		$result = $this->__mongo_collection->findone($query);
+		if ($result) {
+			$this->__current_session = $result;
+			$result['expiry'] = time() + $this->config['lifetime'];
+			$this->__mongo_collection->update(array("_id" => $session_id), $result);
+			$ret = $result['data'];
+		}
+		return $ret;
+	}
+
+	public function write($session_id, $data) {
+		$result = true;
+		$expiry = time() + $this->config['lifetime'];
+		$session_data = array();
+		if (empty($this->__current_session)) {
+			$session_id = $session_id;
+			$session_data['_id'] = $session_id;
+			$session_data['data'] = $data;
+			$session_data['expiry'] = $expiry;
+		} else {
+			$session_data = (array) $this->__current_session;
+			$session_data['data'] = $data;
+			$session_data['expiry'] = $expiry;
+		}
+		$query['_id'] = $session_id;
+		$record = $this->__mongo_collection->findOne($query);
+		if ($record == null) {
+			$this->__mongo_collection->insert($session_data);
+		} else {
+			$record['data'] = $data;
+			$record['expiry'] = $expiry;
+			$this->__mongo_collection->save($record);
+		}
+		return true;
+	}
+
+	public function destroy($session_id) {
+		unset($_SESSION);
+		$query['_id'] = $session_id;
+		$this->__mongo_collection->remove($query);
+		return true;
+	}
+
+	public function gc($max = 0) {
+		$query = array();
+		$query['expiry'] = array(':lt' => time());
+		$this->__mongo_collection->remove($query, array('justOne' => false));
+		return true;
+	}
+
+}
+
+/**
+ * @property Soter_Database_ActiveRecord $dbConnection Description
+ */
+class Soter_Session_Mysql extends Soter_Session {
+
+	protected $dbConnection;
+	protected $dbTable;
+
+	public function __construct($configFileName) {
+		parent::__construct($configFileName);
+		$cfg = Sr::config()->getSessionConfig();
+		$this->config['lifetime'] = $cfg['lifetime'];
+	}
+
+	public function init() {
+		session_set_save_handler(array($this, 'open'), array($this, 'close'), array($this, 'read'), array($this, 'write'), array($this, 'destroy'), array($this, 'gc'));
+	}
+
+	public function connect() {
+		$this->dbTable = $this->config['table'];
+		if ($this->config['group']) {
+			$this->dbConnection = Sr::db($this->config['group']);
+		} else {
+			$dbConfig = Soter_Database::getDefaultConfig();
+			$dbConfig['database'] = $this->config['database'];
+			$dbConfig['masters']['master01']['hostname'] = $this->config['hostname'];
+			$dbConfig['masters']['master01']['port'] = $this->config['port'];
+			$dbConfig['masters']['master01']['username'] = $this->config['username'];
+			$dbConfig['masters']['master01']['password'] = $this->config['password'];
+			$this->dbConnection = Sr::db($dbConfig);
+		}
+	}
+
+	public function open($save_path, $session_name) {
+		if (!is_object($this->dbConnection)) {
+			$this->connect();
+		}
+		return TRUE;
+	}
+
+	public function close() {
+		return $this->dbConnection->close();
+	}
+
+	public function read($id) {
+		$result = $this->dbConnection->from($this->dbTable)->where(array('id' => $id))->execute();
+		if ($result->total()) {
+			$record = $result->row();
+			$where['id'] = $record['id'];
+			$data['timestamp'] = time() + intval($this->config['lifetime']);
+			$this->dbConnection->update($this->dbTable, $data, $where)->execute();
+			return $record['data'];
+		} else {
+			return false;
+		}
+		return true;
+	}
+
+	public function write($id, $sessionData) {
+		$data['id'] = $id;
+		$data['data'] = $sessionData;
+		$data['timestamp'] = time() + intval($this->config['lifetime']);
+		$this->dbConnection->replace($this->dbTable, $data);
+		return $this->dbConnection->execute();
+	}
+
+	public function destroy($id) {
+		unset($_SESSION);
+		return $this->dbConnection->delete($this->dbTable, array('id' => $id))->execute();
+	}
+
+	public function gc($max = 0) {
+		return $this->dbConnection->delete($this->dbTable, array('timestamp <' => time()))->execute();
 	}
 
 }

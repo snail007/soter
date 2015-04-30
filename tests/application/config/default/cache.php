@@ -1,10 +1,48 @@
 <?php
+/**
+ * 缓存配置，如果要使用哪一种缓存，取消相应的return部分的注释即可。
+ * 提示：不要存在两个或者以上的return
+ */
 
 /**
- * Redis缓存支持多主多从，如果只有一个，设置一个master01，保持slaves为空即可。
- * 原理是：写操作会在所有的主上面写，获取数据会随机使用一个从。
+ * 文件缓存
  */
-return array(
+//return new Soter_Cache_File(Sr::config()->getPrimaryApplicationDir() . 'storage/cache/');
+
+/**
+ * Memcache缓存
+ */
+/*
+return new Soter_Cache_Memcache(
+	array(
+    //$name $port
+    array("127.0.0.1", 11211),
+	//array("new.host.ip",11211),
+	)
+);
+*/
+
+/**
+ * Memcached缓存
+ */
+/*
+return new Soter_Cache_Memcached(array(
+    //$name $port $sharing
+    array("127.0.0.1", 11211, 1),
+	//array("new.host.ip",11211,1),
+	)
+);
+ */ 
+/**
+ * Apc缓存
+ */
+//return new Soter_Cache_Apc();
+/**
+ * Redis缓存
+ */
+/*
+return new Soter_Cache_Redis(
+	array(
     'masters' => array(
 	'master01' => array(
 	    //sock,tcp;连接类型，tcp：使用host port连接，sock：本地sock文件连接
@@ -29,7 +67,9 @@ return array(
 	),
     ),
     'slaves' => array(
-//	'slave01' => array(
-//	),
+    //	'slave01' => array(
+    //	),
     ),
+	)
 );
+*/

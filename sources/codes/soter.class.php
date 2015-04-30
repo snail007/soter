@@ -91,6 +91,36 @@ class Soter {
 	 */
 	private static function runWeb() {
 		$config = self::getConfig();
+		//session初始化
+		$sessionConfig = $config->getSessionConfig();
+		@ini_set('session.auto_start', 0);
+		@ini_set('session.gc_probability', 1);
+		@ini_set('session.gc_divisor', 100);
+		@ini_set('session.gc_maxlifetime', $sessionConfig['lifetime']);
+		@ini_set('session.referer_check', '');
+		@ini_set('session.entropy_file', '/dev/urandom');
+		@ini_set('session.entropy_length', 16);
+		@ini_set('session.use_cookies', 1);
+		@ini_set('session.use_only_cookies', 1);
+		@ini_set('session.use_trans_sid', 0);
+		@ini_set('session.hash_function', 1);
+		@ini_set('session.hash_bits_per_character', 5);
+		session_cache_limiter('nocache');
+		session_set_cookie_params(
+			$sessionConfig['lifetime'], $sessionConfig['cookie_path'], preg_match('/^[^\\.]+$/', Sr::server('HTTP_HOST')) ? null : $sessionConfig['cookie_domain']
+		);
+		session_name($sessionConfig['session_name']);
+		register_shutdown_function('session_write_close');
+		//session托管检测
+		$sessionHandle = $config->getSessionHandle();
+		if ($sessionHandle && $sessionHandle instanceof Soter_Session) {
+			$sessionHandle->init();
+		}
+		if ($sessionConfig['autostart']) {
+			Sr::sessionStart();
+		}
+		//session初始化完毕
+
 		$class = '';
 		$method = '';
 		foreach ($config->getRouters() as $router) {
@@ -496,6 +526,15 @@ class Sr {
 	static function session($key = null, $default = null, $xssClean = false) {
 		$value = is_null($key) ? $_SESSION : self::arrayGet($_SESSION, $key, $default);
 		return $xssClean ? self::xssClean($value) : $value;
+	}
+
+	static function sessionSet($key = null, $value = null) {
+		self::sessionStart();
+		if (is_array($key)) {
+			$_SESSION = array_merge($_SESSION, $key);
+		} else {
+			$_SESSION[$key] = $value;
+		}
 	}
 
 	static function server($key = null, $default = null) {
@@ -909,6 +948,12 @@ class Sr {
 			}
 		}
 		return true;
+	}
+
+	static function sessionStart() {
+		if (!isset($_SESSION)) {
+			session_start();
+		}
 	}
 
 }

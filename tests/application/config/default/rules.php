@@ -12,7 +12,7 @@ return array(
 	    return true;
     },
     'optional' => function($key, $value, $data, $args, &$returnValue = null, &$break = false) {
-	    $break = true;
+	    $break = empty($value);
 	    return true;
     },
     'required' => function($key, $value, $data, $args, &$returnValue = null, &$break = false) {
