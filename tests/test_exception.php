@@ -16,8 +16,8 @@ class Test_model extends UnitTestCase {
 		$browser = new SimpleBrowser();
 		$browser->get(testUrl('Demo/Welcome/exceptionNotice.html'));
 		$obj = json_decode($browser->getContent());
-		$this->assertTrue($obj->errorMessage === 'Undefined variable: none');
-		$this->assertTrue($obj->errorType === 'NOTICE');
+		$this->assertTrue($obj->message === 'Undefined variable: none');
+		$this->assertTrue($obj->type === 'NOTICE');
 	}
 
 	/**
@@ -27,8 +27,8 @@ class Test_model extends UnitTestCase {
 		$browser = new SimpleBrowser();
 		$browser->get(testUrl('Demo/Welcome/exceptionException.html'));
 		$obj = json_decode($browser->getContent());
-		$this->assertTrue($obj->errorMessage === 'throw test');
-		$this->assertTrue($obj->errorType === 'Exception');
+		$this->assertTrue($obj->message === 'throw test');
+		$this->assertTrue($obj->type === 'Exception');
 	}
 
 	/**
@@ -38,13 +38,13 @@ class Test_model extends UnitTestCase {
 		$browser = new SimpleBrowser();
 		$browser->get(testUrl('Demo/Welcome/exception.html'));
 		$obj = json_decode($browser->getContent());
-		$this->assertTrue(!empty($obj->errorTime));
-		$this->assertTrue(!empty($obj->errorFile));
-		$this->assertTrue(!empty($obj->errorLine));
-		$this->assertTrue(!empty($obj->errorCode));
-		$this->assertTrue(!empty($obj->errorMessage));
+		$this->assertTrue(!empty($obj->time));
+		$this->assertTrue(!empty($obj->file));
+		$this->assertTrue(!empty($obj->line));
+		$this->assertTrue(!empty($obj->code));
+		$this->assertTrue(!empty($obj->message));
 		$flag = 'Call to undefined function none()';
-		$this->assertTrue(fixString($obj->errorMessage) === fixString($flag));
+		$this->assertTrue(fixString($obj->message) === fixString($flag));
 	}
 
 	/**
@@ -98,13 +98,13 @@ class Test_model extends UnitTestCase {
 		$browser = new SimpleBrowser();
 		$browser->get(testUrl('Welcome/exception.do'));
 		$obj = json_decode($browser->getContent());
-		$this->assertTrue(!empty($obj->errorTime));
-		$this->assertTrue(!empty($obj->errorFile));
-		$this->assertTrue(!empty($obj->errorLine));
-		$this->assertTrue(!empty($obj->errorCode));
-		$this->assertTrue(!empty($obj->errorMessage));
+		$this->assertTrue(!empty($obj->time));
+		$this->assertTrue(!empty($obj->file));
+		$this->assertTrue(!empty($obj->line));
+		$this->assertTrue(!empty($obj->code));
+		$this->assertTrue(!empty($obj->message));
 		$flag = 'Call to undefined function none()';
-		$this->assertTrue(strpos(fixString($obj->errorMessage), fixString($flag)) !== FALSE);
+		$this->assertTrue(strpos(fixString($obj->message), fixString($flag)) !== FALSE);
 	}
 
 	/**
@@ -158,8 +158,8 @@ class Test_model extends UnitTestCase {
 		$browser = new SimpleBrowser();
 		$browser->get(testUrl('Welcome/exceptionNotice.do'));
 		$obj = json_decode($browser->getContent());
-		$this->assertTrue($obj->errorMessage === 'Undefined variable: none');
-		$this->assertTrue($obj->errorType === 'NOTICE');
+		$this->assertTrue($obj->message === 'Undefined variable: none');
+		$this->assertTrue($obj->type === 'NOTICE');
 	}
 
 	/**
@@ -169,8 +169,8 @@ class Test_model extends UnitTestCase {
 		$browser = new SimpleBrowser();
 		$browser->get(testUrl('Welcome/exceptionException.do'));
 		$obj = json_decode($browser->getContent());
-		$this->assertTrue($obj->errorMessage === 'throw test');
-		$this->assertTrue($obj->errorType === 'Exception');
+		$this->assertTrue($obj->message === 'throw test');
+		$this->assertTrue($obj->type === 'Exception');
 	}
 
 }

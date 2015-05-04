@@ -114,7 +114,11 @@ class Soter_View {
 }
 
 class Soter_Response {
-	
+
+	public function render() {
+		
+	}
+
 }
 
 class Soter_CliArgs {
@@ -341,13 +345,13 @@ class Soter_Config {
 		$backendServerIpWhitelist = '',
 		$isRewrite = FALSE,
 		$request, $showError = true,
-		$excptionErrorJsonMessageName = 'errorMessage',
-		$excptionErrorJsonFileName = 'errorFile',
-		$excptionErrorJsonLineName = 'errorLine',
-		$excptionErrorJsonTypeName = 'errorType',
-		$excptionErrorJsonCodeName = 'errorCode',
-		$excptionErrorJsonTraceName = 'errorTrace',
-		$excptionErrorJsonTimeName = 'errorTime',
+		$excptionErrorJsonMessageName = 'message',
+		$excptionErrorJsonFileName = 'file',
+		$excptionErrorJsonLineName = 'line',
+		$excptionErrorJsonTypeName = 'type',
+		$excptionErrorJsonCodeName = 'code',
+		$excptionErrorJsonTraceName = 'trace',
+		$excptionErrorJsonTimeName = 'time',
 		$routersContainer = array(),
 		$packageMasterContainer = array(),
 		$packageContainer = array(),
@@ -365,9 +369,19 @@ class Soter_Config {
 		$databseConfig,
 		$cacheHandle,
 		$sessionConfig,
-		$sessionHandle
+		$sessionHandle,
+		$methodCacheConfig
 
 	;
+
+	public function getMethodCacheConfig() {
+		return $this->methodCacheConfig;
+	}
+
+	public function setMethodCacheConfig($methodCacheConfig) {
+		$this->methodCacheConfig = is_array($methodCacheConfig) ? $methodCacheConfig : Sr::config($methodCacheConfig);
+		return $this;
+	}
 
 	public function getViewsDirName() {
 		return $this->viewsDirName;
@@ -1047,8 +1061,6 @@ class Soter_Config {
 	public function getLoggerWriters() {
 		return $this->loggerWriterContainer;
 	}
-
-			
 
 	public function getIsRewrite() {
 		return $this->isRewrite;
