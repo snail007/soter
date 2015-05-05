@@ -981,6 +981,9 @@ class Sr {
 				    return true;
 			    }, 'required' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    $value = (array) $value;
+				    if(empty($value)){
+					    return false;
+				    }
 				    foreach ($value as $v) {
 					    if (empty($v)) {
 						    return false;
