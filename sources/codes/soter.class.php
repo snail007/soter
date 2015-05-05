@@ -965,6 +965,8 @@ class Sr {
 					    $minOkay = count($value) >= intval($args[1]);
 				    }
 				    return $minOkay && $maxOkay;
+			    }, 'notArray' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    return !is_array($value);
 			    }, 'default' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    if (is_array($value)) {
 					    $i = 0;
