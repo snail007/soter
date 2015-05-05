@@ -981,11 +981,18 @@ class Sr {
 				    return true;
 			    }, 'required' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    $value = (array) $value;
-				    if(empty($value)){
+				    if (empty($value)) {
 					    return false;
 				    }
 				    foreach ($value as $v) {
 					    if (empty($v)) {
+						    return false;
+					    }
+				    }
+				    return true;
+			    }, 'requiredKey' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    foreach ($args as $k) {
+					    if (!isset($data[$k])) {
 						    return false;
 					    }
 				    }
