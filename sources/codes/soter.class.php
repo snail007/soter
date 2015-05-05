@@ -958,7 +958,7 @@ class Sr {
 				    }
 				    return true;
 			    }, 'optional' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    $break=!isset($data[$key]);
+				    $break = !isset($data[$key]);
 				    return true;
 			    }, 'required' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    return !empty($value);
@@ -1163,6 +1163,76 @@ class Sr {
 			if (!isset($_SESSION)) {
 				session_start();
 			}
+		}
+
+		/**
+		 * 分页函数
+		 * @param type $total 一共多少记录
+		 * @param type $page  当前是第几页
+		 * @param type $pagesize 每页多少
+		 * @param type $url    url是什么，url里面的{page}会被替换成页码
+		 * @param array $order 分页条的组成，是一个数组，可以按着1-6的序号，选择分页条组成部分和每个部分的顺序
+		 * @param int $a_count   分页条中a页码链接的总数量,不包含当前页的a标签，默认10个。
+		 * @return type  String
+		 * echo Sr::page(100,3,10,'?article/list/{page}',array(3,4,5,1,2,6));
+		 */
+		static function page($total, $page, $pagesize, $url, $order = array(1, 2, 3, 4, 5, 6), $a_count = 10) {
+			$a_num = $a_count;
+			$first = '首页';
+			$last = '尾页';
+			$pre = '上页';
+			$next = '下页';
+			$a_num = $a_num % 2 == 0 ? $a_num + 1 : $a_num;
+			$pages = ceil($total / $pagesize);
+			$curpage = intval($page) ? intval($page) : 1;
+			$curpage = $curpage > $pages || $curpage <= 0 ? 1 : $curpage; #当前页超范围置为1
+			$body = '<span class="page_body">';
+			$prefix = '';
+			$subfix = '';
+			$start = $curpage - ($a_num - 1) / 2; #开始页
+			$end = $curpage + ($a_num - 1) / 2;  #结束页
+			$start = $start <= 0 ? 1 : $start;   #开始页超范围修正
+			$end = $end > $pages ? $pages : $end; #结束页超范围修正
+			if ($pages >= $a_num) {#总页数大于显示页数
+				if ($curpage <= ($a_num - 1) / 2) {
+					$end = $a_num;
+				}//当前页在左半边补右边
+				if ($end - $curpage <= ($a_num - 1) / 2) {
+					$start-=floor($a_num / 2) - ($end - $curpage);
+				}//当前页在右半边补左边
+			}
+			for ($i = $start; $i <= $end; $i++) {
+				if ($i == $curpage) {
+					$body.='<a class="page_cur_page" href="javascript:void(0);"><b>' . $i . '</b></a>';
+				} else {
+					$body.='<a href="' . str_replace('{page}', $i, $url) . '">' . $i . '</a>';
+				}
+			}
+			$body.='</span>';
+			$prefix = ($curpage == 1 ? '' : '<span class="page_bar_prefix"><a href="' . str_replace('{page}', 1, $url) . '">' . $first . '</a><a href="' . str_replace('{page}', $curpage - 1, $url) . '">' . $pre . '</a></span>');
+			$subfix = ($curpage == $pages ? '' : '<span class="page_bar_subfix"><a href="' . str_replace('{page}', $curpage + 1, $url) . '">' . $next . '</a><a href="' . str_replace('{page}', $pages, $url) . '">' . $last . '</a></span>');
+			$info = "<span class=\"page_cur\">第{$curpage}/{$pages}页</span>";
+			$id = "gsd09fhas9d" . rand(100000, 1000000);
+			$go = '<script>function ekup(){if(event.keyCode==13){clkyup();}}function clkyup(){var num=document.getElementById(\'' . $id . '\').value;if(!/^\d+$/.test(num)||num<=0||num>' . $pages . '){alert(\'请输入正确页码!\');return;};location=\'' . addslashes($url) . '\'.replace(/\\{page\\}/,document.getElementById(\'' . $id . '\').value);}</script><span class="page_input_num"><input onkeyup="ekup()" type="text" id="' . $id . '" style="width:40px;vertical-align:text-baseline;padding:0 2px;font-size:10px;border:1px solid gray;"/></span><span class="page_btn_go" onclick="clkyup();" style="cursor:pointer;">转到</span>';
+			$total = "<span class=\"page_total\">共{$total}条</span>";
+			$pagination = array(
+			    $total,
+			    $info,
+			    $prefix,
+			    $body,
+			    $subfix,
+			    $go
+			);
+			$output = array();
+			if (is_null($order)) {
+				$order = array(1, 2, 3, 4, 5, 6);
+			}
+			foreach ($order as $key) {
+				if (isset($pagination[$key - 1])) {
+					$output[] = $pagination[$key - 1];
+				}
+			}
+			return $pages > 1 ? implode("", $output) : '';
 		}
 
 	}
