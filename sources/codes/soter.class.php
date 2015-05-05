@@ -952,8 +952,27 @@ class Sr {
 		static $checkRules;
 		if (empty($checkRules)) {
 			$defaultRules = array(
-			    'default' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (empty($value)) {
+			    'array' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!is_array($value) || empty($args)) {
+					    return false;
+				    }
+				    $minOkay = true;
+				    if (isset($args[0])) {
+					    $minOkay = count($value) >= intval($args[0]);
+				    }
+				    $maxOkay = true;
+				    if (isset($args[1])) {
+					    $minOkay = count($value) >= intval($args[1]);
+				    }
+				    return $minOkay && $maxOkay;
+			    }, 'default' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (is_array($value)) {
+					    $i = 0;
+					    foreach ($value as $k => $v) {
+						    $returnValue[$k] = empty($v) ? (isset($args[$i]) ? $args[$i] : $args[0]) : $v;
+						    $i++;
+					    }
+				    } elseif (empty($value)) {
 					    $returnValue = $args[0];
 				    }
 				    return true;
@@ -961,11 +980,25 @@ class Sr {
 				    $break = !isset($data[$key]);
 				    return true;
 			    }, 'required' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    return !empty($value);
+				    $value = (array) $value;
+				    foreach ($value as $v) {
+					    if (empty($v)) {
+						    return false;
+					    }
+				    }
+				    return true;
 			    }, 'functions' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    $returnValue = $value;
-				    foreach ($args as $function) {
-					    $returnValue = $function($returnValue);
+				    if (is_array($returnValue)) {
+					    foreach ($returnValue as $k => $v) {
+						    foreach ($args as $function) {
+							    $returnValue[$k] = $function($v);
+						    }
+					    }
+				    } else {
+					    foreach ($args as $function) {
+						    $returnValue = $function($returnValue);
+					    }
 				    }
 				    return true;
 			    }, 'xss' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
@@ -982,7 +1015,13 @@ class Sr {
 				    }
 				    return true;
 			    }, 'enum' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    return in_array($value, $args);
+				    $value = (array) $value;
+				    foreach ($value as $v) {
+					    if (!in_array($v, $args)) {
+						    return false;
+					    }
+				    }
+				    return true;
 			    }, 'unique' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #比如unique[user.name] , unique[user.name,id:1]
 				    if (!$value || !count($args)) {
@@ -1033,89 +1072,292 @@ class Sr {
 				    }
 				    return $db->where($where)->from($table)->execute()->total();
 			    }, 'min_len' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    return isset($args[0]) ? (mb_strlen($value, 'UTF-8') >= intval($args[0])) : false;
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = isset($args[0]) ? (mb_strlen($value, 'UTF-8') >= intval($args[0])) : false;
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
 			    }, 'max_len' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    return isset($args[0]) ? (mb_strlen($value, 'UTF-8') <= intval($args[0])) : false;
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = isset($args[0]) ? (mb_strlen($value, 'UTF-8') <= intval($args[0])) : false;
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
 			    }, 'range_len' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    return count($args) == 2 ? (mb_strlen($value, 'UTF-8') >= intval($args[0])) && (mb_strlen($value, 'UTF-8') <= intval($args[1])) : false;
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = count($args) == 2 ? (mb_strlen($value, 'UTF-8') >= intval($args[0])) && (mb_strlen($value, 'UTF-8') <= intval($args[1])) : false;
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
 			    }, 'len' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    return isset($args[0]) ? (mb_strlen($value, 'UTF-8') == intval($args[0])) : false;
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = isset($args[0]) ? (mb_strlen($value, 'UTF-8') == intval($args[0])) : false;
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
 			    }, 'min' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    return isset($args[0]) && is_numeric($value) ? $value >= $args[0] : false;
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = isset($args[0]) && is_numeric($value) ? $value >= $args[0] : false;
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
 			    }, 'max' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    return isset($args[0]) && is_numeric($value) ? $value <= $args[0] : false;
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = isset($args[0]) && is_numeric($value) ? $value <= $args[0] : false;
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
 			    }, 'range' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    return (count($args) == 2) && is_numeric($value) ? $value >= $args[0] && $value <= $args[1] : false;
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = (count($args) == 2) && is_numeric($value) ? $value >= $args[0] && $value <= $args[1] : false;
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
 			    }, 'alpha' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #纯字母
-				    return !preg_match('/[^A-Za-z]+/', $value);
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = !preg_match('/[^A-Za-z]+/', $value);
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
 			    }, 'alpha_num' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #纯字母和数字
-				    return !preg_match('/[^A-Za-z0-9]+/', $value);
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = !preg_match('/[^A-Za-z0-9]+/', $value);
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
 			    }, 'alpha_dash' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #纯字母和数字和下划线和-
-				    return !preg_match('/[^A-Za-z0-9_-]+/', $value);
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = !preg_match('/[^A-Za-z0-9_-]+/', $value);
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
 			    }, 'alpha_start' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #以字母开头
-				    return preg_match('/^[A-Za-z]+/', $value);
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = preg_match('/^[A-Za-z]+/', $value);
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
 			    }, 'num' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #纯数字
-				    return !preg_match('/[^0-9]+/', $value);
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = !preg_match('/[^0-9]+/', $value);
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
 			    }, 'int' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #整数
-				    return preg_match('/^([-+]?[1-9]\d*|0)$/', $value);
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = preg_match('/^([-+]?[1-9]\d*|0)$/', $value);
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
 			    }, 'float' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #小数
 				    return preg_match('/^([1-9]\d*|0)\.\d+$/', $value);
 			    }, 'numeric' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #数字-1，1.2，+3，4e5
-				    return is_numeric($value);
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = is_numeric($value);
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
 			    }, 'natural' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #自然数0，1，2，3，12，333
-				    return preg_match('/^([1-9]\d*|0)$/', $value);
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = preg_match('/^([1-9]\d*|0)$/', $value);
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
 			    }, 'natural_no_zero' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #自然数不包含0
-				    return preg_match('/^[1-9]\d*$/', $value);
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = preg_match('/^[1-9]\d*$/', $value);
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
 			    }, 'email' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
-				    return !empty($value) ? preg_match('/^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/', $value) : $args[0];
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = !empty($value) ? preg_match('/^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/', $value) : $args[0];
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
 			    }, 'url' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
-				    return !empty($value) ? preg_match('/^http[s]?:\/\/[A-Za-z0-9]+\.[A-Za-z0-9]+[\/=\?%\-&_~`@[\]\':+!]*([^<>\"])*$/', $value) : $args[0];
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = !empty($value) ? preg_match('/^http[s]?:\/\/[A-Za-z0-9]+\.[A-Za-z0-9]+[\/=\?%\-&_~`@[\]\':+!]*([^<>\"])*$/', $value) : $args[0];
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
 			    }, 'qq' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
-				    return !empty($value) ? preg_match('/^[1-9][0-9]{4,}$/', $value) : $args[0];
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = !empty($value) ? preg_match('/^[1-9][0-9]{4,}$/', $value) : $args[0];
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
 			    }, 'phone' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
-				    return !empty($value) ? preg_match('/^(?:\d{3}-?\d{8}|\d{4}-?\d{7})$/', $value) : $args[0];
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = !empty($value) ? preg_match('/^(?:\d{3}-?\d{8}|\d{4}-?\d{7})$/', $value) : $args[0];
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
 			    }, 'mobile' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
-				    return !empty($value) ? preg_match('/^(((13[0-9]{1})|(15[0-9]{1})|(18[0-9]{1})|(14[0-9]{1}))+\d{8})$/', $value) : $args[0];
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = !empty($value) ? preg_match('/^(((13[0-9]{1})|(15[0-9]{1})|(18[0-9]{1})|(14[0-9]{1}))+\d{8})$/', $value) : $args[0];
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
 			    }, 'zipcode' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
-				    return !empty($value) ? preg_match('/^[1-9]\d{5}(?!\d)$/', $value) : $args[0];
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = !empty($value) ? preg_match('/^[1-9]\d{5}(?!\d)$/', $value) : $args[0];
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
 			    }, 'idcard' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
-				    return !empty($value) ? preg_match('/^\d{14}(\d{4}|(\d{3}[xX])|\d{1})$/', $value) : $args[0];
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = !empty($value) ? preg_match('/^\d{14}(\d{4}|(\d{3}[xX])|\d{1})$/', $value) : $args[0];
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
 			    }, 'ip' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
-				    return !empty($value) ? preg_match('/^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$/', $value) : $args[0];
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = !empty($value) ? preg_match('/^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$/', $value) : $args[0];
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
 			    }, 'chs' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    $count = implode(',', array_slice($args, 1, 2));
 				    $count = empty($count) ? '1,' : $count;
 				    $can_empty = isset($args[0]) && $args[0] == 'true';
-				    return !empty($value) ? preg_match('/^[\x{4e00}-\x{9fa5}]{' . $count . '}$/u', $value) : $can_empty;
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = !empty($value) ? preg_match('/^[\x{4e00}-\x{9fa5}]{' . $count . '}$/u', $value) : $can_empty;
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
 			    }, 'date' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
-				    return !empty($value) ? preg_match('/^[0-9]{4}-(((0[13578]|(10|12))-(0[1-9]|[1-2][0-9]|3[0-1]))|(02-(0[1-9]|[1-2][0-9]))|((0[469]|11)-(0[1-9]|[1-2][0-9]|30)))$/', $value) : $args[0];
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = !empty($value) ? preg_match('/^[0-9]{4}-(((0[13578]|(10|12))-(0[1-9]|[1-2][0-9]|3[0-1]))|(02-(0[1-9]|[1-2][0-9]))|((0[469]|11)-(0[1-9]|[1-2][0-9]|30)))$/', $value) : $args[0];
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
 			    }, 'time' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
-				    return !empty($value) ? preg_match('/^(([0-1][0-9])|([2][0-3])):([0-5][0-9])(:([0-5][0-9]))$/', $value) : $args[0];
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = !empty($value) ? preg_match('/^(([0-1][0-9])|([2][0-3])):([0-5][0-9])(:([0-5][0-9]))$/', $value) : $args[0];
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
 			    }, 'datetime' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
-				    return !empty($value) ? preg_match('/^[0-9]{4}-(((0[13578]|(10|12))-(0[1-9]|[1-2][0-9]|3[0-1]))|(02-(0[1-9]|[1-2][0-9]))|((0[469]|11)-(0[1-9]|[1-2][0-9]|30))) (([0-1][0-9])|([2][0-3])):([0-5][0-9])(:([0-5][0-9]))$/', $value) : $args[0];
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = !empty($value) ? preg_match('/^[0-9]{4}-(((0[13578]|(10|12))-(0[1-9]|[1-2][0-9]|3[0-1]))|(02-(0[1-9]|[1-2][0-9]))|((0[469]|11)-(0[1-9]|[1-2][0-9]|30))) (([0-1][0-9])|([2][0-3])):([0-5][0-9])(:([0-5][0-9]))$/', $value) : $args[0];
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
 			    }, 'reg' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    return !empty($args[0]) ? preg_match($args[0], $value) : false;
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = !empty($args[0]) ? preg_match($args[0], $value) : false;
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
 			    }
 				);
 				$userRules = Sr::config()->getDataCheckRules();
