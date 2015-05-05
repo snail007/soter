@@ -3,13 +3,11 @@
 
 -> 便捷输出的设计
 
--> 数据验证功能 *
-
 -> Dao模型父类设计
 
--> 国际化支持
+-> 国际化支持(暂时不加)
 
--> 控制器方法缓存
+
 
 
 @done
@@ -130,3 +128,5 @@
    4.redis缓存
    5.apc缓存
 -> session托管（memcache memcached redis mysql mongodb）
+-> 数据验证功能
+-> 控制器方法缓存

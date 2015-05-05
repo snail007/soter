@@ -746,7 +746,7 @@ class Sr {
 		}
 		$ipAddr = implode('.', $ipAddrArr); //修正后的ip地址
 
-		$netbits = intval($arr[1]);   //得到掩码位
+		$netbits = intval((isset($arr[1]) ? $arr[1] : 0));   //得到掩码位
 
 		$subnetMask = long2ip(ip2long("255.255.255.255") << (32 - $netbits));
 		$ip = ip2long($ipAddr);
@@ -760,7 +760,7 @@ class Sr {
 		if ($ips['count'] <= 0) {
 			$ips['count'] += 4294967296;
 		}
-		if ($ips['count'] < 0) {
+		if ($netbits == 32) {
 			$ips['count'] = 0;      //当$netbits是32的时候可用数目是-1，这里修正为1
 			$ips['start'] = long2ip($ip);    //可用IP开始
 			$ips['end'] = long2ip($ip);      //可用IP结束
@@ -931,50 +931,239 @@ class Sr {
 		return $url;
 	}
 
-	static function checkData($data, $rules, &$returnData, &$errorMessage) {
-		static $checkRules;
-		if (empty($checkRules)) {
-			$checkRules = Sr::config('rules');
-		}
-		$getCheckRuleInfo = function($_rule) {
-			$matches = array();
-			preg_match('|([^\[]+)(?:\[(.*)\](.?))?|', $_rule, $matches);
-			$matches[1] = isset($matches[1]) ? $matches[1] : '';
-			$matches[3] = !empty($matches[3]) ? $matches[3] : ',';
-			$matches[2] = isset($matches[2]) ? explode($matches[3], $matches[2]) : array();
-			return $matches;
-		};
-		$returnData = $data;
-		foreach ($rules as $key => $keyRules) {
-			foreach ($keyRules as $rule => $message) {
-				$matches = $getCheckRuleInfo($rule);
-				$_v = self::arrayGet($returnData, $key);
-				$_r = $matches[1];
-				$args = $matches[2];
-				if (!isset($checkRules[$_r]) || !is_callable($checkRules[$_r])) {
-					throw new Soter_Exception_500('error rule [ ' . $_r . ' ]');
-				}
-				$ruleFunction = $checkRules[$_r];
-				$isOkay = $ruleFunction($key, $_v, $data, $args, $returnValue, $break);
-				if (!$isOkay) {
-					$errorMessage = $message;
-					return false;
-				}
-				if (!is_null($returnValue)) {
-					$returnData[$key] = $returnValue;
-				}
-				if ($break) {
-					break;
-				}
+	/**
+	 * $source_data和$map的key一致，$map的value是返回数据的key
+	 * 根据$map的key读取$source_data中的数据，结果是以map的value为key的数数组
+	 * 
+	 * @param Array $map 字段映射数组,格式：array('表单name名称'=>'表字段名称',...)
+	 */
+	static function readData(Array $map, $sourceData = null) {
+		$data = array();
+		$formdata = is_null($sourceData) ? Sr::post() : $sourceData;
+		foreach ($formdata as $formKey => $val) {
+			if (isset($map[$formKey])) {
+				$data[$map[$formKey]] = $val;
 			}
 		}
-		return true;
+		return $data;
 	}
 
-	static function sessionStart() {
-		if (!isset($_SESSION)) {
-			session_start();
+	static function checkData($data, $rules, &$returnData, &$errorMessage, &$db = null) {
+		static $checkRules;
+		if (empty($checkRules)) {
+			$defaultRules = array(
+			    'default' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (empty($value)) {
+					    $returnValue = $args[0];
+				    }
+				    return true;
+			    }, 'optional' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    $break=!isset($data[$key]);
+				    return true;
+			    }, 'required' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    return !empty($value);
+			    }, 'functions' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    $returnValue = $value;
+				    foreach ($args as $function) {
+					    $returnValue = $function($returnValue);
+				    }
+				    return true;
+			    }, 'xss' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    $returnValue = self::xssClean($value);
+				    return true;
+			    }, 'match' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!isset($args[0]) || !isset($data[$args[0]]) || $value != $data[$args[0]]) {
+					    return false;
+				    }
+				    return true;
+			    }, 'equal' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!isset($args[0]) || $value != $args[0]) {
+					    return false;
+				    }
+				    return true;
+			    }, 'enum' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    return in_array($value, $args);
+			    }, 'unique' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    #比如unique[user.name] , unique[user.name,id:1]
+				    if (!$value || !count($args)) {
+					    return false;
+				    }
+				    $_info = explode('.', $args[0]);
+				    if (count($_info) != 2) {
+					    return false;
+				    }
+				    $table = $_info[0];
+				    $col = $_info[1];
+				    if (isset($args[1])) {
+					    $_id_info = explode(':', $args[1]);
+					    if (count($_id_info) != 2) {
+						    return false;
+					    }
+					    $id_col = $_id_info[0];
+					    $id = $_id_info[1];
+					    $id = stripos($id, '#') === 0 ? Sr::getPost(substr($id, 1)) : $id;
+					    $where = array($col => $value, "$id_col <>" => $id);
+				    } else {
+					    $where = array($col => $value);
+				    }
+				    return !$db->where($where)->from($table)->execute()->total();
+			    }, 'exists' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    #比如exists[user.name] , exists[user.name,type:1], exists[user.name,type:1,sex:#sex]
+				    if (!$value || !count($args)) {
+					    return false;
+				    }
+				    $_info = explode('.', $args[0]);
+				    if (count($_info) != 2) {
+					    return false;
+				    }
+				    $table = $_info[0];
+				    $col = $_info[1];
+				    $where = array($col => $value);
+				    if (count($args) > 1) {
+					    foreach (array_slice($args, 1) as $v) {
+						    $_id_info = explode(':', $v);
+						    if (count($_id_info) != 2) {
+							    continue;
+						    }
+						    $id_col = $_id_info[0];
+						    $id = $_id_info[1];
+						    $id = stripos($id, '#') === 0 ? Sr::getPost(substr($id, 1)) : $id;
+						    $where[$id_col] = $id;
+					    }
+				    }
+				    return $db->where($where)->from($table)->execute()->total();
+			    }, 'min_len' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    return isset($args[0]) ? (mb_strlen($value, 'UTF-8') >= intval($args[0])) : false;
+			    }, 'max_len' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    return isset($args[0]) ? (mb_strlen($value, 'UTF-8') <= intval($args[0])) : false;
+			    }, 'range_len' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    return count($args) == 2 ? (mb_strlen($value, 'UTF-8') >= intval($args[0])) && (mb_strlen($value, 'UTF-8') <= intval($args[1])) : false;
+			    }, 'len' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    return isset($args[0]) ? (mb_strlen($value, 'UTF-8') == intval($args[0])) : false;
+			    }, 'min' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    return isset($args[0]) && is_numeric($value) ? $value >= $args[0] : false;
+			    }, 'max' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    return isset($args[0]) && is_numeric($value) ? $value <= $args[0] : false;
+			    }, 'range' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    return (count($args) == 2) && is_numeric($value) ? $value >= $args[0] && $value <= $args[1] : false;
+			    }, 'alpha' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    #纯字母
+				    return !preg_match('/[^A-Za-z]+/', $value);
+			    }, 'alpha_num' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    #纯字母和数字
+				    return !preg_match('/[^A-Za-z0-9]+/', $value);
+			    }, 'alpha_dash' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    #纯字母和数字和下划线和-
+				    return !preg_match('/[^A-Za-z0-9_-]+/', $value);
+			    }, 'alpha_start' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    #以字母开头
+				    return preg_match('/^[A-Za-z]+/', $value);
+			    }, 'num' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    #纯数字
+				    return !preg_match('/[^0-9]+/', $value);
+			    }, 'int' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    #整数
+				    return preg_match('/^([-+]?[1-9]\d*|0)$/', $value);
+			    }, 'float' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    #小数
+				    return preg_match('/^([1-9]\d*|0)\.\d+$/', $value);
+			    }, 'numeric' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    #数字-1，1.2，+3，4e5
+				    return is_numeric($value);
+			    }, 'natural' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    #自然数0，1，2，3，12，333
+				    return preg_match('/^([1-9]\d*|0)$/', $value);
+			    }, 'natural_no_zero' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    #自然数不包含0
+				    return preg_match('/^[1-9]\d*$/', $value);
+			    }, 'email' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
+				    return !empty($value) ? preg_match('/^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/', $value) : $args[0];
+			    }, 'url' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
+				    return !empty($value) ? preg_match('/^http[s]?:\/\/[A-Za-z0-9]+\.[A-Za-z0-9]+[\/=\?%\-&_~`@[\]\':+!]*([^<>\"])*$/', $value) : $args[0];
+			    }, 'qq' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
+				    return !empty($value) ? preg_match('/^[1-9][0-9]{4,}$/', $value) : $args[0];
+			    }, 'phone' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
+				    return !empty($value) ? preg_match('/^(?:\d{3}-?\d{8}|\d{4}-?\d{7})$/', $value) : $args[0];
+			    }, 'mobile' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
+				    return !empty($value) ? preg_match('/^(((13[0-9]{1})|(15[0-9]{1})|(18[0-9]{1})|(14[0-9]{1}))+\d{8})$/', $value) : $args[0];
+			    }, 'zipcode' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
+				    return !empty($value) ? preg_match('/^[1-9]\d{5}(?!\d)$/', $value) : $args[0];
+			    }, 'idcard' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
+				    return !empty($value) ? preg_match('/^\d{14}(\d{4}|(\d{3}[xX])|\d{1})$/', $value) : $args[0];
+			    }, 'ip' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
+				    return !empty($value) ? preg_match('/^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$/', $value) : $args[0];
+			    }, 'chs' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    $count = implode(',', array_slice($args, 1, 2));
+				    $count = empty($count) ? '1,' : $count;
+				    $can_empty = isset($args[0]) && $args[0] == 'true';
+				    return !empty($value) ? preg_match('/^[\x{4e00}-\x{9fa5}]{' . $count . '}$/u', $value) : $can_empty;
+			    }, 'date' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
+				    return !empty($value) ? preg_match('/^[0-9]{4}-(((0[13578]|(10|12))-(0[1-9]|[1-2][0-9]|3[0-1]))|(02-(0[1-9]|[1-2][0-9]))|((0[469]|11)-(0[1-9]|[1-2][0-9]|30)))$/', $value) : $args[0];
+			    }, 'time' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
+				    return !empty($value) ? preg_match('/^(([0-1][0-9])|([2][0-3])):([0-5][0-9])(:([0-5][0-9]))$/', $value) : $args[0];
+			    }, 'datetime' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
+				    return !empty($value) ? preg_match('/^[0-9]{4}-(((0[13578]|(10|12))-(0[1-9]|[1-2][0-9]|3[0-1]))|(02-(0[1-9]|[1-2][0-9]))|((0[469]|11)-(0[1-9]|[1-2][0-9]|30))) (([0-1][0-9])|([2][0-3])):([0-5][0-9])(:([0-5][0-9]))$/', $value) : $args[0];
+			    }, 'reg' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    return !empty($args[0]) ? preg_match($args[0], $value) : false;
+			    }
+				);
+				$userRules = Sr::config()->getDataCheckRules();
+				$checkRules = (is_array($userRules) && !empty($userRules)) ? array_merge($defaultRules, $userRules) : $defaultRules;
+			}
+			$getCheckRuleInfo = function($_rule) {
+				$matches = array();
+				preg_match('|([^\[]+)(?:\[(.*)\](.?))?|', $_rule, $matches);
+				$matches[1] = isset($matches[1]) ? $matches[1] : '';
+				$matches[3] = !empty($matches[3]) ? $matches[3] : ',';
+				$matches[2] = isset($matches[2]) ? explode($matches[3], $matches[2]) : array();
+				return $matches;
+			};
+			$returnData = $data;
+			foreach ($rules as $key => $keyRules) {
+				foreach ($keyRules as $rule => $message) {
+					$matches = $getCheckRuleInfo($rule);
+					$_v = self::arrayGet($returnData, $key);
+					$_r = $matches[1];
+					$args = $matches[2];
+					if (!isset($checkRules[$_r]) || !is_callable($checkRules[$_r])) {
+						throw new Soter_Exception_500('error rule [ ' . $_r . ' ]');
+					}
+					$ruleFunction = $checkRules[$_r];
+					$db = is_object($db) ? $db : Sr::db();
+					$break = false;
+					$returnValue = null;
+					$isOkay = $ruleFunction($key, $_v, $data, $args, $returnValue, $break, $db);
+					if (!$isOkay) {
+						$errorMessage = $message;
+						return false;
+					}
+					if (!is_null($returnValue)) {
+						$returnData[$key] = $returnValue;
+					}
+					if ($break) {
+						break;
+					}
+				}
+			}
+			return true;
 		}
-	}
 
-}
+		static function sessionStart() {
+			if (!isset($_SESSION)) {
+				session_start();
+			}
+		}
+
+	}
+	

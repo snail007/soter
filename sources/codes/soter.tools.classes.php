@@ -370,9 +370,19 @@ class Soter_Config {
 		$cacheHandle,
 		$sessionConfig,
 		$sessionHandle,
-		$methodCacheConfig
+		$methodCacheConfig,
+		$dataCheckRules
 
 	;
+
+	public function getDataCheckRules() {
+		return $this->dataCheckRules;
+	}
+
+	public function setDataCheckRules($dataCheckRules) {
+		$this->dataCheckRules = is_array($dataCheckRules) ? $dataCheckRules : Sr::config($dataCheckRules);
+		return $this;
+	}
 
 	public function getMethodCacheConfig() {
 		return $this->methodCacheConfig;
@@ -1900,6 +1910,7 @@ class Soter_Session_Mysql extends Soter_Session {
 		} else {
 			$dbConfig = Soter_Database::getDefaultConfig();
 			$dbConfig['database'] = $this->config['database'];
+			$dbConfig['tablePrefix'] = $this->config['table_prefix'];
 			$dbConfig['masters']['master01']['hostname'] = $this->config['hostname'];
 			$dbConfig['masters']['master01']['port'] = $this->config['port'];
 			$dbConfig['masters']['master01']['username'] = $this->config['username'];

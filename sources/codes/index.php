@@ -102,8 +102,10 @@ Soter::initialize()
 	//->setSessionHandle('session')
 	//数据库连接信息，支持多主多从。如果只有一个数据库，只需要设置一个主即可。
 	->setDatabseConfigFile('database')
-	//设置控制器方法缓存规则，可以是配置文件名称，也可以是配置规则数组
+	//设置控制器方法缓存规则，参数可以是配置文件名称，也可以是配置规则数组
 	->setMethodCacheConfig('method_cache')
+	//设置自定义数据验证规则，参数可以是配置文件名称，也可以是规则数组
+	->setDataCheckRules('rules')
 	//加载项目自定义bootstrap.php配置,这一句一定要在最后，确保能覆盖上面的配置
 	->bootstrap()
 ;
