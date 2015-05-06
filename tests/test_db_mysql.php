@@ -54,6 +54,12 @@ class testDbMysql extends UnitTestCase {
 		$this->assertTrue($this->db->execute($cSql));
 	}
 
+	public function clean() {
+		$this->assertTrue($this->db->execute('DROP TABLE IF EXISTS test_a'));
+		$this->assertTrue($this->db->execute('DROP TABLE IF EXISTS test_b'));
+		$this->assertTrue($this->db->execute('DROP TABLE IF EXISTS test_c'));
+	}
+
 	public function testCreate() {
 		$this->init();
 		$this->db->insert('a', array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000)));
@@ -299,12 +305,6 @@ class testDbMysql extends UnitTestCase {
 		$this->assertEqual($this->db->isLocked(), true);
 		$this->db->unlock();
 		$this->clean();
-	}
-
-	public function clean() {
-		$this->assertTrue($this->db->execute('DROP TABLE IF EXISTS test_a'));
-		$this->assertTrue($this->db->execute('DROP TABLE IF EXISTS test_b'));
-		$this->assertTrue($this->db->execute('DROP TABLE IF EXISTS test_c'));
 	}
 
 }

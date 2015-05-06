@@ -953,7 +953,7 @@ class Sr {
 		if (empty($checkRules)) {
 			$defaultRules = array(
 			    'array' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!is_array($value) || empty($args)) {
+				    if (!isset($data[$key]) || !is_array($value)) {
 					    return false;
 				    }
 				    $minOkay = true;
@@ -971,6 +971,7 @@ class Sr {
 				    if (is_array($value)) {
 					    $i = 0;
 					    foreach ($value as $k => $v) {
+
 						    $returnValue[$k] = empty($v) ? (isset($args[$i]) ? $args[$i] : $args[0]) : $v;
 						    $i++;
 					    }
@@ -982,10 +983,10 @@ class Sr {
 				    $break = !isset($data[$key]);
 				    return true;
 			    }, 'required' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    $value = (array) $value;
-				    if (empty($value)) {
+				    if (!isset($data[$key]) || empty($value)) {
 					    return false;
 				    }
+				    $value = (array) $value;
 				    foreach ($value as $v) {
 					    if (empty($v)) {
 						    return false;
@@ -993,6 +994,8 @@ class Sr {
 				    }
 				    return true;
 			    }, 'requiredKey' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    $args[] = $key;
+				    $args = array_unique($args);
 				    foreach ($args as $k) {
 					    if (!isset($data[$k])) {
 						    return false;
@@ -1000,6 +1003,9 @@ class Sr {
 				    }
 				    return true;
 			    }, 'functions' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!isset($data[$key])) {
+					    return true;
+				    }
 				    $returnValue = $value;
 				    if (is_array($returnValue)) {
 					    foreach ($returnValue as $k => $v) {
@@ -1014,19 +1020,25 @@ class Sr {
 				    }
 				    return true;
 			    }, 'xss' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!isset($data[$key])) {
+					    return true;
+				    }
 				    $returnValue = self::xssClean($value);
 				    return true;
 			    }, 'match' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!isset($args[0]) || !isset($data[$args[0]]) || $value != $data[$args[0]]) {
+				    if (!isset($data[$key]) || !isset($args[0]) || !isset($data[$args[0]]) || $value != $data[$args[0]]) {
 					    return false;
 				    }
 				    return true;
 			    }, 'equal' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!isset($args[0]) || $value != $args[0]) {
+				    if (!isset($data[$key]) || !isset($args[0]) || $value != $args[0]) {
 					    return false;
 				    }
 				    return true;
 			    }, 'enum' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!isset($data[$key])) {
+					    return false;
+				    }
 				    $value = (array) $value;
 				    foreach ($value as $v) {
 					    if (!in_array($v, $args)) {
@@ -1036,7 +1048,7 @@ class Sr {
 				    return true;
 			    }, 'unique' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #比如unique[user.name] , unique[user.name,id:1]
-				    if (!$value || !count($args)) {
+				    if (!isset($data[$key]) || !$value || !count($args)) {
 					    return false;
 				    }
 				    $_info = explode('.', $args[0]);
@@ -1060,7 +1072,7 @@ class Sr {
 				    return !$db->where($where)->from($table)->execute()->total();
 			    }, 'exists' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #比如exists[user.name] , exists[user.name,type:1], exists[user.name,type:1,sex:#sex]
-				    if (!$value || !count($args)) {
+				    if (!isset($data[$key]) || !$value || !count($args)) {
 					    return false;
 				    }
 				    $_info = explode('.', $args[0]);
@@ -1084,6 +1096,9 @@ class Sr {
 				    }
 				    return $db->where($where)->from($table)->execute()->total();
 			    }, 'min_len' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!isset($data[$key])) {
+					    return false;
+				    }
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = isset($args[0]) ? (mb_strlen($value, 'UTF-8') >= intval($args[0])) : false;
@@ -1093,6 +1108,9 @@ class Sr {
 				    }
 				    return true;
 			    }, 'max_len' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!isset($data[$key])) {
+					    return false;
+				    }
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = isset($args[0]) ? (mb_strlen($value, 'UTF-8') <= intval($args[0])) : false;
@@ -1102,6 +1120,9 @@ class Sr {
 				    }
 				    return true;
 			    }, 'range_len' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!isset($data[$key])) {
+					    return false;
+				    }
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = count($args) == 2 ? (mb_strlen($value, 'UTF-8') >= intval($args[0])) && (mb_strlen($value, 'UTF-8') <= intval($args[1])) : false;
@@ -1111,6 +1132,9 @@ class Sr {
 				    }
 				    return true;
 			    }, 'len' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!isset($data[$key])) {
+					    return false;
+				    }
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = isset($args[0]) ? (mb_strlen($value, 'UTF-8') == intval($args[0])) : false;
@@ -1120,6 +1144,9 @@ class Sr {
 				    }
 				    return true;
 			    }, 'min' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!isset($data[$key])) {
+					    return false;
+				    }
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = isset($args[0]) && is_numeric($value) ? $value >= $args[0] : false;
@@ -1129,6 +1156,9 @@ class Sr {
 				    }
 				    return true;
 			    }, 'max' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!isset($data[$key])) {
+					    return false;
+				    }
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = isset($args[0]) && is_numeric($value) ? $value <= $args[0] : false;
@@ -1138,6 +1168,9 @@ class Sr {
 				    }
 				    return true;
 			    }, 'range' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!isset($data[$key])) {
+					    return false;
+				    }
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = (count($args) == 2) && is_numeric($value) ? $value >= $args[0] && $value <= $args[1] : false;
@@ -1147,6 +1180,9 @@ class Sr {
 				    }
 				    return true;
 			    }, 'alpha' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!isset($data[$key])) {
+					    return false;
+				    }
 				    #纯字母
 				    $v = (array) $value;
 				    foreach ($v as $value) {
@@ -1158,6 +1194,9 @@ class Sr {
 				    return true;
 			    }, 'alpha_num' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #纯字母和数字
+				    if (!isset($data[$key])) {
+					    return false;
+				    }
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !preg_match('/[^A-Za-z0-9]+/', $value);
@@ -1168,6 +1207,9 @@ class Sr {
 				    return true;
 			    }, 'alpha_dash' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #纯字母和数字和下划线和-
+				    if (!isset($data[$key])) {
+					    return false;
+				    }
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !preg_match('/[^A-Za-z0-9_-]+/', $value);
@@ -1178,6 +1220,9 @@ class Sr {
 				    return true;
 			    }, 'alpha_start' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #以字母开头
+				    if (!isset($data[$key])) {
+					    return false;
+				    }
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = preg_match('/^[A-Za-z]+/', $value);
@@ -1188,6 +1233,9 @@ class Sr {
 				    return true;
 			    }, 'num' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #纯数字
+				    if (!isset($data[$key])) {
+					    return false;
+				    }
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !preg_match('/[^0-9]+/', $value);
@@ -1198,6 +1246,9 @@ class Sr {
 				    return true;
 			    }, 'int' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #整数
+				    if (!isset($data[$key])) {
+					    return false;
+				    }
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = preg_match('/^([-+]?[1-9]\d*|0)$/', $value);
@@ -1208,9 +1259,22 @@ class Sr {
 				    return true;
 			    }, 'float' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #小数
-				    return preg_match('/^([1-9]\d*|0)\.\d+$/', $value);
+				    if (!isset($data[$key])) {
+					    return false;
+				    }
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = preg_match('/^([1-9]\d*|0)\.\d+$/', $value);
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
 			    }, 'numeric' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #数字-1，1.2，+3，4e5
+				    if (!isset($data[$key])) {
+					    return false;
+				    }
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = is_numeric($value);
@@ -1221,6 +1285,9 @@ class Sr {
 				    return true;
 			    }, 'natural' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #自然数0，1，2，3，12，333
+				    if (!isset($data[$key])) {
+					    return false;
+				    }
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = preg_match('/^([1-9]\d*|0)$/', $value);
@@ -1231,6 +1298,9 @@ class Sr {
 				    return true;
 			    }, 'natural_no_zero' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #自然数不包含0
+				    if (!isset($data[$key])) {
+					    return false;
+				    }
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = preg_match('/^[1-9]\d*$/', $value);
@@ -1240,6 +1310,9 @@ class Sr {
 				    }
 				    return true;
 			    }, 'email' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!isset($data[$key])) {
+					    return false;
+				    }
 				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
@@ -1250,6 +1323,9 @@ class Sr {
 				    }
 				    return true;
 			    }, 'url' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!isset($data[$key])) {
+					    return false;
+				    }
 				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
@@ -1260,6 +1336,9 @@ class Sr {
 				    }
 				    return true;
 			    }, 'qq' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!isset($data[$key])) {
+					    return false;
+				    }
 				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
@@ -1270,6 +1349,9 @@ class Sr {
 				    }
 				    return true;
 			    }, 'phone' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!isset($data[$key])) {
+					    return false;
+				    }
 				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
@@ -1280,6 +1362,9 @@ class Sr {
 				    }
 				    return true;
 			    }, 'mobile' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!isset($data[$key])) {
+					    return false;
+				    }
 				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
@@ -1290,6 +1375,9 @@ class Sr {
 				    }
 				    return true;
 			    }, 'zipcode' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!isset($data[$key])) {
+					    return false;
+				    }
 				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
@@ -1300,6 +1388,9 @@ class Sr {
 				    }
 				    return true;
 			    }, 'idcard' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!isset($data[$key])) {
+					    return false;
+				    }
 				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
@@ -1310,6 +1401,9 @@ class Sr {
 				    }
 				    return true;
 			    }, 'ip' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!isset($data[$key])) {
+					    return false;
+				    }
 				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
@@ -1320,6 +1414,9 @@ class Sr {
 				    }
 				    return true;
 			    }, 'chs' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!isset($data[$key])) {
+					    return false;
+				    }
 				    $count = implode(',', array_slice($args, 1, 2));
 				    $count = empty($count) ? '1,' : $count;
 				    $can_empty = isset($args[0]) && $args[0] == 'true';
@@ -1332,6 +1429,9 @@ class Sr {
 				    }
 				    return true;
 			    }, 'date' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!isset($data[$key])) {
+					    return false;
+				    }
 				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
@@ -1342,6 +1442,9 @@ class Sr {
 				    }
 				    return true;
 			    }, 'time' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!isset($data[$key])) {
+					    return false;
+				    }
 				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
@@ -1352,6 +1455,9 @@ class Sr {
 				    }
 				    return true;
 			    }, 'datetime' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!isset($data[$key])) {
+					    return false;
+				    }
 				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
@@ -1362,6 +1468,9 @@ class Sr {
 				    }
 				    return true;
 			    }, 'reg' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!isset($data[$key])) {
+					    return false;
+				    }
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($args[0]) ? preg_match($args[0], $value) : false;
@@ -1394,7 +1503,7 @@ class Sr {
 						throw new Soter_Exception_500('error rule [ ' . $_r . ' ]');
 					}
 					$ruleFunction = $checkRules[$_r];
-					$db = is_object($db) ? $db : Sr::db();
+					$db = (is_object($db) && ($db instanceof Soter_Database_ActiveRecord) ) ? $db : Sr::db();
 					$break = false;
 					$returnValue = null;
 					$isOkay = $ruleFunction($key, $_v, $data, $args, $returnValue, $break, $db);
