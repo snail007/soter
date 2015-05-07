@@ -55,7 +55,7 @@ $header = '/*
  * @package       Soter
  * @author        狂奔的蜗牛
  * @email         672308444@163.com
- * @copyright     Copyright (c) 2013 - ' . date('Y') . ', 狂奔的蜗牛, Inc.
+ * @copyright     Copyright (c) 2015 - ' . date('Y') . ', 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         ' . $ver . '
  * @createdtime   ' . date('Y-m-d H:i:s') . '
@@ -78,7 +78,7 @@ foreach ($files as $file) {
 	$soter.=$content;
 }
 file_put_contents(DIST_DIR . 'soter.php', $soter);
-file_put_contents(DIST_DIR . 'soter.min.php', compress_php_src(DIST_DIR . 'soter.php', true));
+file_put_contents(DIST_DIR . 'soter.min.php', "<?php\n" . $header . substr(compress_php_src(DIST_DIR . 'soter.php', true), 5));
 
 $index = file_get_contents(SRC_DIR . 'index.php');
 $index = str_replace('##{copyright}##', $header, $index);
@@ -88,8 +88,8 @@ $index = str_replace("->bootstrap()", '', $index);
 $index = str_replace("//加载项目自定义bootstrap.php配置,这一句一定要在最后，确保能覆盖上面的配置", '', $index);
 file_put_contents(DIST_DIR . 'index.php', $index);
 
-exec('rm -rf '.DIST_DIR.'docs/*');
-exec('cp -r ../soter-docs/* '.DIST_DIR.'docs/');
+exec('rm -rf ' . DIST_DIR . 'docs/*');
+exec('cp -r ../soter-docs/* ' . DIST_DIR . 'docs/');
 
 function common_replace(&$str) {
 	$str = preg_replace('|^ *// *[\w].*$\n|m', '', $str); //去掉英文单行注释

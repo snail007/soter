@@ -23,10 +23,10 @@
  * @package       Soter
  * @author        狂奔的蜗牛
  * @email         672308444@163.com
- * @copyright     Copyright (c) 2013 - 2015, 狂奔的蜗牛, Inc.
+ * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         v1.0.0
- * @createdtime   2015-05-07 12:35:10
+ * @createdtime   2015-05-07 12:42:32
  */
  
 
