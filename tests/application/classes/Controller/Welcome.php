@@ -3,22 +3,7 @@
 class Controller_Welcome extends Soter_Controller {
 
 	public function do_index() {
-		echo date('H');
-//		$data['userId'] = 123;
-//		$data['name'] = ' <b>dd</b> ';
-//		$rules = array(
-//		    'name' => array(
-//			'functions[trim]' => '',
-//			'required' => '名称不能为空',
-//			'functions[htmlspecialchars]' => '',
-//		    ),
-//		);
-//		if (!Sr::checkData($data, $rules, $returnData, $errorMessage)) {
-//			Sr::dump($errorMessage);
-//		} else {
-//			Sr::dump($returnData);
-//		}
-		Sr::sessionSet('test','123');
+		Sr::view()->load('index');
 	}
 
 	public function do_get() {

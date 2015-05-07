@@ -772,8 +772,8 @@ class Soter_Config {
 	 * 
 	 * @return Soter_Route
 	 */
-	public function &getRoute() {
-		return $this->route;
+	public function getRoute() {
+		return empty($this->route) ? new Soter_Route() : $this->route;
 	}
 
 	public function setRoute(&$route) {

@@ -46,5 +46,6 @@ Soter::getConfig()
 	->setHmvcModules(array(
 	    'Demo' => 'demo'
 	))
+	->setDatabseConfig('database')
 
 ;

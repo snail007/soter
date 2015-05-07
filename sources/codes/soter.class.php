@@ -126,7 +126,6 @@ class Soter {
 		foreach ($config->getRouters() as $router) {
 			$route = $router->find($config->getRequest());
 			if ($route->found()) {
-				$route = $router->route();
 				$config->setRoute($route);
 				$class = $route->getController();
 				$method = $route->getMethod();

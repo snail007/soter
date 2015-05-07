@@ -4,7 +4,7 @@ class Controller_Welcome extends Soter_Controller {
 
 	public function do_index() {
 
-		return Sr::view()->load('test');
+		return Sr::view()->loadParent('index');
 	}
 
 }

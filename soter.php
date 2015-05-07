@@ -26,7 +26,7 @@
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         v1.0.0
- * @createdtime   2015-05-07 12:42:32
+ * @createdtime   2015-05-07 13:33:12
  */
  
 
@@ -2444,8 +2444,8 @@ class Soter_Config {
 	 * 
 	 * @return Soter_Route
 	 */
-	public function &getRoute() {
-		return $this->route;
+	public function getRoute() {
+		return empty($this->route) ? new Soter_Route() : $this->route;
 	}
 
 	public function setRoute(&$route) {
@@ -3757,7 +3757,6 @@ class Soter {
 		foreach ($config->getRouters() as $router) {
 			$route = $router->find($config->getRequest());
 			if ($route->found()) {
-				$route = $router->route();
 				$config->setRoute($route);
 				$class = $route->getController();
 				$method = $route->getMethod();
