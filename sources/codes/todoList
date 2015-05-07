@@ -7,7 +7,7 @@
 
 -> 国际化支持(暂时不加)
 
-
+-> 重定向方法
 
 
 @done
@@ -130,5 +130,5 @@
 -> session托管（memcache memcached redis mysql mongodb）
 -> * 数据验证功能
 -> * 控制器方法缓存
--> 分页条
+-> * 分页条
 -> * 自定义数据验证规则
