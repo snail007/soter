@@ -2,7 +2,7 @@
 
 //数据库配置文件，文件名默认是database.php,
 //也可以通过在入口文件里面修改配置：
-//->setDatabseConfigFile('database')
+//->setDatabseConfig('database')
 //把里面的database参数修改为你想要的配置文件名即可
 return
 	array(

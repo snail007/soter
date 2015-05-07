@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Dao层</title>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script src="js/inc.js"></script>
+	</head>
+	<body>
+		<fieldset>
+                        <legend>Dao层</legend>
+                        <ol>
+                                <li>
+                                        <h2 class="title_h2">什么是Dao</h2>
+                                        Dao是一个思想，如果不正确使用就跟Model一样。Dao我们可以想象成一张表，多张表就多个Dao，也可以想成绑定表。什么意思呢？
+                                        <br>比如：现在有张user表，那么我们对应Dao文件就是UserDao.php，那么我们UserDao.php就可以对user表增删改查。
+                                        <br><b class="text_strong">切勿如下操作：</b>
+                                        <br><b class="text_strong">我们有user表和user_vip表，然后只有创建一个Dao文件。
+                                        <br>那就没有意义了，那我们还不如建Model文件，我们要遵守一个Dao文件对应一张表才可以灵活使用与扩展。</b>
+                                </li>
+				<li>
+					<h2 class="title_h2">Dao层规范</h2>
+                                        1.Dao类文件都放在<code>application/classes/Dao</code>文件夹里面
+                                        <br>2.Dao必须要继承<code>Soter_Dao</code>抽象类，实现父类抽象方法。
+                                        <br>示例如下：
+                                        <br>2.1.新建Dao文件application/classes/Dao/TestDao.php
+                                        <br>2.2.输入以下代码：
+                                        <pre class="brush:php">
+                                                &lt;?php
+
+                                                class Dao_TestDao extends Soter_Dao {
+                                                        
+                                                        public function getTable(){}
+
+                                                        public function getPrimaryKey(){}
+
+                                                        public function getColumns(){}
+                                                }
+                                        </pre>
+                                        可以看到Dao_TestDao需要继承3个方法，<code>getTable</code>、<code>getPrimaryKey</code>和<code>getColumns</code>分别什么意思呢？
+                                        <br>第一个<code>getTable</code>是获取表，比如：我们有个user表，那么函数里面可以有<code>return 'user';</code>。
+                                        <br>第二个<code>getPrimaryKey</code>是获取主键，比如：我们user表定义一个id字段为主键，那么函数里面可以有<code>return 'id';</code>。
+                                        <br>第三个<code>getColumns</code>是获取字段名称数组，比如：我们有user表里面有id、uid和username等等……字段
+                                        <br>示例如下:
+                                        <pre class="brush:php">
+                                                function getColumns(){
+                                                        return array(
+                                                                'id',
+                                                                'uid',
+                                                                'username',
+                                                                ……
+                                                        );
+                                                }
+                                        </pre>
+                                        <b class="text_strong">提示：</b>
+                                        <br>以上三个方法都可以自己扩展，但是我们要记得一个Dao文件对应一个表。                                      
+				</li>
+                                <li>
+                                        <h2 class="title_h2">使用Dao层</h2>
+                                        可以在任意地方使用下面的代码加载一个dao层类：
+                                        <br>示例如下：
+                                        <pre class="brush:php">
+                                                Sr::dao('TestDao');
+                                        </pre>
+                                        我们可以看到上面有一个参数，这个是什么意思呢，是加载dao类的时候，不需要前缀<code>Dao_</code>， 
+                                        <br>比如上面的：Dao_TestDao，加载的时候只用Sr::dao('TestDao');
+                                        <br>例如:我们要创建Dao类文件名为ListDao.php，类名就是Dao_ListDao，那么参数就要输入ListDao
+                                       
+                                </li>
+                                <li>
+                                        <h2 class="title_h2">示例一</h2>
+                                        比如有文件：classes/Dao/ArticleUser.php 
+                                        <br>那么ArticleUser.php文件里面的类名就应该是：Dao_ArticleUser。
+                                        <br>那么要加载Dao类如下:
+                                        <pre class="brush:php">
+                                                Sr::dao('ArticleUser');
+                                        </pre>
+                                </li>
+                                <li>
+                                        <h2 class="title_h2">示例二</h2>
+                                        比如有文件：classes/Dao/Vip/User.php 
+                                        <br>那么User.php文件里面的类名就应该是：Dao_Vip_User,也就是下划线代表着文件夹的分隔符。 
+                                        <br>那么要加载Dao类如下:
+                                        <pre class="brush:php">
+                                                Sr::dao('Vip_User');
+                                                //还有另一种方式例如以下
+                                                Sr::dao('Vip/User.php');
+                                                //我们也可以不用带.php后缀,例如以下：
+                                                Sr::dao('Vip/User');
+                                        </pre>
+                                </li>
+				<li>
+					<h2 class="title_h2">创建自己的Dao类</h2>
+                                        下面我们自定义一个加载Dao类
+                                        <br>1.创建<code>test_dao</code>数据库
+                                        <br>2.执行以下sql:
+                                        <pre class="brush:sql">
+                                                create database test_dao CHARACTER SET utf8 COLLATE utf8_general_ci; 
+                                        </pre>
+                                        3.创建<code>users</code>数据表
+                                        <br>4.执行以下sql:
+                                        <pre class="brush:sql">
+                                        DROP TABLE IF EXISTS `users`;
+                                        CREATE TABLE `users` (
+                                                `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '标识',
+                                                `uid` int(11) NOT NULL COMMENT '用户id',
+                                                `username` varchar(20) NOT NULL COMMENT '用户名',
+                                                `email` varchar(30) NOT NULL COMMENT '邮箱',
+                                                PRIMARY KEY (`id`)
+                                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+                                        INSERT INTO `users` VALUES ('1', '1', '刘一', '111@qq.com');
+                                        INSERT INTO `users` VALUES ('2', '2', '陈二', '222@qq.com');
+                                        INSERT INTO `users` VALUES ('3', '3', '张三', '333@qq.com');
+                                        INSERT INTO `users` VALUES ('4', '4', '李四', '444@qq.com');
+                                        </pre>
+                                        5.修改数据库配置文件<code>application/config/default/database.php</code>
+                                        <br>6.修改一下代码
+                                        <pre class="brush:php">
+                                                'mysql' => array(
+                                                        'database' => 'test_dao',
+                                                        'masters' => array(
+                                                                'master01' => array(
+                                                                        'hostname' => '127.0.0.1',
+                                                                        'port' => 3306,
+                                                                        'username' => '用户名',
+                                                                        'password' => '密码',
+                                                                )
+                                                        ),
+                                                ),
+                                        </pre>
+                                        详细请看<a href="database.html">数据库手册</a>的“<b>数据库配置信息说明</b>”
+                                        <br>7.新建Dao文件application/classes/Dao/Users.php
+                                        <br>8.输入以下代码：
+                                        <pre class="brush:php">
+                                                &lt;?php
+
+                                                class Dao_User extends Soter_Dao {
+
+                                                        public function getColumns() {
+                                                                return array(
+                                                                                'id'//标识
+                                                                                ,'uid'//用户id
+                                                                                ,'username'//用户名
+                                                                                ,'email'//邮箱
+                                                                                );
+                                                        }
+
+                                                        public function getPrimaryKey() {
+                                                                return 'id';
+                                                        }
+
+                                                        public function getTable() {
+                                                                return 'users';
+                                                        }
+
+                                                        //这里我们做一个简单查询，详细可以查看“数据库手册”的“查询数据”和“查询结果集的使用”
+                                                        public function getUserName(){
+                                                                $table = $this->getTable();
+                                                                $username = Sr::db()->select('username')
+                                                                                ->from($table)
+                                                                                ->limit(0,1)
+                                                                                ->execute()
+                                                                                ->value('username');
+                                                                return $username;
+                                                        }
+
+                                                }
+                                        </pre>
+                                        9.新建控制器文件application/classes/Controller/Welcome.php
+                                        <br>10.输入以下代码：
+                                        <pre class="brush:php">
+                                                &lt;?php
+
+                                                class Controller_Welcome extends Soter_Controller {
+
+                                                        public function do_dao() {
+                                                                $dao = Sr::dao('User');
+                                                                echo $dao->getUserName();
+                                                        }
+                                                }  
+                                        </pre>                                        
+                                        11.浏览器访问：http://127.0.0.1/index.php/Welcome/dao.do
+                                        <br>//将输出：刘一
+                                        <br>为什么会输出“<b>刘一</b>”?
+                                        <br>我们可以从上面例子看Controller_Welcome控制器类，
+                                        <br>在do_dao方法里面做了加载Dao层中的Dao_User类赋值给<b>$dao</b>。
+                                        <br>然后通过<b>$dao</b>输出Dao_User类中的<code>getUserName</code>方法,
+                                        <br><code>getUserName</code>方法，主要是去数据库查询<code>users</code>表查询username字段的第一条数据，最后得到查询结果数据数组中的username字段。
+                                        <br>详细请看<a href="database.html">数据库手册</a>的“<b>查询数据</b>”和“<b>查询结果集的使用</b>”，
+                                        <br>所以浏览器才会显示“<b>刘一</b>”。
+                                </li>
+
+                        </ol>
+                </fieldset>
+		<script src="js/inc.foot.js"></script>
+	</body>
+</html>

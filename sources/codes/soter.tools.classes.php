@@ -365,7 +365,6 @@ class Soter_Config {
 		$isMaintainMode = false,
 		$maintainIpWhitelist = array(),
 		$maintainModeHandle,
-		$databseConfigFileName,
 		$databseConfig,
 		$cacheHandle,
 		$sessionConfig,
@@ -460,10 +459,6 @@ class Soter_Config {
 	}
 
 	public function getDatabseConfig($group = null) {
-		if (!is_array($this->databseConfig)) {
-			$config = Sr::config($this->databseConfigFileName);
-			$this->databseConfig = is_array($config) ? $config : array();
-		}
 		if (empty($group)) {
 			return $this->databseConfig;
 		} else {
@@ -471,8 +466,8 @@ class Soter_Config {
 		}
 	}
 
-	public function setDatabseConfigFile($databseConfigFileName) {
-		$this->databseConfigFileName = $databseConfigFileName;
+	public function setDatabseConfig($databseConfig) {
+		$this->databseConfig = is_array($databseConfig) ? $databseConfig : Sr::config($databseConfig);
 		return $this;
 	}
 

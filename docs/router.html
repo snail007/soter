@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Soter路由</title>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script src="js/inc.js"></script>
+	</head>
+	<body>
+		<fieldset>
+			<legend>Soter路由</legend>
+			<ol>
+				<li><h2 class="title_h2">系统路由</h2>
+					系统默认提供了：
+					<br>1.PATH_INFO路由器。
+					<br>2.GET模式路由器。
+					<br>默认情况下，我们可以使用PATH_INFO路由器的访问规则或者GET模式路由器的访问规则访问我们的控制器。
+					<br>下面对这两个路由器进行介绍：
+					<h3 class="title_h3">1.PATH_INFO路由器</h3>
+					在入口文件里面我们会发现下面的配置。
+					<pre class="brush:php">
+						//初始化请求
+						->setRequest(new Soter_Request(Sr::arrayGet($_SERVER, 'REQUEST_URI')))
+						//注册默认pathinfo路由器
+						->addRouter(new Soter_Default_Router_PathInfo())
+						//pathinfo路由器,注册uri重写
+						->setUriRewriter(new Soter_Uri_Rewriter_Default())
+					</pre>
+					从上面我们可以看到Soter初始化请求的时候，注册了一个Soter_Request对象，并在构造方法里面传入了$_SERVER['REQUEST_URI']，
+					<br>这个构造方法里面传入的URI就是所有路由器接受的原始URI，各种路由器可以按着自己的规则分析这个URI，实现不同功能的路由器。
+					<br>接着通过addRouter方法注册了系统默认的Soter_Default_Router_PathInfo路由器类，也就是PATH_INFO路由器。
+					<br>PATH_INFO路由器,是通过分析符合形如：/index.php/Welcome/user.do这样的URI的路由器。
+					<br><b class="text_strong">PATH_INFO路由器支持的访问规则如下：</b>
+					<br>1.比如：<b>/index.php/Welcome/article.do</b>	
+					<br>访问的就是控制器application/classes/Controller/Welcome.php,中的<b>do_article</b>方法。
+					<br>2.假如我们在入口文件里面注册了hmvc模块Demo，那么访问：<b>/index.php/Demo/Welcome/article.do</b>
+					<br>访问的就是控制器application/hvmc/demo/classes/Controller/Welcome.php,中的<b>do_article</b>方法。
+					<br>3.比如：<b>/index.php/Welcome/article-system-001.do</b>
+					<br>传递了两个参数给Welcome->do_article($cat='food',$id='002'),其中$cat是system，$id是001
+					<br>为了避免没有传递参数的时候报错，我们需要给$cat和$id设置默认值。
+					<br>4.比如：<b>/index.php/Welcome/article--001.do</b>
+					<br>传递了两个参数给Welcome->do_article($cat='food',$id='002'),其中$cat是空，$id是001
+					<br>5.比如：<b>/index.php/Welcome/article-system-.do</b>
+					<br>传递了两个参数给Welcome->do_article($cat='food',$id='002'),其中$cat是system，$id是空
+					<br>6.比如：<b>/index.php/Welcome/article-system.do</b>
+					<br>传递了两个参数给Welcome->do_article($cat='food',$id='002'),其中$cat是system，$id是002
+					<br>7.比如：<b>/index.php/Welcome/article.do</b>
+					<br>传递了两个参数给Welcome->do_article($cat='food',$id='002'),其中$cat是food，$id是002
+					<br>8.比如：<b>/index.php/Welcome/article.do?p1=a&p2=b</b>
+					<br>传递了两个get参数给Welcome->do_article(),
+					<br>那么我们就可以在do_article方法里面通过Sr::get('p1'),Sr::get('p2')获取它们的值。
+					<br><b class="text_strong">默认的参数分隔符 - 可以通过入口文件里面修改配置 ->setMethodParametersDelimiter('-')进行修改。</b>
+					<h2 class="title_h3">2.PATH_INFO路由器URI重写</h2>
+					Soter里面用户可以自定义PATH_INFO路由器URI重写类，默认情况下PATH_INFO路由器处理的是$_SERVER['REQUEST_URI']，
+					<br>但是用户可以通过注册自己的URI重写类对$_SERVER['REQUEST_URI']进行重写，把重写之后的URI返回给PATH_INF路由器使用。
+					<br>满足用户对路由器规则的各种需求。
+					<br>上面的配置里面我们看到下面的配置：
+					<pre class="brush:php">
+						//pathinfo路由器,注册uri重写
+						->setUriRewriter(new Soter_Uri_Rewriter_Default())
+					</pre>
+					这个配置就是注册uri重写，稍候我们会详细介绍rui重写类的写法。这里先说明他的作用。
+					<br>配置中我们可以看到Soter注册了一个默认的uri重写类Soter_Uri_Rewriter_Default。
+					<br>下面是这个类的实现代码，我们一起看一下：
+					<pre class="brush:php">
+						class Soter_Uri_Rewriter_Default implements Soter_Uri_Rewriter {
+
+							public function rewrite($uri) {
+								return $uri;
+							}
+
+						}
+					</pre>
+					可以看到默认的URI重写类Soter_Uri_Rewriter_Default实现了Soter_Uri_Rewriter接口，
+					<br>然后在rewrite方法里面接收了$uri参数，然后原样返回了。
+					<br>其实我们可以在rewrite方法里面进行比如正则替换之类的，处理$uri,然后把处理之后的$uri返回就行了，
+					<br>然后PATH_INFO路由器最终分析使用的就是返回的$uri;
+					<br><b class="text_strong">提示：rewrite方法接收的$uri中不包含入口文件名称，
+						<br>比如：$_SERVER['REQUEST_URI']是/index.php/Welcome/index.do
+						<br>那么方法里面接收的$uri就是Welcome/index.do</b>
+					<br>下面我们自定义一个自己的URI重写类。
+					<br>1.新建文件application/classes/UriRewriter/MyRewriter.php
+					<br>2.输入以下代码：
+					<pre class="brush:php">
+						class UriRewriter_MyRewriter implements Soter_Uri_Rewriter {
+
+							public function rewrite($uri) {
+								if(strpos($uri, 'Welcome/')===0){
+									return str_replace('Welcome/', 'Home/', $uri);
+								}
+								return $uri;
+							}
+
+						}
+					</pre>
+					3.上面我们的UriRewriter_MyRewriter重写类，在rewrite方法里面做了简单的判断，
+					<br>如果访问的是Welcome控制器，那么就转换为访问的是Home控制器，然后返回转换后的$uri，
+					<br>这样路由器就会使用转换后的$uri,去寻找Home控制器。
+					<br>这里只是简单的演示一下怎么进行重写，我们可以在rewrite方法里面进行更复杂的正则替换等等，
+					<br>满足自己的各种需求。
+					<br>4.最后为了让我们的UriRewriter_MyRewriter重写类生效，我们需要在入口文件里面注册一下，
+					<br>在入口文件里可以进行如下设置：
+					<pre class="brush:php">
+						//pathinfo路由器,注册uri重写
+						->setUriRewriter(new UriRewriter_MyRewriter())
+					</pre>
+					5.最后为了测试我们可以新建一个Home控制器，application/classes/Controller/Home.php
+					<br>输入以下代码：
+					<pre class="brush:php">
+						class Controller_Home  extends Soter_Controller {
+
+							public function do_index() {
+								echo 'home called';
+							}
+
+						}
+					</pre>
+					然后我们浏览器访问，比如：http://127.0.0.1/soter/index.php/Welcome/index.do
+					<br>就会看到输出了：home called，说明我们的$uri重写生效了。
+					<br><b>小提示：</b>
+					<br>前面我们会发现，控制器方法都默认用的是do_前缀,浏览器地址里面方法的后缀是.do。
+					<br>它们是可以通过修改入口文件里面的配置进行改变的。
+					<br>在入口文件里面你可以看到下面的配置：
+					<pre class="brush:php">
+						//控制器方法前缀
+						->setMethodPrefix('do_')
+						//方法url后缀
+						->setMethodUriSubfix('.do')
+					</pre>
+					我们只要修改里面的do_和.do为我们想要使用的前缀和后缀即可。
+					<h3 class="title_h3">3.GET模式路由器。</h3>
+					GET模式路由器，就是用户通过在浏览器URL里面通过get变量指定要访问的控制器，方法和hmvc模块。
+					<br>在入口文件index.php里面我们可以看到下面和get路由器相关的配置。
+					<pre class="brush:php">
+						//注册默认get路由器
+						->addRouter(new Soter_Default_Router_Get())
+						//get路由器,url中的控制器的get变量名
+						->setRouterUrlControllerKey('c')
+						//get路由器,url中的方法的get变量名
+						->setRouterUrlMethodKey('a')
+						//get路由器,url中的hmvc模块的get变量名
+						->setRouterUrlModuleKey('m')
+					</pre>
+					可以看到默认情况下，系统注册了默认GET路由器类Soter_Default_Router_Get，处理get模式$uri路由。
+					<br>然后注册了控制器的get变量名a，方法的get变量名a，hmvc模块的get变量名m。
+					<br>也就是如下：
+					<br>1.get参数 c 代表控制器名称
+					<br>2.get参数 a 代表控制器方法名称
+					<br>3.get参数 m 代表hmvc模块名称
+					<br>比如：
+					<br>1.访问：http://127.0.0.1/index.php?c=Welcome&a=index
+					<br>访问的就是控制器Welcome的index方法
+					<br>2.访问：http://127.0.0.1/index.php?c=Welcome&a=index&m=Demo
+					<br>访问的就是hmvc Demo模块的控制器Welcome的index方法
+					<br>提示：
+					<br>我们可以在这里修改配置，使用我们自己想用的参数名称。
+				</li>
+
+				<li><h2 class="title_h2">用户路由</h2>
+					Soter里面用户可以自定义路由器。
+					<br>我们在入口文件index.php里面可以发现下面的配置：
+					<pre class="brush:php">
+						//注册默认pathinfo路由器
+						->addRouter(new Soter_Default_Router_PathInfo())
+					</pre>
+					<pre class="brush:php">
+						//注册默认get路由器
+						->addRouter(new Soter_Default_Router_Get())
+					</pre>
+					可以发现Soter注册了两个路由器分别是pathinfo路由器，get路由器。
+					<br>我们之所以能通过PATH_INFO模式和GET模式访问我们的控制器就是因为在这里注册了它们。
+					<br>当然我们也可以注册自己的路由器。完成一个路由器是一个相对复杂的事情，要处理很多信息，
+					<br>分析$uri找到控制器名称，方法名称，hmvc模块名称并加载hvmc模块。
+					<br>为了方便了解路由器需要完成的功能，我们一起看看系统GET路由器的实现代码，并分析一下。
+					<br>系统GET路由器的实现代码如下：
+					<pre class="brush:php">
+						class Soter_Default_Router_Get extends Soter_Router {
+
+							public function find() {
+								$config = Sr::config();
+								$uri = explode('?', $config->getRequest()->getUri());
+								$query = end($uri);
+								parse_str($query, $get);
+								$controllerName = Sr::arrayGet($get, $config->getRouterUrlControllerKey(), '');
+								$methodName = Sr::arrayGet($get, $config->getRouterUrlMethodKey(), '');
+								$hmvcModuleName = Sr::arrayGet($get, $config->getRouterUrlModuleKey(), '');
+								//hmvc检测
+								$hmvcModuleDirName = Soter::checkHmvc($hmvcModuleName, false);
+								if ($controllerName) {
+									$controllerName = $config->getControllerDirName() . '_' . $controllerName;
+								}
+								if ($methodName) {
+									$methodName = $config->getMethodPrefix() . $methodName;
+								}
+								return $this->route->setHmvcModuleName($hmvcModuleName)
+										->setController($controllerName)
+										->setMethod($methodName)
+										->setFound($hmvcModuleDirName || $controllerName);
+							}
+						}
+					</pre>
+					可以看到Soter_Default_Router_Get继承了抽象类Soter_Router，我们来一行行的分析：
+					<br>第4行：通过Sr::config()获取系统配对象，为下面使用配置信息准备。
+					<br>第5行：通过$config->getRequest()->getUri()获取$uri信息，
+					<br>$config->getRequest()返回的就是我们之前说过的入口文件里面初始化请求注册的那个Soter_Request类对象。
+					<br>$config->getRequest()->getUri()获取的$uri就是如下Soter_Request类构造方法里面传入的字符串。
+					<pre class="brush:php">
+							//初始化请求
+							 ->setRequest(new Soter_Request(Sr::arrayGet($_SERVER, 'REQUEST_URI')))
+					</pre>
+					然后用系统函数explode用?分割一下$uri,获取get格式的参数，比如：c=Welcome&a=index
+					<br>第6行： 获取get格式的参数赋值给$query，$query比如是：c=Welcome&a=index
+					<br>第7行： 使用系统函数parse_str解析$query为键值的$get数组。
+					<br>比如把：c=Welcome&a=index解析为：array('a'=>'index','c'=>'Welcome')
+					<br>第8-10行：使用Soter的获取数组键值的方法Sr::arrayGet分别尝试从$get数组中获取,
+					<br>控制器名称$controllerName，方法名称$methodName，hmvc模块名称$hmvcModuleName。
+					<br>第12行：使用Soter的checkHmvc方法检查模块名称$hmvcModuleName是否有效，
+					<br>如果有效就会返回模块对应的文件夹名称,无效会返回false。
+					<br>第13-18行：如果控制器名称存在，方法名存在，就分别加上类名前缀，和方法名前缀。
+					<br>第19-22行：通过路由器的成员变量$this->route设置相关的路由信息，$this->route是路由信息Soter_Route类的一个对象。
+					<br>设置hmvc模块名称：->setHmvcModuleName($hmvcModuleName)
+					<br>设置控制器名称：->setController($controllerName)
+					<br>设置方法名称：->setMethod($methodName)
+					<br>最重要的是：->setFound($hmvcModuleDirName || $controllerName)这个是告诉Soter，当前路由器是否找到了路由信息。
+					<br>get路由器只要找到了hmvc模块名称或者控制器名称就说明$uri有效，找到了路由信息。
+					<br>Soter就会停止调用下一个注册的路由器处理$uri。如果setFound是false，Soter会继续调用后面注册的路由器进行路由，
+					<br>直到路由器返回的$route对象setFound是true为止，然后就使用返回的$route对象进行加载控制器，hmvc模块等后续操作。
+					<br><b>提示：</b>
+					<br>我们在入口文件里面可以通过->addRouter注册多个路由器，那么Soter调用路由器的先后顺序是什么样的呢，
+					<br>Soter调用的路由器和addRouter方法的顺序是反的，也就是最后一个被addRouter注册的路由器会被第一个调用，用来解析路由信息。
+					<br>第一个被addRouter注册的路由器会被最后调用，用来解析路由信息。
+					<b class="text_strong"><br>到此我们已经把系统的Get路由器分析了一遍，会发现路由器要完成的工作有以下几个，
+						<br>也就是说我们自定义的路由器只要完成这些工作就能让我们的路由器正常工作了。</b>
+					<br>1.自定义路由器类要继承抽象类Soter_Router，并实现find方法。
+					<br>2.解析$config->getRequest()->getUri()获取的$uri信息
+					<br>3.尝试找到hmvc模块名称，并用Soter::checkHmvc($hmvcModuleName, false)检查hmvc模块名称。
+					<br>4.尝试找到控制器名称，方法名称，如果有效然后使用配置对象分别获取前缀信息，转化为完整的控制器类名和完整的方法名称。
+					<br>5.把找到的信息通过成员变量$this->route设置。
+					<br>6.最后返回成员变量$this->route。
+					<br><b>下面我们自定义一个自己的简单的路由器，用来了解自定义路由器的过程。</b>
+					<br>1.新建文件application/classes/Router/MyRouter.php
+					<br>2.输入以下内容：
+					<pre class="brush:php">
+						class Router_MyRouter extends Soter_Router {
+
+							      public function find() {
+									      return $this->route->setHmvcModuleName('')
+								    ->setController('Welcome')
+								    ->setMethod('index')
+								    ->setFound(true);
+							      }
+						 }
+					</pre>
+					<br>为了演示，路由器find方法里面不进行复杂的解析，我们写死了控制器Welcome和方法名称index。
+					<br>实际情况肯定是像get路由器那样解析一番。
+					<br>3.在入口文件里面注册我们的路由器，为了保证我们的路由器最先被Soter调用，
+					<br>我们把我们的路由器最后注册，也就是放在get路由器下面注册，如下：
+					<pre class="brush:php">
+						//注册默认get路由器
+						->addRouter(new Soter_Default_Router_Get())
+						//get路由器,url中的控制器的get变量名
+						->setRouterUrlControllerKey('c')
+						//get路由器,url中的方法的get变量名
+						->setRouterUrlMethodKey('a')
+						//get路由器,url中的hmvc模块的get变量名
+						->setRouterUrlModuleKey('m')
+						//注册我们自己的路由器Router_MyRouter
+						->addRouter(new Router_MyRouter())
+					</pre>
+					4.我们访问比如：http://127.0.0.1/index.php/test/tset，也就是无论我们url怎么变化，返回的始终是Welcome控制器index方法的页面，
+					<br>因为我们在我们的路由器里面写死了控制器和方法名称，到此说明我们的路由器正常工作了。
+				</li>
+				<li><h2 class="title_h2">默认控制器和默认方法</h2>
+					当用户在浏览器地址里面只输入了域名，或者hvmc模块。没有输入控制器名称和方法名称。
+					<br>那么在这种情况下我们可以设置一个默认的控制器和默认的方法。
+					<br><b>提示：</b>
+					<br>默认方法对所有的控制器都起作用有，不只是只对设置的默认控制器起作用。
+					<br>1.比如：http://127.0.0.1/soter/index.php/User
+					<br>假设我们设置的默认控制器是Welcome,默认方法是index。
+					<br>我们访问非默认控制器User，而且没有输入方法名称的时候，那么用户访问的就是User的do_index方法。
+					<br>2.比如：http://127.0.0.1/soter/index.php/Demo
+					<br>假设我们设置的默认控制器是Welcome,默认方法是index。
+					<br>而且注册了hvmc模块Demo。
+					<br>我们直接访问Demo hmvc模块，而且没有输入控制器名称和方法名称的时候，
+					<br>那么用户访问的就是模块中的控制器Welcome的do_index方法。
+				</li>
+			</ol>
+
+		</fieldset>
+		<script src="js/inc.foot.js"></script>
+	</body>
+</html>

@@ -1,4 +1,8 @@
 <?php
+$release='';
+if(isset($_GET['release'])){
+	$release='?release';
+}
 $files = array();
 $ignore_list = array();
 $dir = dir(dirname(__FILE__));
@@ -7,7 +11,7 @@ while ($file = $dir->read()) {
 		if (!in_array($file, $ignore_list)) {
 			//echo "<b style='color:darkgreen'>$file</b><br/>";
 			//$this->addFile($file);
-			$files[] = $file;
+			$files[] = $file.$release;
 		} else {
 			//echo "ignore:$file<br/>";
 		}

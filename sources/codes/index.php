@@ -3,7 +3,7 @@
 ##{copyright}##
 define("IN_SOTER", true);
 //引入核心
-require dirname(__FILE__) . '/soter.php';
+require dirname(__FILE__) . '/' . (isset($_GET['release']) ? '../../soter.php' : 'soter.php');
 //项目目录路径
 define('SOTER_APP_PATH', Sr::realPath(dirname(__FILE__) . '/../../tests/application') . '/');
 //项目拓展包路径
@@ -42,7 +42,7 @@ Soter::initialize()
 	//宕机维护模式
 	->setIsMaintainMode(false)
 	//宕机维护模式IP白名单
-	->setMaintainIpWhitelist(array('127.0.0.2', '192.168.0.2/32'))
+	//->setMaintainIpWhitelist(array('127.0.0.2', '192.168.0.2/32'))
 	//宕机维护模式处理方法
 	->setMaintainModeHandle(new Soter_Maintain_Handle_Default())
 	//初始化请求
@@ -65,7 +65,7 @@ Soter::initialize()
 	//设置自定义的错误显示控制处理类
 	->setExceptionHandle(new Soter_Exception_Handle_Default())
 	//错误日志记录，注释掉这行会关闭日志记录，去掉注释则开启日志文件记录
-	->addLoggerWriter(new Soter_Logger_FileWriter(SOTER_APP_PATH . 'storage/logs/'))
+	//->addLoggerWriter(new Soter_Logger_FileWriter(SOTER_APP_PATH . 'storage/logs/'))
 	//设置日志记录子目录格式，参数就是date()函数的第一个参数,默认是 Y-m-d/H
 	->setLogsSubDirNameFormat('Y-m-d/H')
 	//默认控制器
@@ -88,7 +88,7 @@ Soter::initialize()
 	->setCacheHandle(new Soter_Cache_File())
 	//设置session信息
 	->setSessionConfig(array(
-	    'autostart' => true,
+	    'autostart' => false,
 	    'cookie_path' => '/',
 	    'cookie_domain' => Sr::server('HTTP_HOST'),
 	    'session_name' => 'SOTER',
@@ -101,11 +101,11 @@ Soter::initialize()
 	 */
 	//->setSessionHandle('session')
 	//数据库连接信息，支持多主多从。如果只有一个数据库，只需要设置一个主即可。
-	->setDatabseConfigFile('database')
+	->setDatabseConfig('database')
 	//设置控制器方法缓存规则，参数可以是配置文件名称，也可以是配置规则数组
-	->setMethodCacheConfig('method_cache')
+	//->setMethodCacheConfig('method_cache')
 	//设置自定义数据验证规则，参数可以是配置文件名称，也可以是规则数组
-	->setDataCheckRules('rules')
+	//->setDataCheckRules('rules')
 	//加载项目自定义bootstrap.php配置,这一句一定要在最后，确保能覆盖上面的配置
 	->bootstrap()
 ;

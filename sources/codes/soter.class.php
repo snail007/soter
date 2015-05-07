@@ -58,10 +58,10 @@ class Soter {
 	 * 运行调度
 	 */
 	public static function run() {
-		if (Sr::isCli()) {
-			self::runCli();
-		} elseif (Sr::isPluginMode()) {
+		if (Sr::isPluginMode()) {
 			self::runPlugin();
+		} elseif (Sr::isCli()) {
+			self::runCli();
 		} else {
 			$canRunWeb = !Sr::config()->getIsMaintainMode();
 			if (!$canRunWeb) {
@@ -545,6 +545,7 @@ class Sr {
 	}
 
 	static function session($key = null, $default = null, $xssClean = false) {
+		self::sessionStart();
 		$value = is_null($key) ? $_SESSION : self::arrayGet($_SESSION, $key, $default);
 		return $xssClean ? self::xssClean($value) : $value;
 	}
