@@ -30,7 +30,7 @@ require dirname(__FILE__) . '/../codes/index.php';
   佛祖保佑         永无BUG
  */
 date_default_timezone_set('PRC');
-$ver = "v1.0.0";
+$ver = "v1.0.2";
 $header = '/*
  * Copyright ' . date('Y') . ' Soter(狂奔的蜗牛 672308444@163.com)
  *
@@ -89,7 +89,7 @@ $index = str_replace("//加载项目自定义bootstrap.php配置,这一句一定
 file_put_contents(DIST_DIR . 'index.php', $index);
 
 exec('rm -rf ' . DIST_DIR . 'docs/*');
-exec('cp -r ../soter-docs/* ' . DIST_DIR . 'docs/');
+exec('cp -r ' . DIST_DIR . '../soter-docs/* ' . DIST_DIR . 'docs/');
 
 function common_replace(&$str) {
 	$str = preg_replace('|^ *// *[\w].*$\n|m', '', $str); //去掉英文单行注释

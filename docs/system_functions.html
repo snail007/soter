@@ -121,7 +121,16 @@
                                                 echo Sr::clientIp();
                                                 //输出当前客户端的ip
                                         </pre>
-
+					<b class="text_strong">提示：</b>
+					<br>入口文件里面我们可以发现下面的配置：
+					<pre class="brush:php">
+                                                ->setBackendServerIpWhitelist(array('192.168.2.2'))
+                                        </pre>
+					如果服务器是ngix之类代理转发请求到后端apache运行的PHP。
+					<br>那么这里应该设置信任的nginx所在服务器的ip。
+					<br>nginx里面应该设置 X_FORWARDED_FOR server变量来表示真实的客户端IP。
+					<br>不然通过Sr::clientIp()是获取不到真实的客户端IP的。
+					<br>参数是数组，有多个ip放入数组即可。
                                 </li>
                                 <li>
                                         <h2 class="title_h2">验证字符串开头</h2>
@@ -212,7 +221,6 @@
                                                 //上面将会输出:/Welcome/index.do
                                                 //我们默认是不去除的，需要到入口文件去配置。
                                         </pre>
-
                                 </li>
                                 <li>
                                         <h2 class="title_h2">获取入口文件所在目录url路径</h2>

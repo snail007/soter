@@ -48,6 +48,36 @@
 					<br>当我们通过setEnvironment设置了“当前环境”之后，Sr::config()方法会优先去“当前环境”的目录里面去找配置文件，
 					<br>如果没有找到，就去“默认环境”default目录里面去找。
 					<br><b class="text_strong">一般情况下如果我们的配置文件和环境无关，我们把文件放在default目录里面即可。</b>
+					<br><b class="text_strong">提示：</b>
+					<br>比如nginx里面我们设置$_SERVER变量ENVIRONMENT，并且值为development，如下04行：
+					<pre class="brush:php">
+					location ~ \.php {
+						fastcgi_pass 127.0.0.1:9000;
+						fastcgi_index  index.php;
+						fastcgi_param ENVIRONMENT development;
+						fastcgi_param SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+						fastcgi_split_path_info ^((?U).+\.php)(/?.+)$;
+						fastcgi_param PATH_INFO $fastcgi_path_info;
+						fastcgi_param PATH_TRANSLATED $document_root$fastcgi_path_info;
+						include fastcgi_params;
+					}
+					</pre>
+					比如apache里面我们可以通过下面的配置设置$_SERVER变量ENVIRONMENT，并且值为development，如下05行：
+					<pre class="brush:php">
+					&lt;VirtualHost *:80>
+						DocumentRoot "/www/soter/test.com"
+						ServerName test.com
+						ServerAlias 
+						SetEnv ENVIRONMENT development
+					      &lt;Directory "/www/soter/test.com">
+						  Options FollowSymLinks ExecCGI
+						  AllowOverride All
+						  Order allow,deny
+						  Allow from all
+						  Require all granted
+					      &lt;/Directory>
+					&lt;/VirtualHost>
+					</pre>
 				</li>
 				<li><h2 class="title_h2">规范</h2>
 					配置文件规范里面需要return一个关联数组，这个数组就是要使用的配置信息。

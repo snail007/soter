@@ -284,6 +284,61 @@
 					<br>我们直接访问Demo hmvc模块，而且没有输入控制器名称和方法名称的时候，
 					<br>那么用户访问的就是模块中的控制器Welcome的do_index方法。
 				</li>
+				<li><h2 class="title_h2">伪静态</h2>
+					例如apache、nginx都可以通过虚拟机主机配置文件实现伪静态去掉url中的index.php。
+					<br>为了方便我们调试，下面给出经过测试可用的配置实例。
+					<h3 class="title_h3">1.nginx规则，下面是个完整的nginx虚拟主机配置范例，里面包含了rewrite规则。</h3>
+					<pre class="brush:php">
+						server {
+							listen 80;
+							server_name test.com;
+							root /www/test/microphp;
+							index index.html index.htm index.php;
+							charset UTF-8;
+							 if (-d $request_filename) {
+							   rewrite ^/(.*)([^/])$ http://$host/$1$2/ permanent;
+							 }
+							location /
+							 {
+							      #这里是rewrite规则,里面排除了public、static文件夹、robots.txt、index.php，让它们可以直接访问，其它到都会rewrite到index.php。
+							      #可以根据自己情况修改public、static为你自己的需要web直接访问到的文件夹
+							      if ($request_filename !~ (public|static|robots.txt|index.php.*) )
+							      {
+								 rewrite ^/(.*)$ /index.php/$1 last;      
+								 break;
+							      }
+							 }
+							 #设置PHP pathinfo支持
+							 location ~ .php {
+							      fastcgi_pass 127.0.0.1:9000;
+							      fastcgi_index index.php;
+							      fastcgi_param SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+							      fastcgi_param  PHP_VALUE  "open_basedir=$document_root:/tmp/";
+							      fastcgi_split_path_info ^((?U).+.php)(/?.+)$;
+							      fastcgi_param PATH_INFO $fastcgi_path_info;
+							      fastcgi_param PATH_TRANSLATED $document_root$fastcgi_path_info;
+							      include fastcgi_params;
+							 }
+						     }
+					</pre>
+					<br><h3 class="title_h3">2.Apache rewrite规则</h3>
+					<pre class="brush:php">
+						#rewrite规则开始
+						RewriteEngine On
+						#这里是rewrite规则,里面排除了public、static文件夹、robots.txt、index.php，让它们可以直接访问，其它到都会rewrite到index.php。
+						#可以根据自己情况修改public、static为你自己的需要web直接访问到的文件夹
+						RewriteCond $1 !^(index.php|public|static|robots.txt)
+						RewriteCond %{REQUEST_FILENAME} !-f
+						RewriteCond %{REQUEST_FILENAME} !-d
+						RewriteRule ^(.*)$ index.php/$1 [L]
+					</pre>
+					把上面内容写入到.htaccess文件中，然后把.htaccess文件和入口文件index.php放在一个目录里面即可。
+					<br><b>提示：</b>
+					开启rewirte后
+					1.以前这样访问http://127.0.0.1/index.php/Welcome/index.do 现在我们可以这样访问 http://127.0.0.1/Welcome/index.do
+					2.以前这样访问demo hvmc模块http://127.0.0.1/index.php/Demo 现在我们可以这样访问 http://127.0.0.1/Demo
+					3.如果要使用Sr::url()函数，记得把入口文件里面的配置<code>->setIsRewrite(TRUE)</code>设置为TRUE。
+				</li>
 			</ol>
 
 		</fieldset>
