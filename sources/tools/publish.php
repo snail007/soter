@@ -30,7 +30,7 @@ require dirname(__FILE__) . '/../codes/index.php';
   佛祖保佑         永无BUG
  */
 date_default_timezone_set('PRC');
-$ver = "v1.0.3";
+$ver = "v1.0.4";
 $header = '/*
  * Copyright ' . date('Y') . ' Soter(狂奔的蜗牛 672308444@163.com)
  *

@@ -3,11 +3,13 @@
 class Controller_Welcome extends Soter_Controller {
 
 	public function do_index() {
-		Sr::dump(Sr::config()->getRoute());
+		Sr::dump(Sr::config()->getRequest(),Sr::config()->getRoute());
 		Sr::view()->load('index');
+		Sr::dump($_SERVER);
 	}
 
 	public function do_get() {
+		echo 'get';
 		echo Sr::session('test');
 	}
 

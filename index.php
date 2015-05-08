@@ -26,8 +26,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.3
- * @createdtime   2015-05-08 16:59:56
+ * @since         v1.0.4
+ * @createdtime   2015-05-08 18:54:21
  */
  
 define("IN_SOTER", true);
@@ -83,7 +83,7 @@ Soter::initialize()
 	 */
 	//->setBackendServerIpWhitelist(array('192.168.2.2'))
 	/* 初始化请求 */
-	->setRequest(new Soter_Request(Sr::arrayGet($_SERVER, 'REQUEST_URI')))
+	->setRequest(new Soter_Request(Sr::arrayGet($_SERVER, 'PATH_INFO', Sr::arrayGet($_SERVER, 'REDIRECT_PATH_INFO'))))
 	/* 网站是否开启了nginx或者apache的url重写，开启了这里设置为true，
 	  这样Sr::url方法在生成url的时候就知道是否加上入口文件名称 */
 	->setIsRewrite(FALSE)

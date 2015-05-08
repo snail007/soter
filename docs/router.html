@@ -331,13 +331,14 @@
 					<br><h3 class="title_h3">2.Apache rewrite规则</h3>
 					<pre class="brush:php">
 						#rewrite规则开始
+						AcceptPathInfo On
 						RewriteEngine On
 						#这里是rewrite规则,里面排除了public、static文件夹、robots.txt、index.php，让它们可以直接访问，其它到都会rewrite到index.php。
 						#可以根据自己情况修改public、static为你自己的需要web直接访问到的文件夹
 						RewriteCond $1 !^(index.php|public|static|robots.txt)
 						RewriteCond %{REQUEST_FILENAME} !-f
 						RewriteCond %{REQUEST_FILENAME} !-d
-						RewriteRule ^(.*)$ index.php/$1 [L]
+						RewriteRule ^(.*)$ index.php [QSA,L,E=PATH_INFO:/$1]
 					</pre>
 					把上面内容写入到.htaccess文件中，然后把.htaccess文件和入口文件index.php放在一个目录里面即可。
 					<br><b>提示：</b>

@@ -231,29 +231,22 @@ class Soter_Default_Router_PathInfo extends Soter_Router {
 	 */
 	public function find() {
 		$config = Soter::getConfig();
-		//获取uri
-		$uri = $config->getRequest()->getUri();
-
 		/**
+		 * 获取uri
 		 * pathinfo模式路由判断以及解析uri中的访问路径 
 		 * 比如：http://127.0.0.1/index.php/Welcome/index.do?id=11
 		 * 获取的是后面的(Welcome/index.do)部分，也就是index.php/和?之间的部分
 		 */
-		$indexName = Soter::getConfig()->getIndexName();
-		if (($pos = stripos($uri, '/' . $indexName)) !== FALSE) {
-			$uri = ltrim(substr($uri, $pos + strlen('/' . $indexName)), '/');
-			$_uriarr = explode('?', $uri);
-			$uri = trim(current($_uriarr), '/');
-			if ($uriRewriter = $config->getUriRewriter()) {
-				$uri = $uriRewriter->rewrite($uri);
-			}
-		} else {
-			$uri = '';
-		}
+		$uri = $config->getRequest()->getUri();
 		if (empty($uri)) {
 			//没有找到hmvc模块名称，或者控制器名称
 			return $this->route->setFound(FALSE);
+		} else {
+			if ($uriRewriter = $config->getUriRewriter()) {
+				$uri = $uriRewriter->rewrite($uri);
+			}
 		}
+		$uri = trim($uri, '/');
 		//到此$uri形如：Welcome/index.do , Welcome/User , Welcome
 		$_info = explode('/', $uri);
 		$hmvcModule = current($_info);

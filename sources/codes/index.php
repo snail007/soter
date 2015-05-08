@@ -54,7 +54,7 @@ Soter::initialize()
 	 */
 	//->setBackendServerIpWhitelist(array('192.168.2.2'))
 	/* 初始化请求 */
-	->setRequest(new Soter_Request(Sr::arrayGet($_SERVER, 'REQUEST_URI')))
+	->setRequest(new Soter_Request(Sr::arrayGet($_SERVER, 'PATH_INFO', Sr::arrayGet($_SERVER, 'REDIRECT_PATH_INFO'))))
 	/* 网站是否开启了nginx或者apache的url重写，开启了这里设置为true，
 	  这样Sr::url方法在生成url的时候就知道是否加上入口文件名称 */
 	->setIsRewrite(FALSE)
