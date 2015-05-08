@@ -45,6 +45,14 @@ Soter::initialize()
 	//->setMaintainIpWhitelist(array('127.0.0.2', '192.168.0.2/32'))
 	//宕机维护模式处理方法
 	->setMaintainModeHandle(new Soter_Maintain_Handle_Default())
+	/**
+	 * 如果服务器是ngix之类代理转发请求到后端apache运行的PHP。
+	 * 那么这里应该设置信任的nginx所在服务器的ip。
+	 * nginx里面应该设置 X_FORWARDED_FOR server变量来表示真实的客户端IP。
+	 * 不然通过Sr::clientIp()是获取不到真实的客户端IP的。
+	 * 参数是数组，有多个ip放入数组即可。
+	 */
+	//->setBackendServerIpWhitelist(array('192.168.2.2'))
 	//初始化请求
 	->setRequest(new Soter_Request(Sr::arrayGet($_SERVER, 'REQUEST_URI')))
 	//网站是否开启了nginx或者apache的url重写，开启了这里设置为true，

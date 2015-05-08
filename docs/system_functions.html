@@ -197,10 +197,20 @@
                                         通过Sr::url()方法，生成控制器方法的url。
                                         <br>示例如下
                                         <pre class="brush:php">
+                                                echo Sr::url('Welcome/index.do');
+                                                //参数是：控制器方法
+                                                //上面将会输出:/index.php/Welcome/index.do
+                                                
                                                 $data = array('a' => '1', 'd' => '2');
                                                 echo Sr::url('Welcome/index.do', $data);
-                                                //第一个参数 必填：控制器方法
-                                                //第二个参数 选填：get传递的参数数组，键值对，键是参数名，值是参数值
+                                                //我们可以看到多了个第二参数，作用是get传递的参数数组，键值对，键是参数名，值是参数值。
+                                                //上面将会输出:/index.php/Welcome/index.do?a=1&d=2
+
+                                                //我们还可以去掉入口文件名称
+                                                Sr::config()->setIsRewrite(true);
+                                                echo Sr::url('Welcome/index.do');
+                                                //上面将会输出:/Welcome/index.do
+                                                //我们默认是不去除的，需要到入口文件去配置。
                                         </pre>
 
                                 </li>
@@ -209,9 +219,12 @@
                                         通过Sr::urlPath()方法，获取入口文件所在目录url路径，只能在web访问时使用，在命令行下面会抛出异常。
                                         <br>示例如下
                                         <pre class="brush:php">
+                                                echo Sr::urlPath('public');
+                                                //上面将会输出:/public/
+                                                
                                                 echo Sr::urlPath('public/css/style.css', false);
-                                                //第一个参数 必填：子路径或者文件路径，如果非空就会被附加在入口文件所在目录的后面
-                                                //第二个参数 选填：如果为true的话，最后多加/符号，默认是true
+                                                //上面将会输出:/public/css/style.css
+                                                //我们可以看到多了个第二参数，作用是如果为true的话，最后多加/符号，默认是true。
                                         </pre>
 
                                 </li>
