@@ -3,6 +3,7 @@
 class Controller_Welcome extends Soter_Controller {
 
 	public function do_index() {
+		Sr::dump(Sr::config()->getRoute());
 		Sr::view()->load('index');
 	}
 

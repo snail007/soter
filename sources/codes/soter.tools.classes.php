@@ -212,7 +212,7 @@ class Soter_Default_Router_Get extends Soter_Router {
 		if ($methodName) {
 			$methodName = $config->getMethodPrefix() . $methodName;
 		}
-		return $this->route->setHmvcModuleName($hmvcModuleName)
+		return $this->route->setHmvcModuleName($hmvcModuleDirName ? $hmvcModuleName : '')
 				->setController($controllerName)
 				->setMethod($methodName)
 				->setFound($hmvcModuleDirName || $controllerName);
@@ -299,7 +299,7 @@ class Soter_Default_Router_PathInfo extends Soter_Router {
 		$parameters = $methodAndParameters;
 		//$config->getMethodPrefix() . $method;
 		return $this->route
-				->setHmvcModuleName($hmvcModule)
+				->setHmvcModuleName($hmvcModuleDirName ? $hmvcModule : '')
 				->setController($controller)
 				->setMethod($method)
 				->setArgs($parameters)
@@ -776,7 +776,7 @@ class Soter_Config {
 		return empty($this->route) ? new Soter_Route() : $this->route;
 	}
 
-	public function setRoute(&$route) {
+	public function setRoute($route) {
 		$this->route = $route;
 		return $this;
 	}

@@ -132,12 +132,16 @@ class Soter {
 				break;
 			}
 		}
+		$_route = Sr::config()->getRoute();
 		if (empty($class)) {
 			$class = $config->getControllerDirName() . '_' . $config->getDefaultController();
+			$_route->setController($class);
 		}
 		if (empty($method)) {
 			$method = $config->getMethodPrefix() . $config->getDefaultMethod();
+			$_route->setMethod($method);
 		}
+		$config->setRoute($_route);
 		$controllerObject = new $class();
 		if (!($controllerObject instanceof Soter_Controller)) {
 			throw new Soter_Exception_500('[ ' . $class . ' ] not a valid Soter_Controller');

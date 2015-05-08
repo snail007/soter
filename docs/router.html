@@ -128,6 +128,10 @@
 						->setMethodUriSubfix('.do')
 					</pre>
 					我们只要修改里面的do_和.do为我们想要使用的前缀和后缀即可。
+					<b class="text_strong">
+						<br>提示：
+						<br>方法url后缀是必须的不能为空。
+					</b>
 					<h3 class="title_h3">3.GET模式路由器。</h3>
 					GET模式路由器，就是用户通过在浏览器URL里面通过get变量指定要访问的控制器，方法和hmvc模块。
 					<br>在入口文件index.php里面我们可以看到下面和get路由器相关的配置。
@@ -192,7 +196,7 @@
 								if ($methodName) {
 									$methodName = $config->getMethodPrefix() . $methodName;
 								}
-								return $this->route->setHmvcModuleName($hmvcModuleName)
+								return $this->route->setHmvcModuleName($hmvcModuleDirName ? $hmvcModule : '')
 										->setController($controllerName)
 										->setMethod($methodName)
 										->setFound($hmvcModuleDirName || $controllerName);
@@ -218,11 +222,14 @@
 					<br>如果有效就会返回模块对应的文件夹名称,无效会返回false。
 					<br>第13-18行：如果控制器名称存在，方法名存在，就分别加上类名前缀，和方法名前缀。
 					<br>第19-22行：通过路由器的成员变量$this->route设置相关的路由信息，$this->route是路由信息Soter_Route类的一个对象。
-					<br>设置hmvc模块名称：->setHmvcModuleName($hmvcModuleName)
+					<br>设置hmvc模块名称：->setHmvcModuleName($hmvcModuleDirName ? $hmvcModule : '')，
+					<br>$hmvcModuleDirName=Soter::checkHmvc($hmvcModuleName, false),
+					<br>$hmvcModuleDirName是hmvc的文件夹名称，我们可以通过判断hmvc的文件夹名称是否是是空知道Url里面的hmvc模块是否存在。
+					<br>当hmvc模块存在的时候Soter::checkHmvc()会返回对应hmvc的文件夹名称，不存在的时候返回空。
 					<br>设置控制器名称：->setController($controllerName)
 					<br>设置方法名称：->setMethod($methodName)
 					<br>最重要的是：->setFound($hmvcModuleDirName || $controllerName)这个是告诉Soter，当前路由器是否找到了路由信息。
-					<br>get路由器只要找到了hmvc模块名称或者控制器名称就说明$uri有效，找到了路由信息。
+					<br>get路由器只要找到了存在的hmvc模块或者控制器名称就说明$uri有效，找到了路由信息。
 					<br>Soter就会停止调用下一个注册的路由器处理$uri。如果setFound是false，Soter会继续调用后面注册的路由器进行路由，
 					<br>直到路由器返回的$route对象setFound是true为止，然后就使用返回的$route对象进行加载控制器，hmvc模块等后续操作。
 					<br><b>提示：</b>

@@ -30,7 +30,7 @@ require dirname(__FILE__) . '/../codes/index.php';
   佛祖保佑         永无BUG
  */
 date_default_timezone_set('PRC');
-$ver = "v1.0.2";
+$ver = "v1.0.3";
 $header = '/*
  * Copyright ' . date('Y') . ' Soter(狂奔的蜗牛 672308444@163.com)
  *
@@ -64,12 +64,12 @@ $header = '/*
 define('SRC_DIR', dirname(__FILE__) . '/../codes/');
 define('DIST_DIR', dirname(__FILE__) . '/../../');
 $files = array(
+    'soter.class.php',
     'SoterPDO.php',
     'soter.interface.php',
     'soter.abstract.php',
     'soter.exception.php',
     'soter.tools.classes.php',
-    'soter.class.php'
 );
 $soter = "<?php\n" . $header . "\n";
 foreach ($files as $file) {
