@@ -1601,8 +1601,8 @@ class Sr {
 		static function json() {
 			$args = func_get_args();
 			$handle = Sr::config()->getOutputJsonHandle();
-			if ($handle instanceof Soter_Output_Handle_Json) {
-				return call_user_func_array(array($handle, 'render'), $args);
+			if (is_callable($handle)) {
+				return call_user_func_array($handle, $args);
 			} else {
 				return '';
 			}

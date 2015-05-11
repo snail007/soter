@@ -364,7 +364,7 @@ class Soter_Config {
 		return $this->outputJsonHandle;
 	}
 
-	public function setOutputJsonHandle(Soter_Output_Handle_Json $outputJsonHandle) {
+	public function setOutputJsonHandle($outputJsonHandle) {
 		$this->outputJsonHandle = $outputJsonHandle;
 		return $this;
 	}

@@ -3,7 +3,8 @@
 class Controller_Welcome extends Soter_Controller {
 
 	public function do_index() {
-		echo Sr::json(1,200,array());
+		$sessionDao=Sr::dao('SessionDao');
+		Sr::dump($sessionDao->find('30i4kdctus8ca3d0g19djufpclj66ago'));
 	}
 
 	public function do_get() {
