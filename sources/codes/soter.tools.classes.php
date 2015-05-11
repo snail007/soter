@@ -363,9 +363,19 @@ class Soter_Config {
 		$sessionConfig,
 		$sessionHandle,
 		$methodCacheConfig,
-		$dataCheckRules
+		$dataCheckRules,
+		$outputJsonHandle
 
 	;
+
+	public function getOutputJsonHandle() {
+		return $this->outputJsonHandle;
+	}
+
+	public function setOutputJsonHandle(Soter_Output_Handle_Json $outputJsonHandle) {
+		$this->outputJsonHandle = $outputJsonHandle;
+		return $this;
+	}
 
 	public function getDataCheckRules() {
 		return $this->dataCheckRules;

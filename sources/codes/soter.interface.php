@@ -52,5 +52,3 @@ interface Soter_Cache {
 
 	public function clean();
 }
-
-

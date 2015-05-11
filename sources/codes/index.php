@@ -114,6 +114,14 @@ Soter::initialize()
 	//->setMethodCacheConfig('method_cache')
 	/* 设置自定义数据验证规则，参数可以是配置文件名称，也可以是规则数组 */
 	//->setDataCheckRules('rules')
+	/* 设置Sr::json()输出处理回调函数，这里可以自定义json输出格式 */
+	->setOutputJsonHandle(function() {
+		$args = func_get_args();
+		$code = Sr::arrayGet($args, 0, '');
+		$message = Sr::arrayGet($args, 1, '');
+		$data = Sr::arrayGet($args, 2, '');
+		return @json_encode(array('code' => $code, 'message' => $message, 'data' => $data));
+	})
 	//加载项目自定义bootstrap.php配置,这一句一定要在最后，确保能覆盖上面的配置
 	->bootstrap()
 ;

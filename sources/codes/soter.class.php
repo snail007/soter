@@ -1602,5 +1602,15 @@ class Sr {
 			return $pages > 1 ? implode("", $output) : '';
 		}
 
+		static function json() {
+			$args = func_get_args();
+			$handle = Sr::config()->getOutputJsonHandle();
+			if ($handle instanceof Soter_Output_Handle_Json) {
+				return call_user_func_array(array($handle, 'render'), $args);
+			} else {
+				return '';
+			}
+		}
+
 	}
 	
