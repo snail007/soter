@@ -358,7 +358,7 @@ class Soter_Config {
 		return $this->exceptionJsonRender;
 	}
 
-	public function setExceptionJsonRender(callable $exceptionJsonRender) {
+	public function setExceptionJsonRender($exceptionJsonRender) {
 		$this->exceptionJsonRender = $exceptionJsonRender;
 		return $this;
 	}
@@ -367,7 +367,7 @@ class Soter_Config {
 		return $this->outputJsonRender;
 	}
 
-	public function setOutputJsonRender(callable $outputJsonHandle) {
+	public function setOutputJsonRender($outputJsonHandle) {
 		$this->outputJsonRender = $outputJsonHandle;
 		return $this;
 	}

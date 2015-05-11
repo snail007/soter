@@ -26,8 +26,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.4
- * @createdtime   2015-05-08 18:54:21
+ * @since         v1.0.5
+ * @createdtime   2015-05-11 18:40:24
  */
  
 define("IN_SOTER", true);
@@ -143,6 +143,25 @@ Soter::initialize()
 	//->setMethodCacheConfig('method_cache')
 	/* 设置自定义数据验证规则，参数可以是配置文件名称，也可以是规则数组 */
 	//->setDataCheckRules('rules')
+	/* 设置Sr::json()输出处理回调函数，这里可以自定义json输出格式 */
+	->setOutputJsonRender(function() {
+		$args = func_get_args();
+		$code = Sr::arrayGet($args, 0, '');
+		$message = Sr::arrayGet($args, 1, '');
+		$data = Sr::arrayGet($args, 2, '');
+		return @json_encode(array('code' => $code, 'message' => $message, 'data' => $data));
+	})
+	/* 设置发生异常的时候，调用异常对象的renderJson()方法输出json的回调函数，这里可以自定义json输出格式 */
+	->setExceptionJsonRender(function(Exception $e) {
+		$json['file'] = $e->getErrorFile();
+		$json['line'] = $e->getErrorLine();
+		$json['message'] = $e->getErrorMessage();
+		$json['type'] = $e->getErrorType();
+		$json['code'] = $e->getErrorCode();
+		$json['time'] = date('Y/m/d H:i:s T');
+		$json['trace'] = $e->getTraceCliString();
+		return @json_encode($json);
+	})
 	
 	
 ;

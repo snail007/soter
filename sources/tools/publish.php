@@ -30,7 +30,7 @@ require dirname(__FILE__) . '/../codes/index.php';
   佛祖保佑         永无BUG
  */
 date_default_timezone_set('PRC');
-$ver = "v1.0.4";
+$ver = "v1.0.5";
 $header = '/*
  * Copyright ' . date('Y') . ' Soter(狂奔的蜗牛 672308444@163.com)
  *
@@ -90,6 +90,9 @@ file_put_contents(DIST_DIR . 'index.php', $index);
 
 exec('rm -rf ' . DIST_DIR . 'docs/*');
 exec('cp -r ' . DIST_DIR . '../soter-docs/* ' . DIST_DIR . 'docs/');
+
+//内测版生成
+exec('cd ' . DIST_DIR . '&&tar zcvf "' . 'soter-alpha-' . $ver . '.tar.gz' . '" application docs composer.json index.php LICENSE README.md soter.min.php soter.php');
 
 function common_replace(&$str) {
 	$str = preg_replace('|^ *// *[\w].*$\n|m', '', $str); //去掉英文单行注释
