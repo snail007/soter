@@ -10,12 +10,28 @@ abstract class Soter_Model {
 
 abstract class Soter_Dao {
 
+	private $db;
+
+	public function __construct() {
+		$this->db = Sr::db();
+	}
+
 	/**
-	 * 
+	 * 设置Dao中使用的数据库操作对象
+	 * @param Soter_Database_ActiveRecord $db
+	 * @return \Soter_Dao
+	 */
+	public function setDb(Soter_Database_ActiveRecord $db) {
+		$this->db = $db;
+		return $this;
+	}
+
+	/**
+	 * 获取Dao中使用的数据库操作对象
 	 * @return Soter_Database_ActiveRecord
 	 */
 	public function &getDb() {
-		return Sr::db();
+		return $this->db;
 	}
 
 	public abstract function getTable();
