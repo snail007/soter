@@ -1612,5 +1612,31 @@ class Sr {
 			}
 		}
 
+		static function redirect($url, $msg = null, $time = 3, $view = null) {
+			$time = intval($time) ? intval($time) : 3;
+			header("refresh:{$time};url={$url}"); //单位秒
+			header("Content-type: text/html; charset=utf-8");
+			if (empty($view)) {
+				echo $msg;
+			} else {
+				self::view()->set(array('msg' => $msg, 'url' => $url, 'time' => $time))->load($view);
+			}
+			exit();
+		}
+
+		static function message($msg, $url = null, $time = 3, $view = null) {
+			$time = intval($time) ? intval($time) : 3;
+			if (!empty($url)) {
+				header("refresh:{$time};url={$url}"); //单位秒
+			}
+			header("Content-type: text/html; charset=utf-8");
+			if (!empty($view)) {
+				self::view()->set(array('msg' => $msg, 'url' => $url, 'time' => $time))->load($view);
+			} else {
+				echo $msg;
+			}
+			exit();
+		}
+
 	}
 	
