@@ -330,13 +330,6 @@ class Soter_Config {
 		$backendServerIpWhitelist = '',
 		$isRewrite = FALSE,
 		$request, $showError = true,
-		$excptionErrorJsonMessageName = 'message',
-		$excptionErrorJsonFileName = 'file',
-		$excptionErrorJsonLineName = 'line',
-		$excptionErrorJsonTypeName = 'type',
-		$excptionErrorJsonCodeName = 'code',
-		$excptionErrorJsonTraceName = 'trace',
-		$excptionErrorJsonTimeName = 'time',
 		$routersContainer = array(),
 		$packageMasterContainer = array(),
 		$packageContainer = array(),
@@ -356,16 +349,26 @@ class Soter_Config {
 		$sessionHandle,
 		$methodCacheConfig,
 		$dataCheckRules,
-		$outputJsonHandle
+		$outputJsonRender,
+		$exceptionJsonRender
 
 	;
 
-	public function getOutputJsonHandle() {
-		return $this->outputJsonHandle;
+	public function getExceptionJsonRender() {
+		return $this->exceptionJsonRender;
 	}
 
-	public function setOutputJsonHandle($outputJsonHandle) {
-		$this->outputJsonHandle = $outputJsonHandle;
+	public function setExceptionJsonRender(callable $exceptionJsonRender) {
+		$this->exceptionJsonRender = $exceptionJsonRender;
+		return $this;
+	}
+
+	public function getOutputJsonRender() {
+		return $this->outputJsonRender;
+	}
+
+	public function setOutputJsonRender(callable $outputJsonHandle) {
+		$this->outputJsonRender = $outputJsonHandle;
 		return $this;
 	}
 
@@ -983,64 +986,6 @@ class Soter_Config {
 
 	public function setRequest(Soter_Request $request) {
 		$this->request = $request;
-		return $this;
-	}
-
-	public function getExcptionErrorJsonMessageName() {
-		return $this->excptionErrorJsonMessageName;
-	}
-
-	public function getExcptionErrorJsonFileName() {
-		return $this->excptionErrorJsonFileName;
-	}
-
-	public function getExcptionErrorJsonLineName() {
-		return $this->excptionErrorJsonLineName;
-	}
-
-	public function getExcptionErrorJsonTypeName() {
-		return $this->excptionErrorJsonTypeName;
-	}
-
-	public function getExcptionErrorJsonCodeName() {
-		return $this->excptionErrorJsonCodeName;
-	}
-
-	public function getExcptionErrorJsonTraceName() {
-		return $this->excptionErrorJsonTraceName;
-	}
-
-	public function getExcptionErrorJsonTimeName() {
-		return $this->excptionErrorJsonTimeName;
-	}
-
-	public function setExcptionErrorJsonTimeName($excptionErrorJsonTimeName) {
-		$this->excptionErrorJsonTimeName = $excptionErrorJsonTimeName;
-		return $this;
-	}
-
-	public function setExcptionErrorJsonMessageName($excptionErrorJsonMessageName) {
-		$this->excptionErrorJsonMessageName = $excptionErrorJsonMessageName;
-		return $this;
-	}
-
-	public function setExcptionErrorJsonFileName($excptionErrorJsonFileName) {
-		$this->excptionErrorJsonFileName = $excptionErrorJsonFileName;
-		return $this;
-	}
-
-	public function setExcptionErrorJsonLineName($excptionErrorJsonLineName) {
-		$this->excptionErrorJsonLineName = $excptionErrorJsonLineName;
-		return $this;
-	}
-
-	public function setExcptionErrorJsonTypeName($excptionErrorJsonTypeName) {
-		$this->excptionErrorJsonTypeName = $excptionErrorJsonTypeName;
-		return $this;
-	}
-
-	public function setExcptionErrorJsonCodeName($excptionErrorJsonCodeName) {
-		$this->excptionErrorJsonCodeName = $excptionErrorJsonCodeName;
 		return $this;
 	}
 

@@ -403,16 +403,11 @@ abstract class Soter_Exception extends Exception {
 	}
 
 	public function renderJson() {
-		$config = soter::getConfig();
-		$json[$config->getExcptionErrorJsonFileName()] = $this->getErrorFile();
-		$json[$config->getExcptionErrorJsonLineName()] = $this->getErrorLine();
-		$json[$config->getExcptionErrorJsonMessageName()] = $this->getErrorMessage();
-		$json[$config->getExcptionErrorJsonTypeName()] = $this->getErrorType();
-		$json[$config->getExcptionErrorJsonCodeName()] = $this->getErrorCode();
-		$json[$config->getExcptionErrorJsonTimeName()] = date('Y/m/d H:i:s T');
-		$json[$config->getExcptionErrorJsonTraceName()] = $this->getTraceCliString();
-		$output = json_encode($json);
-		return $output;
+		$render = soter::getConfig()->getExceptionJsonRender();
+		if(is_callable($render)){
+			return $render($this);
+		}
+		return '';
 	}
 
 	public function setHttpHeader() {

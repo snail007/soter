@@ -4,7 +4,7 @@ class Controller_Welcome extends Soter_Controller {
 
 	public function do_index() {
 		$sessionDao=Sr::dao('SessionDao');
-		Sr::dump($sessionDao->find('30i4kdctus8ca3d0g19djufpclj66ago'));
+		Sr::dump($sessionDao->findCol('timestamp',array('id <>'=>'')));
 	}
 
 	public function do_get() {

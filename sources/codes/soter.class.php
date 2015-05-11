@@ -1600,7 +1600,7 @@ class Sr {
 
 		static function json() {
 			$args = func_get_args();
-			$handle = Sr::config()->getOutputJsonHandle();
+			$handle = Sr::config()->getOutputJsonRender();
 			if (is_callable($handle)) {
 				return call_user_func_array($handle, $args);
 			} else {
