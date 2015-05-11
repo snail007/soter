@@ -160,9 +160,7 @@ class Soter {
 				$response = call_user_func_array(array($controllerObject, $method), $route->getArgs());
 				$contents = @ob_get_contents();
 				@ob_end_clean();
-				if ($response instanceof Soter_Response) {
-					$contents.=$response->render();
-				} elseif (!empty($response)) {
+				if (!empty($response)) {
 					$contents.= $response;
 				}
 				Sr::cache()->set($cacheMethoKey, $contents, $cacheMethodConfig[$methoKey]['time']);
@@ -170,9 +168,7 @@ class Soter {
 			echo $contents;
 		} else {
 			$response = call_user_func_array(array($controllerObject, $method), $route->getArgs());
-			if ($response instanceof Soter_Response) {
-				$response->output();
-			} else {
+			if ($response) {
 				echo $response;
 			}
 		}

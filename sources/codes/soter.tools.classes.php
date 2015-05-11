@@ -113,14 +113,6 @@ class Soter_View {
 
 }
 
-class Soter_Response {
-
-	public function render() {
-		
-	}
-
-}
-
 class Soter_CliArgs {
 
 	private $args;
