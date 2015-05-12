@@ -20,31 +20,31 @@
 					<br>即：<code>define('SOTER_RUN_MODE_PLUGIN', TRUE);</code>
 				</li>
 				<li><h2 class="title_h2">手动加载</h2>
-					插件模式下路由器不在起作用，我们可以通过Sr::plugin()方法加载各种资源，比如控制器方法。
+					插件模式下路由器不在起作用，我们可以通过Sr::factory()方法加载各种资源，比如控制器方法。
 					<br>下面对它进行介绍：
 					<h3 class="title_h3">1.首先我们看它的参数</h3>
 					<pre class="brush:php">
-						Sr::plugin($className, $hmvcModuleName = null)	
+						Sr::factory($className, $hmvcModuleName = null)	
 					</pre>
 					我们看到有两个参数：
 					<br>$className：　　　　可以是完整的控制器类名，模型类名，类库类名
-					<br>$hmvcModuleName：　 hmvc模块名称，是入口文件配置里面的数组的键名
+					<br>$hmvcModuleName：　 hmvc模块名称，是入口文件配置里面的数组的键名，插件模式下才会用到这个参数
 					<h3 class="title_h3">2.加载示例</h3>
 					2.1.比如加载控制器：application/classes/Controller/Welcome.php
 					<pre class="brush:php">
-						$welcome=Sr::plugin('Controller_Welcome');
+						$welcome=Sr::factory('Controller_Welcome');
 						//手动调用do_index方法，这里应该是按着我们具体的业务逻辑手动调用我们需要调用的方法。
 						$welcome->do_index();		
 					</pre>
 					2.2.比如加载hmvc模块控制器：application/hmvc/demo/classes/Controller/Welcome.php
 					<br>而且入口文件里面注册了hvmc模块demo，<code>Demo=>demo</code>。
 					<pre class="brush:php">
-						$welcome=Sr::plugin('Controller_Welcome','Demo');
+						$welcome=Sr::factory('Controller_Welcome','Demo');
 						$welcome->do_index();
 					</pre>
 					2.3.比如加载模型：application/classes/Model/User.php
 					<pre class="brush:php">
-						$userModel=Sr::plugin('Model_User');
+						$userModel=Sr::factory('Model_User');
 						//手动调用do_index方法，这里应该是按着我们具体的业务逻辑手动调用我们需要调用的方法。
 						$userModel->do_something();		
 					</pre>

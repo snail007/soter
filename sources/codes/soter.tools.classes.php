@@ -214,13 +214,6 @@ class Soter_Default_Router_Get extends Soter_Router {
 
 class Soter_Default_Router_PathInfo extends Soter_Router {
 
-	/**
-	 * 只处理pathinfo模式的路由<br>
-	 * 比如：<br>
-	 * uri：/index.php/Vip uri至少有一个hmvc模块名称Vip，或者控制器名称Vip<br>
-	 * 如果没有就认为不是pathinfo模式的路由<br>
-	 * @return \Soter_Route
-	 */
 	public function find() {
 		$config = Soter::getConfig();
 		/**
@@ -1031,10 +1024,8 @@ class Soter_Logger_Writer_Dispatcher {
 		if (empty(self::$instance)) {
 			self::$instance = new self();
 			error_reporting(E_ALL);
-			//只在web和命令行模式下关闭错误显示，插件模式不应该关闭
-			if (!Sr::isPluginMode()) {
-				ini_set('display_errors', FALSE);
-			}
+			//插件模式打开错误显示，web和命令行模式关闭错误显示
+			Sr::isPluginMode() ? ini_set('display_errors', TRUE) : ini_set('display_errors', FALSE);
 			set_exception_handler(array(self::$instance, 'handleException'));
 			set_error_handler(array(self::$instance, 'handleError'));
 			register_shutdown_function(array(self::$instance, 'handleFatal'));
@@ -1245,11 +1236,6 @@ class Soter_Cache_File implements Soter_Cache {
 		return true;
 	}
 
-	/**
-	 * 成功返回数据，失败返回null
-	 * @param type $key
-	 * @return type
-	 */
 	public function get($key) {
 		if (empty($key)) {
 			return null;
@@ -1264,13 +1250,6 @@ class Soter_Cache_File implements Soter_Cache {
 		return NULL;
 	}
 
-	/**
-	 * 成功返回true，失败返回false
-	 * @param type $key       缓存key
-	 * @param type $value     缓存数据
-	 * @param type $cacheTime 缓存时间，单位秒
-	 * @return boolean
-	 */
 	public function set($key, $value, $cacheTime) {
 		if (empty($key)) {
 			return false;
@@ -1647,19 +1626,11 @@ class Soter_Generator_Mysql extends Soter_Task {
 		}
 	}
 
-	/**
-	 * 获取表字段信息，并返回
-	 * 提示：
-	 * 只适用于mysql数据库
-	 * @param type $tableName   不含前缀的表名称
-	 * @param type $db           数据库组配置名称，或者数据库对象，或者数据库配置数组
-	 * @return array $info
-	 */
-	public static function getTableFieldsInfo($tableName, $db) {
+	private static function getTableFieldsInfo($tableName, $db) {
 		if (!is_object($db)) {
 			$db = Sr::db($db);
 		}
-		if ($db->getDriverType() != 'mysql') {
+		if (strtolower($db->getDriverType()) != 'mysql') {
 			throw new Soter_Exception_500('getTableFieldsInfo() only for mysql database');
 		}
 		$info = array();

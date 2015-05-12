@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.5
- * @createdtime   2015-05-11 18:40:24
+ * @since         v1.0.7
+ * @createdtime   2015-05-12 16:56:29
  */
  
 
@@ -290,7 +290,7 @@ class Sr {
 		echo!self::isCli() ? '<pre style="line-height:1.5em;font-size:14px;">' : "\n";
 		@ob_start();
 		$args = func_get_args();
-		call_user_func_array('var_dump', $args);
+		empty($args) ? null : call_user_func_array('var_dump', $args);
 		$html = @ob_get_clean();
 		echo!self::isCli() ? htmlentities($html) : $html;
 		echo!self::isCli() ? "</pre>" : "\n";
@@ -410,38 +410,23 @@ class Sr {
 	}
 
 	/**
-	 * web模式和命令行模式下的超级工厂方法
-	 * @param type $className
-	 * @return \className
+	 * 超级工厂方法
+	 * @param type $className      可以是完整的控制器类名，模型类名，类库类名
+	 * @param type $hmvcModuleName hmvc模块名称，是配置里面的数组的键名，插件模式下才会用到这个参数
 	 * @throws Soter_Exception_404
 	 */
-	static function factory($className) {
+	static function factory($className, $hmvcModuleName = null) {
+		if (Sr::isPluginMode()) {
+			//hmvc检测
+			Soter::checkHmvc($hmvcModuleName);
+		}
 		if (Sr::strEndsWith(strtolower($className), '.php')) {
 			$className = substr($className, 0, strlen($className) - 4);
 		}
 		$className = str_replace('/', '_', $className);
-		if (Sr::isPluginMode()) {
-			throw new Soter_Exception_500('Sr::factory() only in web or cli mode');
-		}
 		if (!class_exists($className)) {
 			throw new Soter_Exception_404("class [ $className ] not found");
 		}
-		return new $className();
-	}
-
-	/**
-	 * 插件模式下的超级工厂类
-	 * @param type $className      可以是完整的控制器类名，模型类名，类库类名
-	 * @param type $hmvcModuleName hmvc模块名称，是配置里面的数组的键名
-	 * @return \className
-	 * @throws Soter_Exception_404
-	 */
-	static function plugin($className, $hmvcModuleName = null) {
-		if (!Sr::isPluginMode()) {
-			throw new Soter_Exception_500('Sr::plugin() only in PLUGIN mode');
-		}
-		//hmvc检测
-		Soter::checkHmvc($hmvcModuleName);
 		return new $className();
 	}
 
@@ -507,14 +492,13 @@ class Sr {
 	}
 
 	/**
-	 * 解析命令行参数 $GLOBALS['argv'] 到一个数组
-	 *
-	 * 参数形式支持:
-	 * -e
-	 * -e <value>
-	 * --long-param
-	 * --long-param=<value>
-	 * --long-param <value>
+	 * 解析命令行参数 $GLOBALS['argv'] 到一个数组<br>
+	 * 参数形式支持:		<br>
+	 * -e			<br>
+	 * -e <value>		<br>
+	 * --long-param		<br>
+	 * --long-param=<value><br>
+	 * --long-param <value><br>
 	 * <value>
 	 *
 	 */
@@ -1560,7 +1544,7 @@ class Sr {
 		}
 
 		/**
-		 * 分页函数
+		 * 分页方法
 		 * @param type $total 一共多少记录
 		 * @param type $page  当前是第几页
 		 * @param type $pagesize 每页多少
@@ -2140,7 +2124,7 @@ abstract class Soter_Database {
 						$return = $isWritetRowsType ? $sth->rowCount() : $status;
 						$this->_lastInsertId = $isWriteInsertType ? $pdo->lastInsertId() : 0;
 					} else {
-						$return = $sth->execute($this->_getValues()) ? $sth->fetchAll(PDO::FETCH_ASSOC) : array();
+						$return = $sth->execute($values) ? $sth->fetchAll(PDO::FETCH_ASSOC) : array();
 						$return = new Soter_Database_Resultset($return);
 					}
 				} else {
@@ -2167,7 +2151,7 @@ abstract class Soter_Database {
 						$return = $isWritetRowsType ? $sth->rowCount() : $status;
 						$this->_lastInsertId = $isWriteInsertType ? $pdo->lastInsertId() : 0;
 					} else {
-						$return = $sth->execute($this->_getValues()) ? $sth->fetchAll(PDO::FETCH_ASSOC) : array();
+						$return = $sth->execute($values) ? $sth->fetchAll(PDO::FETCH_ASSOC) : array();
 						$return = new Soter_Database_Resultset($return);
 					}
 				} else {
@@ -2985,8 +2969,8 @@ class Soter_Database_Resultset {
 		return $columns;
 	}
 
-	public function value($columnName, $default = null, $index = 0) {
-		$row = $this->row($index);Sr::dump($row);
+	public function value($columnName, $default = null, $index = null) {
+		$row = $this->row($index);
 		return ($columnName && isset($row[$columnName])) ? $row[$columnName] : $default;
 	}
 
@@ -3000,23 +2984,11 @@ class Soter_Database_Resultset {
 
 interface Soter_Logger_Writer {
 
-	/**
-	 * 这里不应该有输出，应该仅记录错误信息到日志系统（文件、数据库等等）<br/>
-	 * 而且不能执行退出的操作比如exit，die
-	 * @param Soter_Exception $exception
-	 */
 	public function write(Soter_Exception $exception);
 }
 
 interface Soter_Uri_Rewriter {
 
-	/**
-	 * 参数是uri中的访问路径部分 <br>
-	 * 比如：http://127.0.0.1/index.php/Welcome/index.do?id=11<br>
-	 * 参数就是后面的(Welcome/index.do)部分，也就是index.php/和?之间的部分<br>
-	 * 这里应该返回处理后的uri，系统最终使用的就是这里返回的uri<br>
-	 * @param String $uri
-	 */
 	public function rewrite($uri);
 }
 
@@ -3098,7 +3070,7 @@ abstract class Soter_Dao {
 	 * @return boolean
 	 */
 	public function insert($data) {
-		return $this->getDb()->insert($this->getTable(), $data);
+		return $this->getDb()->insert($this->getTable(), $data)->execute();
 	}
 
 	/**
@@ -3109,7 +3081,7 @@ abstract class Soter_Dao {
 	 */
 	public function update($data, $where) {
 		$where = is_array($where) ? $where : array($this->getPrimaryKey() => $where);
-		return $this->getDb()->where($where)->update($this->getTable(), $data);
+		return $this->getDb()->where($where)->update($this->getTable(), $data)->execute();
 	}
 
 	/**
@@ -3129,7 +3101,6 @@ abstract class Soter_Dao {
 			if ($is_asso) {
 				$this->getDb()->where($values);
 			} else {
-				$isRows = true;
 				$this->getDb()->where(array($this->getPrimaryKey() => array_values($values)));
 			}
 		} else {
@@ -3205,9 +3176,10 @@ abstract class Soter_Dao {
 		if (empty($values)) {
 			return 0;
 		}
-		if (is_array($values)) {
-			$this->getDb()->where(array($this->getPrimaryKey() => array_values($values)));
-		} elseif (!empty($cond)) {
+		if (!empty($values)) {
+			$this->getDb()->where(array($this->getPrimaryKey() => is_array($values) ? array_values($values) : $values));
+		}
+		if (!empty($cond)) {
 			$this->getDb()->where($cond);
 		}
 		return $this->getDb()->delete($this->getTable())->execute();
@@ -3225,13 +3197,13 @@ abstract class Soter_Dao {
 	 * @param int   $pageBarACount 分页条a的数量，可以参考手册分页条部分
 	 * @return type
 	 */
-	public function getPage($page, $pagesize, $url, $fields = '*', Array $where = null, $orderBy = array(), $pageBarOrder = array(1, 2, 3, 4, 5, 6), $pageBarACount = 10) {
+	public function getPage($page, $pagesize, $url, $fields = '*', Array $where = null, Array $orderBy = array(), $pageBarOrder = array(1, 2, 3, 4, 5, 6), $pageBarACount = 10) {
 		$data = array();
 
 		if (is_array($where)) {
 			$this->getDb()->where($where);
 		}
-		$total = $this->getDb()->select('count(*) as toal')
+		$total = $this->getDb()->select('count(*) as total')
 			->from($this->getTable())
 			->execute()
 			->value('total');
@@ -3256,7 +3228,7 @@ abstract class Soter_Dao {
 	 * @param type $pagesize  每页多少条
 	 * @param type $url       基础url，里面的{page}会被替换为实际的页码
 	 * @param type $fields    select的字段，全部用*，多个字段用逗号分隔
-	 * @param type $cond      SQL语句where后面的部分，不要带limit
+	 * @param type $cond      是条件字符串，SQL语句where后面的部分，不要带limit
 	 * @param type $values    $cond中的问号的值数组，$cond中使用?可以防止sql注入
 	 * @param array $pageBarOrder   分页条组成，可以参考手册分页条部分
 	 * @param int   $pageBarACount 分页条a的数量，可以参考手册分页条部分
@@ -3266,12 +3238,12 @@ abstract class Soter_Dao {
 		$data = array();
 		$table = $this->getDb()->getTablePrefix() . $this->getTable();
 		$total = $this->getDb()
-			->execute('select count(*) as total from ' . $table . (strpos(trim($cond), 'order') === 0 ? '' : ' where') . $cond)
+			->execute('select count(*) as total from ' . $table . (strpos(trim($cond), 'order') === 0 ? ' ' : ' where ') . $cond, $values)
 			->value('total');
 		$data['items'] = $this->getDb()
-			->execute('select ' . $fields . ' from ' . $table . (strpos(trim($cond), 'order') === 0 ? '' : ' where') . $cond . ' limit ' . (($page - 1) * $pagesize) . ',' . $pagesize, $values)
+			->execute('select ' . $fields . ' from ' . $table . (strpos(trim($cond), 'order') === 0 ? ' ' : ' where ') . $cond . ' limit ' . (($page - 1) * $pagesize) . ',' . $pagesize, $values)
 			->rows();
-		$data['page'] = $this->page($total, $page, $pagesize, $url, $pageBarOrder, $pageBarACount);
+		$data['page'] = Sr::page($total, $page, $pagesize, $url, $pageBarOrder, $pageBarACount);
 		return $data;
 	}
 
@@ -3456,7 +3428,7 @@ abstract class Soter_Exception extends Exception {
 
 	public function renderJson() {
 		$render = soter::getConfig()->getExceptionJsonRender();
-		if(is_callable($render)){
+		if (is_callable($render)) {
 			return $render($this);
 		}
 		return '';
@@ -3724,13 +3696,6 @@ class Soter_Default_Router_Get extends Soter_Router {
 
 class Soter_Default_Router_PathInfo extends Soter_Router {
 
-	/**
-	 * 只处理pathinfo模式的路由<br>
-	 * 比如：<br>
-	 * uri：/index.php/Vip uri至少有一个hmvc模块名称Vip，或者控制器名称Vip<br>
-	 * 如果没有就认为不是pathinfo模式的路由<br>
-	 * @return \Soter_Route
-	 */
 	public function find() {
 		$config = Soter::getConfig();
 		/**
@@ -4541,10 +4506,8 @@ class Soter_Logger_Writer_Dispatcher {
 		if (empty(self::$instance)) {
 			self::$instance = new self();
 			error_reporting(E_ALL);
-			//只在web和命令行模式下关闭错误显示，插件模式不应该关闭
-			if (!Sr::isPluginMode()) {
-				ini_set('display_errors', FALSE);
-			}
+			//插件模式打开错误显示，web和命令行模式关闭错误显示
+			Sr::isPluginMode() ? ini_set('display_errors', TRUE) : ini_set('display_errors', FALSE);
 			set_exception_handler(array(self::$instance, 'handleException'));
 			set_error_handler(array(self::$instance, 'handleError'));
 			register_shutdown_function(array(self::$instance, 'handleFatal'));
@@ -4755,11 +4718,6 @@ class Soter_Cache_File implements Soter_Cache {
 		return true;
 	}
 
-	/**
-	 * 成功返回数据，失败返回null
-	 * @param type $key
-	 * @return type
-	 */
 	public function get($key) {
 		if (empty($key)) {
 			return null;
@@ -4774,13 +4732,6 @@ class Soter_Cache_File implements Soter_Cache {
 		return NULL;
 	}
 
-	/**
-	 * 成功返回true，失败返回false
-	 * @param type $key       缓存key
-	 * @param type $value     缓存数据
-	 * @param type $cacheTime 缓存时间，单位秒
-	 * @return boolean
-	 */
 	public function set($key, $value, $cacheTime) {
 		if (empty($key)) {
 			return false;
@@ -5157,19 +5108,11 @@ class Soter_Generator_Mysql extends Soter_Task {
 		}
 	}
 
-	/**
-	 * 获取表字段信息，并返回
-	 * 提示：
-	 * 只适用于mysql数据库
-	 * @param type $tableName   不含前缀的表名称
-	 * @param type $db           数据库组配置名称，或者数据库对象，或者数据库配置数组
-	 * @return array $info
-	 */
-	public static function getTableFieldsInfo($tableName, $db) {
+	private static function getTableFieldsInfo($tableName, $db) {
 		if (!is_object($db)) {
 			$db = Sr::db($db);
 		}
-		if ($db->getDriverType() != 'mysql') {
+		if (strtolower($db->getDriverType()) != 'mysql') {
 			throw new Soter_Exception_500('getTableFieldsInfo() only for mysql database');
 		}
 		$info = array();

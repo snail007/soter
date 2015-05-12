@@ -259,7 +259,7 @@ class Sr {
 		echo!self::isCli() ? '<pre style="line-height:1.5em;font-size:14px;">' : "\n";
 		@ob_start();
 		$args = func_get_args();
-		empty($args)?null:call_user_func_array('var_dump', $args);
+		empty($args) ? null : call_user_func_array('var_dump', $args);
 		$html = @ob_get_clean();
 		echo!self::isCli() ? htmlentities($html) : $html;
 		echo!self::isCli() ? "</pre>" : "\n";
@@ -461,14 +461,13 @@ class Sr {
 	}
 
 	/**
-	 * 解析命令行参数 $GLOBALS['argv'] 到一个数组
-	 *
-	 * 参数形式支持:
-	 * -e
-	 * -e <value>
-	 * --long-param
-	 * --long-param=<value>
-	 * --long-param <value>
+	 * 解析命令行参数 $GLOBALS['argv'] 到一个数组<br>
+	 * 参数形式支持:		<br>
+	 * -e			<br>
+	 * -e <value>		<br>
+	 * --long-param		<br>
+	 * --long-param=<value><br>
+	 * --long-param <value><br>
 	 * <value>
 	 *
 	 */
@@ -1514,7 +1513,7 @@ class Sr {
 		}
 
 		/**
-		 * 分页函数
+		 * 分页方法
 		 * @param type $total 一共多少记录
 		 * @param type $page  当前是第几页
 		 * @param type $pagesize 每页多少
