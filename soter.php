@@ -2985,8 +2985,8 @@ class Soter_Database_Resultset {
 		return $columns;
 	}
 
-	public function value($columnName, $default = null, $index = null) {
-		$row = $this->row($index);
+	public function value($columnName, $default = null, $index = 0) {
+		$row = $this->row($index);Sr::dump($row);
 		return ($columnName && isset($row[$columnName])) ? $row[$columnName] : $default;
 	}
 

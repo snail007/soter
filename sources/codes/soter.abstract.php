@@ -179,7 +179,7 @@ abstract class Soter_Dao {
 		if (is_array($where)) {
 			$this->getDb()->where($where);
 		}
-		$total = $this->getDb()->select('count(*) as toal')
+		$total = $this->getDb()->select('count(*) as total')
 			->from($this->getTable())
 			->execute()
 			->value('total');
