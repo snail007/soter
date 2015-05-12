@@ -29,11 +29,18 @@ require dirname(__FILE__) . '/../codes/index.php';
 
   佛祖保佑         永无BUG
  */
+define('SRC_DIR', dirname(__FILE__) . '/../codes/');
+define('DIST_DIR', dirname(__FILE__) . '/../../');
 date_default_timezone_set('PRC');
 $ver = "v1.0.6";
 
 if (Sr::getOpt('version')) {
 	$ver = Sr::getOpt('version');
+}
+if (Sr::getOpt('docs')) {
+	$contents =  file_get_contents($docIndex=DIST_DIR.'../soter-docs/index.html');
+	$contents=  preg_replace('/v\d+.\d+.\d+/', $ver, $contents);
+	file_put_contents($docIndex, $contents);
 }
 
 $header = '/*
@@ -66,8 +73,7 @@ $header = '/*
  * @createdtime   ' . date('Y-m-d H:i:s') . '
  */
  ';
-define('SRC_DIR', dirname(__FILE__) . '/../codes/');
-define('DIST_DIR', dirname(__FILE__) . '/../../');
+
 $files = array(
     'soter.class.php',
     'SoterPDO.php',
