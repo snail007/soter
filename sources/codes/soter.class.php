@@ -259,7 +259,7 @@ class Sr {
 		echo!self::isCli() ? '<pre style="line-height:1.5em;font-size:14px;">' : "\n";
 		@ob_start();
 		$args = func_get_args();
-		call_user_func_array('var_dump', $args);
+		empty($args)?null:call_user_func_array('var_dump', $args);
 		$html = @ob_get_clean();
 		echo!self::isCli() ? htmlentities($html) : $html;
 		echo!self::isCli() ? "</pre>" : "\n";
@@ -379,38 +379,23 @@ class Sr {
 	}
 
 	/**
-	 * web模式和命令行模式下的超级工厂方法
-	 * @param type $className
-	 * @return \className
+	 * 超级工厂方法
+	 * @param type $className      可以是完整的控制器类名，模型类名，类库类名
+	 * @param type $hmvcModuleName hmvc模块名称，是配置里面的数组的键名，插件模式下才会用到这个参数
 	 * @throws Soter_Exception_404
 	 */
-	static function factory($className) {
+	static function factory($className, $hmvcModuleName = null) {
+		if (Sr::isPluginMode()) {
+			//hmvc检测
+			Soter::checkHmvc($hmvcModuleName);
+		}
 		if (Sr::strEndsWith(strtolower($className), '.php')) {
 			$className = substr($className, 0, strlen($className) - 4);
 		}
 		$className = str_replace('/', '_', $className);
-		if (Sr::isPluginMode()) {
-			throw new Soter_Exception_500('Sr::factory() only in web or cli mode');
-		}
 		if (!class_exists($className)) {
 			throw new Soter_Exception_404("class [ $className ] not found");
 		}
-		return new $className();
-	}
-
-	/**
-	 * 插件模式下的超级工厂类
-	 * @param type $className      可以是完整的控制器类名，模型类名，类库类名
-	 * @param type $hmvcModuleName hmvc模块名称，是配置里面的数组的键名
-	 * @return \className
-	 * @throws Soter_Exception_404
-	 */
-	static function plugin($className, $hmvcModuleName = null) {
-		if (!Sr::isPluginMode()) {
-			throw new Soter_Exception_500('Sr::plugin() only in PLUGIN mode');
-		}
-		//hmvc检测
-		Soter::checkHmvc($hmvcModuleName);
 		return new $className();
 	}
 

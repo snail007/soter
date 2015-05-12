@@ -46,7 +46,7 @@ abstract class Soter_Dao {
 	 * @return boolean
 	 */
 	public function insert($data) {
-		return $this->getDb()->insert($this->getTable(), $data);
+		return $this->getDb()->insert($this->getTable(), $data)->execute();
 	}
 
 	/**
@@ -57,7 +57,7 @@ abstract class Soter_Dao {
 	 */
 	public function update($data, $where) {
 		$where = is_array($where) ? $where : array($this->getPrimaryKey() => $where);
-		return $this->getDb()->where($where)->update($this->getTable(), $data);
+		return $this->getDb()->where($where)->update($this->getTable(), $data)->execute();
 	}
 
 	/**
@@ -77,7 +77,6 @@ abstract class Soter_Dao {
 			if ($is_asso) {
 				$this->getDb()->where($values);
 			} else {
-				$isRows = true;
 				$this->getDb()->where(array($this->getPrimaryKey() => array_values($values)));
 			}
 		} else {
@@ -153,9 +152,10 @@ abstract class Soter_Dao {
 		if (empty($values)) {
 			return 0;
 		}
-		if (is_array($values)) {
-			$this->getDb()->where(array($this->getPrimaryKey() => array_values($values)));
-		} elseif (!empty($cond)) {
+		if (!empty($values)) {
+			$this->getDb()->where(array($this->getPrimaryKey() => is_array($values) ? array_values($values) : $values));
+		}
+		if (!empty($cond)) {
 			$this->getDb()->where($cond);
 		}
 		return $this->getDb()->delete($this->getTable())->execute();
@@ -204,7 +204,7 @@ abstract class Soter_Dao {
 	 * @param type $pagesize  每页多少条
 	 * @param type $url       基础url，里面的{page}会被替换为实际的页码
 	 * @param type $fields    select的字段，全部用*，多个字段用逗号分隔
-	 * @param type $cond      SQL语句where后面的部分，不要带limit
+	 * @param type $cond      是条件字符串，SQL语句where后面的部分，不要带limit
 	 * @param type $values    $cond中的问号的值数组，$cond中使用?可以防止sql注入
 	 * @param array $pageBarOrder   分页条组成，可以参考手册分页条部分
 	 * @param int   $pageBarACount 分页条a的数量，可以参考手册分页条部分
@@ -404,7 +404,7 @@ abstract class Soter_Exception extends Exception {
 
 	public function renderJson() {
 		$render = soter::getConfig()->getExceptionJsonRender();
-		if(is_callable($render)){
+		if (is_callable($render)) {
 			return $render($this);
 		}
 		return '';
