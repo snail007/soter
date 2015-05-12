@@ -219,7 +219,7 @@ abstract class Soter_Dao {
 		$data['items'] = $this->getDb()
 			->execute('select ' . $fields . ' from ' . $table . (strpos(trim($cond), 'order') === 0 ? '' : ' where') . $cond . ' limit ' . (($page - 1) * $pagesize) . ',' . $pagesize, $values)
 			->rows();
-		$data['page'] = $this->page($total, $page, $pagesize, $url, $pageBarOrder, $pageBarACount);
+		$data['page'] = Sr::page($total, $page, $pagesize, $url, $pageBarOrder, $pageBarACount);
 		return $data;
 	}
 
