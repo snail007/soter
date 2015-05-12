@@ -172,9 +172,23 @@ class TestDao extends UnitTestCase {
 		$this->assertEqual($num, 1);
 		$num = $this->dao->insert(array('name' => 'name33', 'gid' => rand(1000, 10000)));
 		$this->assertEqual($num, 1);
-		$num = $this->dao->getPage();
-		$this->assertEqual(count($num), 3);
+		$num = $this->dao->getPage(1, 1, '#', '*', array('id' => array(1, 2, 3)), array('id' => 'desc'), array(1, 2, 3, 4, 5, 6), 10);
+		$this->assertEqual(count($num['items']), 1);
+		$this->assertTrue(!empty($num['page']));
+		$this->clean();
+	}
 
+	public function testSearch() {
+		$this->init();
+		$num = $this->dao->insert(array('name' => 'name11', 'gid' => rand(1000, 10000)));
+		$this->assertEqual($num, 1);
+		$num = $this->dao->insert(array('name' => 'name22', 'gid' => rand(1000, 10000)));
+		$this->assertEqual($num, 1);
+		$num = $this->dao->insert(array('name' => 'name33', 'gid' => rand(1000, 10000)));
+		$this->assertEqual($num, 1);
+		$num = $this->dao->search(1, 2, '#', '*','id>?', array(0), array(1, 2, 3, 4, 5, 6), 10);
+		$this->assertEqual(count($num['items']), 2);
+		$this->assertTrue(!empty($num['page']));
 		$this->clean();
 	}
 

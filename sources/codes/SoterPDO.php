@@ -472,7 +472,7 @@ abstract class Soter_Database {
 						$return = $isWritetRowsType ? $sth->rowCount() : $status;
 						$this->_lastInsertId = $isWriteInsertType ? $pdo->lastInsertId() : 0;
 					} else {
-						$return = $sth->execute($this->_getValues()) ? $sth->fetchAll(PDO::FETCH_ASSOC) : array();
+						$return = $sth->execute($values) ? $sth->fetchAll(PDO::FETCH_ASSOC) : array();
 						$return = new Soter_Database_Resultset($return);
 					}
 				} else {
@@ -499,7 +499,7 @@ abstract class Soter_Database {
 						$return = $isWritetRowsType ? $sth->rowCount() : $status;
 						$this->_lastInsertId = $isWriteInsertType ? $pdo->lastInsertId() : 0;
 					} else {
-						$return = $sth->execute($this->_getValues()) ? $sth->fetchAll(PDO::FETCH_ASSOC) : array();
+						$return = $sth->execute($values) ? $sth->fetchAll(PDO::FETCH_ASSOC) : array();
 						$return = new Soter_Database_Resultset($return);
 					}
 				} else {

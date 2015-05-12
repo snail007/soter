@@ -173,7 +173,7 @@ abstract class Soter_Dao {
 	 * @param int   $pageBarACount 分页条a的数量，可以参考手册分页条部分
 	 * @return type
 	 */
-	public function getPage($page, $pagesize, $url, $fields = '*', Array $where = null, $orderBy = array(), $pageBarOrder = array(1, 2, 3, 4, 5, 6), $pageBarACount = 10) {
+	public function getPage($page, $pagesize, $url, $fields = '*', Array $where = null, Array $orderBy = array(), $pageBarOrder = array(1, 2, 3, 4, 5, 6), $pageBarACount = 10) {
 		$data = array();
 
 		if (is_array($where)) {
@@ -214,10 +214,10 @@ abstract class Soter_Dao {
 		$data = array();
 		$table = $this->getDb()->getTablePrefix() . $this->getTable();
 		$total = $this->getDb()
-			->execute('select count(*) as total from ' . $table . (strpos(trim($cond), 'order') === 0 ? '' : ' where') . $cond)
+			->execute('select count(*) as total from ' . $table . (strpos(trim($cond), 'order') === 0 ? ' ' : ' where ') . $cond, $values)
 			->value('total');
 		$data['items'] = $this->getDb()
-			->execute('select ' . $fields . ' from ' . $table . (strpos(trim($cond), 'order') === 0 ? '' : ' where') . $cond . ' limit ' . (($page - 1) * $pagesize) . ',' . $pagesize, $values)
+			->execute('select ' . $fields . ' from ' . $table . (strpos(trim($cond), 'order') === 0 ? ' ' : ' where ') . $cond . ' limit ' . (($page - 1) * $pagesize) . ',' . $pagesize, $values)
 			->rows();
 		$data['page'] = Sr::page($total, $page, $pagesize, $url, $pageBarOrder, $pageBarACount);
 		return $data;

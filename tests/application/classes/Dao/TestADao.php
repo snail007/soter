@@ -15,7 +15,7 @@ class Dao_TestADao extends Soter_Dao {
 	}
 
 	public function getTable() {
-		return 'test_a';
+		return 'a';
 	}
 
 }
