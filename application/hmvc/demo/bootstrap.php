@@ -27,6 +27,6 @@ Soter::getConfig()
 	->setDefaultController('Welcome')
 	->setDefaultMethod('index')
 	->setMethodPrefix('do_')
-	->setMethodUriSubfix('.html')
+	->setMethodUriSubfix('.do')
 
 ;
