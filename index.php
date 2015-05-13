@@ -27,7 +27,7 @@
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         v1.0.8
- * @createdtime   2015-05-13 10:12:19
+ * @createdtime   2015-05-13 11:55:02
  */
  
 define("IN_SOTER", true);
@@ -137,7 +137,7 @@ Soter::initialize()
 	 * 2.setSessionHandle也可以传入配置文件名称，配置文件里面要返回一个Soter_Session类对象。
 	 */
 	//->setSessionHandle('session')
-	/* 数据库连接信息，支持多主多从。如果只有一个数据库，只需要设置一个主即可。 */
+	/* 设置数据库连接信息，参数可以是配置文件名称；也可以是数据库配置信息数组，即配置文件返回的那个数组。 */
 	//->setDatabseConfig('database')
 	/* 设置控制器方法缓存规则，参数可以是配置文件名称，也可以是配置规则数组 */
 	//->setMethodCacheConfig('method_cache')

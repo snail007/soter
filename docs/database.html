@@ -37,10 +37,6 @@
 					<br>完整配置如下：
 					<pre class="brush:php">
 						&lt;?php
-						//数据库配置文件，文件名默认是database.php,
-						//也可以通过在入口文件里面修改配置：
-						//->setDatabseConfigFile('database')
-						//把里面的database参数修改为你想要的配置文件名即可
 						return array(
 						    //默认组
 						    'default_group' => 'mysql',
@@ -279,7 +275,150 @@
 					<br>3.组名是sqlite
 					<br>4.不支持pconnect，charset，collate设置
 				</li>
-
+				<li><h2 class="title_h2">连接数据库</h2>
+					当我们配置好了数据库文件database.php后，需要在入口文件里面启用它。
+					在入口文件里面我们可以看到：
+					<pre class="brush:php">
+						/* 设置数据库连接信息，参数可以是配置文件名称；也可以是数据库配置信息数组，即配置文件返回的那个数组。 */
+						//->setDatabseConfig('database')
+					</pre>
+					我们要取消<code>//->setDatabseConfig</code>前面的注释,后面的参数database就是告诉Soter要使用的数据库配置文件名称，
+					<br>默认是database，也就是使用配置文件database.php。
+					<br><b>另外：</b>
+					<br>我们还可以传入一个数据库配置数组，也就是database.php里返回的配置数组。
+					<br>比如下面是用数据库配置数组作为参数：
+					<pre class="brush:php">
+							->setDatabseConfig(array(
+									//默认组
+									'default_group' => 'mysql',
+									//组名=>配置
+									//mysql配置示例
+									'mysql' => array(
+										    'driverType' => 'mysql',
+										    'debug' => true,
+										    'pconnect' => false,
+										    'charset' => 'utf8',
+										    'collate' => 'utf8_general_ci',
+										    'database' => '',
+										    'tablePrefix' => '',
+										    'tablePrefixSqlIdentifier' => '_tablePrefix_',
+										    //是否开启慢查询记录
+										    'slowQueryDebug' => false,
+										    'slowQueryTime' => 3000, //慢查询最小时间,单位毫秒，1秒=1000毫秒
+										    'slowQueryHandle' => new Soter_Database_SlowQuery_Handle_Default(),
+										    /**
+										     * 是否开启没有满足设置的索引类型的查询记录
+										     */
+										    'indexDebug' => false,
+										    /**
+										     * 索引使用的最小情况，只有小于最小情况的时候才会记录sql到日志
+										     * minIndexType值从好到坏依次是:
+										     * system > const > eq_ref > ref > fulltext > ref_or_null 
+										     * > index_merge > unique_subquery > index_subquery > range 
+										     * > index > ALL 一般来说，得保证查询至少达到range级别，最好能达到ref
+										     * 避免ALL即全表扫描
+										     */
+										    'minIndexType' => 'index',
+										    'indexHandle' => new Soter_Database_Index_Handle_Default(),
+										    'masters' => array(
+											    'master01' => array(
+												'hostname' => '127.0.0.1',
+												'port' => 3306,
+												'username' => 'root',
+												'password' => '',
+											    )
+										    ),
+										    'slaves' => array(
+										    //		    'slave01' => array(
+										    //			'hostname' => '127.0.0.1',
+										    //			'port' => 3306,
+										    //			'username' => 'root',
+										    //			'password' => '',
+										    //		    )
+										    )
+									),
+									//sqlite3配置示例
+									'sqlite3' => array(
+											    'driverType' => 'sqlite',
+											    'debug' => true,
+											    'pconnect' => false,
+											    'tablePrefix' => '',
+											    'tablePrefixSqlIdentifier' => '_tablePrefix_',
+											    'database'=>'test.sqlite3',
+											    //是否开启慢查询记录
+											    'slowQueryDebug' => true,
+											    'slowQueryTime' => 3000, //单位毫秒，1秒=1000毫秒
+											    'slowQueryHandle' => new Soter_Database_SlowQuery_Handle_Default()
+											)
+									    )
+						)
+					</pre>
+					<b>入口文件里面使用数据库配置文件名称和直接使用数据库配置数组的区别是：</b>
+					<br>1.使用数据库配置文件名称，我们可以在不同环境下面自动切换数据库文件，
+					<br>只需要在配置目录下每个环境下面的目录里面放上一个database.php即可。
+					<br>关于配置目录的详细信息可以参考<a href="config.html">配置文件</a>手册部分。
+					<br>2.直接使用数据库配置数组我们就不能自动的根据环境切换数据库连接了。
+					<br>程序里面使用的数据库信息就是入口里面设置的固定的数据库配置数组。
+					<br><b class="text_strong">有三种方式连接数据库：</b>
+					<h3 class="title_h3">1.默认方式</h3>
+					默认情况下使用Sr::db()操作数据库，Sr::db()连接的是默认数据库组，也就是上面<code>'default_group' => 'mysql',</code>设置的，
+					<br>上面设置的默认组是mysql，那么Sr::db()操作数据库用的就是mysql配置组。
+					<h3 class="title_h3">2.手动指定组方式</h3>
+					比如我们有另外一个数据库组配置“mysql_bbs”，我们可以手动指定组$bbs=Sr::db('mysql_bbs')，
+					<br>然后我们就可以使用$bbs操作mysql_bbs组连接的数据库了。
+					<h3 class="title_h3">3.传递配置组信息方式</h3>
+					我们还可以直接传递Sr::db()一个数据库配置组信息数组，
+					<br>比如：
+					<pre class="brush:php">
+						$dbConfig=array(
+							    'driverType' => 'mysql',
+							    'debug' => true,
+							    'pconnect' => false,
+							    'charset' => 'utf8',
+							    'collate' => 'utf8_general_ci',
+							    'database' => '',
+							    'tablePrefix' => '',
+							    'tablePrefixSqlIdentifier' => '_tablePrefix_',
+							    //是否开启慢查询记录
+							    'slowQueryDebug' => false,
+							    'slowQueryTime' => 3000, //慢查询最小时间,单位毫秒，1秒=1000毫秒
+							    'slowQueryHandle' => new Soter_Database_SlowQuery_Handle_Default(),
+							    /**
+							     * 是否开启没有满足设置的索引类型的查询记录
+							     */
+							    'indexDebug' => false,
+							    /**
+							     * 索引使用的最小情况，只有小于最小情况的时候才会记录sql到日志
+							     * minIndexType值从好到坏依次是:
+							     * system > const > eq_ref > ref > fulltext > ref_or_null 
+							     * > index_merge > unique_subquery > index_subquery > range 
+							     * > index > ALL 一般来说，得保证查询至少达到range级别，最好能达到ref
+							     * 避免ALL即全表扫描
+							     */
+							    'minIndexType' => 'index',
+							    'indexHandle' => new Soter_Database_Index_Handle_Default(),
+							    'masters' => array(
+								    'master01' => array(
+									'hostname' => '127.0.0.1',
+									'port' => 3306,
+									'username' => 'root',
+									'password' => '',
+								    )
+							    ),
+							    'slaves' => array(
+							    //		    'slave01' => array(
+							    //			'hostname' => '127.0.0.1',
+							    //			'port' => 3306,
+							    //			'username' => 'root',
+							    //			'password' => '',
+							    //		    )
+							    )
+						);
+						$db=Sr::db($dbConfig);
+						//...do something
+					</pre>上面我们直接传递了一个数据库组配置数组$dbConfig给Sr::db()，
+					<br>然后用返回的$db数据库操作对象操作$dbConfig连接的数据库。
+				</li>
 				<li><h2 class="title_h2">配置中自定义处理类的使用说明</h2>
 					上面介绍中说了，Soter支持：
 					<br>1.自定义慢查询记录处理类。
@@ -527,7 +666,7 @@
 					<br>作用：得到查询结果数据数组中的第$index个记录的数据的bean对象，默认取第一条
 					<br>参数：$beanClassName 数据库表的Soter_Bean类名称，Soter_Bean规范可以参考“<a href="bean.html">Bean实体</a>”
 					<br>参数：$index   获取查询结果中的第几条，0开始的数字，0是第一条
-					</li>
+				</li>
 				<li><h3 class="title_h2">查询缓存</h3>
 					通过cache方法我们可以十分方便的把我们的查询结果缓存一定的时间。
 					<br>需要对一个查询开启缓存效果我们只需要在查询前面调用cache方法即可。
