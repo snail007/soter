@@ -206,11 +206,12 @@
                                                 INSERT INTO `test` VALUES ('3', '张三', '1425312000');
                                                 INSERT INTO `test` VALUES ('4', '李四', '1428076800');
                                         </pre>
-                                        那么Dao文件，如下：
+                                        新建Dao文件application/classes/Dao/Test.php 
+                                        <br>代码如下：
                                         <pre class="brush:php">
                                                 &lt;?php
 
-                                                class Dao_MyFirstDao extends Soter_Dao {
+                                                class Dao_Test extends Soter_Dao {
 
                                                         public function getColumns() {
                                                                 return array(
@@ -234,12 +235,12 @@
                                         下面是介绍自带常用方法：
                                         <h3 class="title_h3">1.设置Dao中使用的数据库操作对象</h3>
                                         通过<code>setDb(Soter_Database_ActiveRecord $db)</code>方法，设置Dao中使用的数据库操作对象。
-                                        <br>默认情况下，Dao是连接<code>Sr::db()</code>连接数据库，如果我们不再使用<code>Sr::db()</code>连接数据库里面数据表，
-                                        <br>那么我们可以通过<code>setDb()</code>来设置另外一个数据库，现在就可以用<code>setDb()</code>来找到数据表了。
-                                        <br>$db 必填：<code>Soter_Database_ActiveRecord</code>对象
+                                        <br>默认情况下，<code>Sr::db()</code>连接数据库，如果我们不再使用<code>Sr::db()</code>连接数据库，
+                                        <br>那么我们可以通过<code>setDb()</code>来设置另外一个数据库。
+                                        <br>setDb()的参数$db 必填：<code>setDb()</code>对象
                                         <br>示例如下：
                                         <pre class="brush:php">
-                                                class Dao_MyFirstDao extends Soter_Dao {
+                                                class Dao_Test extends Soter_Dao {
 
                                                         public function __construct(){
                                                                 parent::__construct();
@@ -306,35 +307,40 @@
                                         <h3 class="title_h3">2.添加数据</h3>
                                         通过<code>insert($data)</code>方法，我们可以添加数据。
                                         <br>$data 必填：需要添加的数据 例如：<code>array('username' => '张三', 'addtime' => time());</code>
-                                        <br>假如我们子类要调用,如下：
+                                        <br>假如我们Business要调用,如下：
                                         <pre class="brush:php">
                                                 $data = array('username' => '张三', 'addtime' => time());
-                                                echo $this->insert($data);
+                                                $userDao = Sr::dao('Test');
+                                                echo $userDao->insert($data);
                                                 //上面将输出:INSERT INTO `test` (`username`,`addtime`) VALUES (?,?)
-                                                
+
                                                 //如果我们想要直接执行sql,如下:
                                                 $data = array('username' => '张三', 'addtime' => time());
-                                                echo $this->insert($data)->execute();
+                                                $userDao = Sr::dao('Test');
+                                                echo $userDao->insert($data)->execute();
                                                 //上面将输出:1
                                         </pre>
                                         <h3 class="title_h3">3.更新数据</h3>
                                         通过<code>update($data, $where)</code>方法，我们可以更新数据。
                                         <br>$data 必填：需要更新的数据 例如：<code>array('username' => '李四', 'addtime' => time());</code>
                                         <br>$where 必填：可以是$where条件关联数组，还可以是主键值。
-                                        <br>假如我们子类要调用,如下：
+                                        <br>假如我们Business要调用,如下：
                                         <pre class="brush:php">
                                                 $data = array('username' => '王五', 'addtime' => time());
-                                                echo $this->update($data, 1);
+                                                $userDao = Sr::dao('Test');
+                                                echo $userDao->update($data, 1);
                                                 //上面将输出:UPDATE `test` SET `username` = ? , `addtime` = ? WHERE `id` = ?
 
                                                 $data = array('addtime' => time());
-                                                $where = array($this->getPrimaryKey() => 1, 'username' => '王五');
-                                                echo $this->update($data, $where);
+                                                $where = array('id' => 1, 'username' => '王五');
+                                                $userDao = Sr::dao('Test');
+                                                echo $userDao->update($data, $where);
                                                 //上面将输出:UPDATE `test` SET `addtime` = ? WHERE `id` = ? AND `username` = ?
 
                                                 //如果我们想要直接执行sql,如下:
                                                 $data = array('username' => '张三', 'addtime' => time());
-                                                echo $this->update($data, 1)->execute();
+                                                $userDao = Sr::dao('Test');
+                                                echo $userDao->update($data, 1)->execute();
                                                 //上面将输出:1
                                         </pre>
                                         <h3 class="title_h3">4.获取一条或者多条数据</h3>
@@ -344,31 +350,31 @@
                                         <br>$orderBy 选填：当返回多行记录时，可以指定排序。例如：array('time'=>'desc') 或者 array('time'=>'desc','id'=>'asc')
                                         <br>假如我们子类要调用,如下：
                                         <pre class="brush:php">
-                                                $values = 1;
-                                                Sr::dump($this->find($values));
+                                                $where = 1;
+                                                Sr::dump($this->find($where));
                                                 //上面将输出:array(3) { ["id"]=> string(1) "1" ["username"]=> string(6) "刘一" ["addtime"]=> string(10) "1431356499" }
 
-                                                $values = array(1,2,3);
-                                                Sr::dump($this->find($values));
+                                                $where = array(1,2,3);
+                                                Sr::dump($this->find($where));
                                                 /*上面将输出:array(3) { 
                                                         [0]=> array(3) { ["id"]=> string(1) "1" ["username"]=> string(6) "刘一" ["addtime"]=> string(10) "1431356499" } 
                                                         [1]=> array(3) { ["id"]=> string(1) "2" ["username"]=> string(6) "陈二" ["addtime"]=> string(10) "1422806400" } 
                                                         [2]=> array(3) { ["id"]=> string(1) "3" ["username"]=> string(6) "张三" ["addtime"]=> string(10) "1425312000" } 
                                                 }*/
 
-                                                $values = array('id' => 1, 'username' => '刘一');
-                                                Sr::dump($this->find($values));
+                                                $where = array('id' => 1, 'username' => '刘一');
+                                                Sr::dump($this->find($where));
                                                 //上面将输出:array(3) { ["id"]=> string(1) "1" ["username"]=> string(6) "刘一" ["addtime"]=> string(10) "1431356499" }
 
-                                                $values = array('username' => array('刘一', '陈二'));
-                                                Sr::dump($this->find($values, true));
+                                                $where = array('username' => array('刘一', '陈二'));
+                                                Sr::dump($this->find($where, true));
                                                 /*上面将输出:array(2) { 
                                                         [0]=> array(3) { ["id"]=> string(1) "1" ["username"]=> string(6) "刘一" ["addtime"]=> string(10) "1431356499" } 
                                                         [1]=> array(3) { ["id"]=> string(1) "2" ["username"]=> string(6) "陈二" ["addtime"]=> string(10) "1422806400" } 
                                                 }*/
 
-                                                $values = array('username' => array('刘一', '陈二'));
-                                                Sr::dump($this->find($values, true, array('addtime' => 'asc')));
+                                                $where = array('username' => array('刘一', '陈二'));
+                                                Sr::dump($this->find($where, true, array('addtime' => 'asc')));
                                                 /*上面将输出:array(2) { 
                                                         [0]=> array(3) { ["id"]=> string(1) "2" ["username"]=> string(6) "陈二" ["addtime"]=> string(10) "1422806400" } 
                                                         [1]=> array(3) { ["id"]=> string(1) "1" ["username"]=> string(6) "刘一" ["addtime"]=> string(10) "1431356499" } 
@@ -504,7 +510,7 @@
                                                 }*/
 
                                         </pre>
-                                        上面的<b>“分页代码”</b>是我们系统方法手册中<b>分页条</b>方法生成代码，了解详细的系统方法,点击进入<a href="system_functions.html">系统方法</a>
+                                        上面的<b>“分页代码”</b>是我们系统方法手册中<b>分页条</b>方法生成代码，了解详细的系统方法的<b>分页条</b>部分,点击进入<a href="system_functions.html">系统方法</a>
                                         <h3 class="title_h3">9.SQL搜索</h3>
                                         通过<code>search($page, $pagesize, $url, $fields, $cond, Array $values = array(), $pageBarOrder = array(1, 2, 3, 4, 5, 6), $pageBarACount = 10)</code>方法，来获取SQL搜索。
                                         <br>$page 必填：第几页
@@ -535,7 +541,7 @@
                                                         ["page"]=> "分页代码" 
                                                 }*/
                                         </pre>
-                                        上面的<b>“分页代码”</b>是我们系统方法手册中<b>分页条</b>方法生成代码，了解详细的系统方法,点击进入<a href="system_functions.html">系统方法</a>
+                                        上面的<b>“分页代码”</b>是我们系统方法手册中<b>分页条</b>方法生成代码，了解详细的系统方法的<b>分页条</b>部分,点击进入<a href="system_functions.html">系统方法</a>
                                 </li>
                         </ol>
                 </fieldset>
