@@ -59,11 +59,11 @@ Soter::initialize()
 	  这样Sr::url方法在生成url的时候就知道是否加上入口文件名称 */
 	->setIsRewrite(FALSE)
 	/* 注册默认pathinfo路由器 */
-	->addRouter(new Soter_Default_Router_PathInfo())
+	->addRouter(new Soter_Router_PathInfo_Default())
 	/* pathinfo路由器,注册uri重写 */
 	->setUriRewriter(new Soter_Uri_Rewriter_Default())
 	/* 注册默认get路由器 */
-	->addRouter(new Soter_Default_Router_Get())
+	->addRouter(new Soter_Router_Get_Default())
 	/* get路由器,url中的控制器的get变量名 */
 	->setRouterUrlControllerKey('c')
 	/* get路由器,url中的方法的get变量名 */

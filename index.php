@@ -26,8 +26,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.8
- * @createdtime   2015-05-13 11:55:02
+ * @since         1.0.9
+ * @createdtime   2015-05-13 13:52:29
  */
  
 define("IN_SOTER", true);
@@ -88,11 +88,11 @@ Soter::initialize()
 	  这样Sr::url方法在生成url的时候就知道是否加上入口文件名称 */
 	->setIsRewrite(FALSE)
 	/* 注册默认pathinfo路由器 */
-	->addRouter(new Soter_Default_Router_PathInfo())
+	->addRouter(new Soter_Router_PathInfo_Default())
 	/* pathinfo路由器,注册uri重写 */
 	->setUriRewriter(new Soter_Uri_Rewriter_Default())
 	/* 注册默认get路由器 */
-	->addRouter(new Soter_Default_Router_Get())
+	->addRouter(new Soter_Router_Get_Default())
 	/* get路由器,url中的控制器的get变量名 */
 	->setRouterUrlControllerKey('c')
 	/* get路由器,url中的方法的get变量名 */

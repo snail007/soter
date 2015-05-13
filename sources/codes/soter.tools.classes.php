@@ -186,7 +186,7 @@ class Soter_Route {
 
 }
 
-class Soter_Default_Router_Get extends Soter_Router {
+class Soter_Router_Get_Default extends Soter_Router {
 
 	public function find() {
 		$config = Sr::config();
@@ -212,16 +212,10 @@ class Soter_Default_Router_Get extends Soter_Router {
 
 }
 
-class Soter_Default_Router_PathInfo extends Soter_Router {
+class Soter_Router_PathInfo_Default extends Soter_Router {
 
 	public function find() {
 		$config = Soter::getConfig();
-		/**
-		 * 获取uri
-		 * pathinfo模式路由判断以及解析uri中的访问路径 
-		 * 比如：http://127.0.0.1/index.php/Welcome/index.do?id=11
-		 * 获取的是后面的(Welcome/index.do)部分，也就是index.php/和?之间的部分
-		 */
 		$uri = $config->getRequest()->getUri();
 		if (empty($uri)) {
 			//没有找到hmvc模块名称，或者控制器名称

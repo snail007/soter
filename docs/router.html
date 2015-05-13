@@ -20,16 +20,16 @@
 					在入口文件里面我们会发现下面的配置。
 					<pre class="brush:php">
 						//初始化请求
-						->setRequest(new Soter_Request(Sr::arrayGet($_SERVER, 'REQUEST_URI')))
+						->setRequest(new Soter_Request(Sr::arrayGet($_SERVER, 'PATH_INFO')))
 						//注册默认pathinfo路由器
-						->addRouter(new Soter_Default_Router_PathInfo())
+						->addRouter(new Soter_Router_PathInfo_Default())
 						//pathinfo路由器,注册uri重写
 						->setUriRewriter(new Soter_Uri_Rewriter_Default())
 					</pre>
-					从上面我们可以看到Soter初始化请求的时候，注册了一个Soter_Request对象，并在构造方法里面传入了$_SERVER['REQUEST_URI']，
-					<br>这个构造方法里面传入的URI就是所有路由器接受的原始URI，各种路由器可以按着自己的规则分析这个URI，实现不同功能的路由器。
-					<br>接着通过addRouter方法注册了系统默认的Soter_Default_Router_PathInfo路由器类，也就是PATH_INFO路由器。
-					<br>PATH_INFO路由器,是通过分析符合形如：/index.php/Welcome/user.do这样的URI的路由器。
+					从上面我们可以看到Soter初始化请求的时候，注册了一个Soter_Request对象，并在构造方法里面传入了$_SERVER['PATH_INFO']，
+					<br>这个构造方法里面传入的URI就是所有路由器接受的原始PATH_INFO，各种路由器可以按着自己的规则分析这个PATH_INFO，实现不同功能的路由器。
+					<br>接着通过addRouter方法注册了系统默认的Soter_Router_PathInfo_Default路由器类，也就是PATH_INFO路由器。
+					<br>PATH_INFO路由器,是通过分析符合形如：/Welcome/user.do这样的URI的路由器。
 					<br><b class="text_strong">PATH_INFO路由器支持的访问规则如下：</b>
 					<br>1.比如：<b>/index.php/Welcome/article.do</b>	
 					<br>访问的就是控制器application/classes/Controller/Welcome.php,中的<b>do_article</b>方法。
@@ -51,8 +51,8 @@
 					<br>那么我们就可以在do_article方法里面通过Sr::get('p1'),Sr::get('p2')获取它们的值。
 					<br><b class="text_strong">默认的参数分隔符 - 可以通过入口文件里面修改配置 ->setMethodParametersDelimiter('-')进行修改。</b>
 					<h2 class="title_h3">2.PATH_INFO路由器URI重写</h2>
-					Soter里面用户可以自定义PATH_INFO路由器URI重写类，默认情况下PATH_INFO路由器处理的是$_SERVER['REQUEST_URI']，
-					<br>但是用户可以通过注册自己的URI重写类对$_SERVER['REQUEST_URI']进行重写，把重写之后的URI返回给PATH_INF路由器使用。
+					Soter里面用户可以自定义PATH_INFO路由器URI重写类，默认情况下PATH_INFO路由器处理的是$_SERVER['PATH_INFO']，
+					<br>但是用户可以通过注册自己的URI重写类对$_SERVER['PATH_INFO']进行重写，把重写之后的URI返回给PATH_INF路由器使用。
 					<br>满足用户对路由器规则的各种需求。
 					<br>上面的配置里面我们看到下面的配置：
 					<pre class="brush:php">
@@ -76,7 +76,7 @@
 					<br>其实我们可以在rewrite方法里面进行比如正则替换之类的，处理$uri,然后把处理之后的$uri返回就行了，
 					<br>然后PATH_INFO路由器最终分析使用的就是返回的$uri;
 					<br><b class="text_strong">提示：rewrite方法接收的$uri中不包含入口文件名称，
-						<br>比如：$_SERVER['REQUEST_URI']是/index.php/Welcome/index.do
+						<br>比如：$_SERVER['PATH_INFO']是/Welcome/index.do
 						<br>那么方法里面接收的$uri就是Welcome/index.do</b>
 					<br>下面我们自定义一个自己的URI重写类。
 					<br>1.新建文件application/classes/UriRewriter/MyRewriter.php
@@ -137,7 +137,7 @@
 					<br>在入口文件index.php里面我们可以看到下面和get路由器相关的配置。
 					<pre class="brush:php">
 						//注册默认get路由器
-						->addRouter(new Soter_Default_Router_Get())
+						->addRouter(new Soter_Router_Get_Default())
 						//get路由器,url中的控制器的get变量名
 						->setRouterUrlControllerKey('c')
 						//get路由器,url中的方法的get变量名
@@ -145,7 +145,7 @@
 						//get路由器,url中的hmvc模块的get变量名
 						->setRouterUrlModuleKey('m')
 					</pre>
-					可以看到默认情况下，系统注册了默认GET路由器类Soter_Default_Router_Get，处理get模式$uri路由。
+					可以看到默认情况下，系统注册了默认GET路由器类Soter_Router_Get_Default，处理get模式$uri路由。
 					<br>然后注册了控制器的get变量名a，方法的get变量名a，hmvc模块的get变量名m。
 					<br>也就是如下：
 					<br>1.get参数 c 代表控制器名称
@@ -165,11 +165,11 @@
 					<br>我们在入口文件index.php里面可以发现下面的配置：
 					<pre class="brush:php">
 						//注册默认pathinfo路由器
-						->addRouter(new Soter_Default_Router_PathInfo())
+						->addRouter(new Soter_Router_PathInfo_Default())
 					</pre>
 					<pre class="brush:php">
 						//注册默认get路由器
-						->addRouter(new Soter_Default_Router_Get())
+						->addRouter(new Soter_Router_Get_Default())
 					</pre>
 					可以发现Soter注册了两个路由器分别是pathinfo路由器，get路由器。
 					<br>我们之所以能通过PATH_INFO模式和GET模式访问我们的控制器就是因为在这里注册了它们。
@@ -178,7 +178,7 @@
 					<br>为了方便了解路由器需要完成的功能，我们一起看看系统GET路由器的实现代码，并分析一下。
 					<br>系统GET路由器的实现代码如下：
 					<pre class="brush:php">
-						class Soter_Default_Router_Get extends Soter_Router {
+						class Soter_Router_Get_Default extends Soter_Router {
 
 							public function find() {
 								$config = Sr::config();
@@ -203,7 +203,7 @@
 							}
 						}
 					</pre>
-					可以看到Soter_Default_Router_Get继承了抽象类Soter_Router，我们来一行行的分析：
+					可以看到Soter_Router_Get_Default继承了抽象类Soter_Router，我们来一行行的分析：
 					<br>第4行：通过Sr::config()获取系统配对象，为下面使用配置信息准备。
 					<br>第5行：通过$config->getRequest()->getUri()获取$uri信息，
 					<br>$config->getRequest()返回的就是我们之前说过的入口文件里面初始化请求注册的那个Soter_Request类对象。
@@ -264,7 +264,7 @@
 					<br>我们把我们的路由器最后注册，也就是放在get路由器下面注册，如下：
 					<pre class="brush:php">
 						//注册默认get路由器
-						->addRouter(new Soter_Default_Router_Get())
+						->addRouter(new Soter_Router_Get_Default())
 						//get路由器,url中的控制器的get变量名
 						->setRouterUrlControllerKey('c')
 						//get路由器,url中的方法的get变量名
@@ -299,7 +299,7 @@
 						server {
 							listen 80;
 							server_name test.com;
-							root /www/test/microphp;
+							root /www/test/soter;
 							index index.html index.htm index.php;
 							charset UTF-8;
 							 if (-d $request_filename) {
@@ -328,7 +328,7 @@
 							 }
 						     }
 					</pre>
-					<br><h3 class="title_h3">2.Apache rewrite规则</h3>
+					<h3 class="title_h3">2.Apache rewrite规则</h3>
 					<pre class="brush:php">
 						#rewrite规则开始
 						AcceptPathInfo On
