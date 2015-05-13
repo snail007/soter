@@ -237,30 +237,72 @@
                                         <br>默认情况下，Dao是连接<code>Sr::db()</code>连接数据库，如果我们不再使用<code>Sr::db()</code>连接数据库里面数据表，
                                         <br>那么我们可以通过<code>setDb()</code>来设置另外一个数据库，现在就可以用<code>setDb()</code>来找到数据表了。
                                         <br>$db 必填：<code>Soter_Database_ActiveRecord</code>对象
-                                        <br>假如我们子类要调用,如下：
+                                        <br>示例如下：
                                         <pre class="brush:php">
-                                                $groupName = array(
-                                                        'driverType' => 'mysql',
-                                                        'database' => 'test',
-                                                        'tablePrefix' => '',
-                                                        'debug' => true,
-                                                        'slowQueryDebug' => FALSE,
-                                                        'slowQueryTime' => 100, //单位毫秒，1秒=1000毫秒
-                                                        'slowQueryHandle' => new Soter_Database_SlowQuery_Handle_Default(),
-                                                        'indexDebug' => FALSE,
-                                                        'minIndexType' => 'index',
-                                                        'indexHandle' => new Soter_Database_Index_Handle_Default(),
-                                                        'masters' => array(
-                                                                array(
-                                                                    'hostname' => '127.0.0.1',
-                                                                    'port' => 3306,
-                                                                    'username' => 'root',
-                                                                    'password' => ''
-                                                                )
-                                                        )
-                                                );
-                                                $this->setDb($groupName);//这段代码是要放在构造方法里面
+                                                class Dao_MyFirstDao extends Soter_Dao {
+
+                                                        public function __construct(){
+                                                                parent::__construct();
+                                                                $dbConfig = array(
+                                                                        'driverType' => 'mysql',
+                                                                        'debug' => true,
+                                                                        'pconnect' => false,
+                                                                        'charset' => 'utf8',
+                                                                        'collate' => 'utf8_general_ci',
+                                                                        'database' => 'test_name',
+                                                                        'tablePrefix' => '',
+                                                                        'tablePrefixSqlIdentifier' => '_tablePrefix_',
+                                                                        //是否开启慢查询记录
+                                                                        'slowQueryDebug' => false,
+                                                                        'slowQueryTime' => 3000, //慢查询最小时间,单位毫秒，1秒=1000毫秒
+                                                                        'slowQueryHandle' => new Soter_Database_SlowQuery_Handle_Default(),
+                                                                        /**
+                                                                        * 是否开启没有满足设置的索引类型的查询记录
+                                                                        */
+                                                                        'indexDebug' => false,
+                                                                        /**
+                                                                        * 索引使用的最小情况，只有小于最小情况的时候才会记录sql到日志
+                                                                        * minIndexType值从好到坏依次是:
+                                                                        * system > const > eq_ref > ref > fulltext > ref_or_null 
+                                                                        * > index_merge > unique_subquery > index_subquery > range 
+                                                                        * > index > ALL 一般来说，得保证查询至少达到range级别，最好能达到ref
+                                                                        * 避免ALL即全表扫描
+                                                                        */
+                                                                        'minIndexType' => 'index',
+                                                                        'indexHandle' => new Soter_Database_Index_Handle_Default(),
+                                                                        'masters' => array(
+                                                                            'master01' => array(
+                                                                                'hostname' => '127.0.0.1',
+                                                                                'port' => 3306,
+                                                                                'username' => 'root',
+                                                                                'password' => '',
+                                                                            )
+                                                                        ),
+                                                                        'slaves' => array()
+                                                                );
+                                                                $db = Sr::db($dbConfig);
+                                                                $this->setDb($db);//这段代码是要放在构造方法里面
+                                                        }
+
+                                                        public function getColumns() {
+                                                                return array(
+                                                                                'id'//标识
+                                                                                ,'username'//用户名
+                                                                                ,'addtime'//添加时间
+                                                                                );
+                                                        }
+
+                                                        public function getPrimaryKey() {
+                                                                return 'id';
+                                                        }
+
+                                                        public function getTable() {
+                                                                return 'test';
+                                                        }
+                                                }
                                         </pre>
+                                        <b style="color: red;">提示：</b>
+                                        <br>了解详细的数据库手册,点击进入<a href="database.html">数据库手册</a>
                                         <h3 class="title_h3">2.添加数据</h3>
                                         通过<code>insert($data)</code>方法，我们可以添加数据。
                                         <br>$data 必填：需要添加的数据 例如：<code>array('username' => '张三', 'addtime' => time());</code>
