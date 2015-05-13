@@ -329,7 +329,7 @@ class Sr {
 		$name = Soter::getConfig()->getBusinessDirName() . '_' . $businessName;
 		$object = self::factory($name);
 		if (!($object instanceof Soter_Business)) {
-			throw new Soter_Exception_500('[ ' . $name . ' ] not a valid Soter_Bussiness');
+			throw new Soter_Exception_500('[ ' . $name . ' ] not a valid Soter_Business');
 		}
 		return $object;
 	}

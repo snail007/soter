@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.7
- * @createdtime   2015-05-12 17:34:59
+ * @since         v1.0.8
+ * @createdtime   2015-05-13 10:12:19
  */
  
 
@@ -360,7 +360,7 @@ class Sr {
 		$name = Soter::getConfig()->getBusinessDirName() . '_' . $businessName;
 		$object = self::factory($name);
 		if (!($object instanceof Soter_Business)) {
-			throw new Soter_Exception_500('[ ' . $name . ' ] not a valid Soter_Bussiness');
+			throw new Soter_Exception_500('[ ' . $name . ' ] not a valid Soter_Business');
 		}
 		return $object;
 	}

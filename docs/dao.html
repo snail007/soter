@@ -97,8 +97,46 @@
 
                                         </pre>
                                         下面是介绍父类自带常用方法：
-                                        <h3 class="title_h3">1.添加数据</h3>
-                                        通过insert($data)方法，我们可以添加数据。
+                                        <h3 class="title_h3">1.设置Dao中使用的数据库操作对象</h3>
+                                        通过<code>setDb(Soter_Database_ActiveRecord $db)</code>方法，设置Dao中使用的数据库操作对象。
+                                        <br>默认情况下，Dao是连接<code>Sr::db()</code>连接数据库，如果我们不再使用<code>Sr::db()</code>连接数据库里面数据表，
+                                        <br>那么我们可以通过<code>setDb()</code>来设置另外一个数据库，现在就可以用<code>setDb()</code>来找到数据表了。
+                                        <br>$db 必填：<code>Soter_Database_ActiveRecord</code>对象
+                                        <br>假如我们子类要调用,如下：
+                                        <pre class="brush:php">
+                                                $config = array(
+                                                        'driverType' => 'mysql',
+                                                        'database' => 'test',
+                                                        'tablePrefix' => '',
+                                                        'debug' => true,
+                                                        'slowQueryDebug' => FALSE,
+                                                        'slowQueryTime' => 100, //单位毫秒，1秒=1000毫秒
+                                                        'slowQueryHandle' => new Soter_Database_SlowQuery_Handle_Default(),
+                                                        'indexDebug' => FALSE,
+                                                        'minIndexType' => 'index',
+                                                        'indexHandle' => new Soter_Database_Index_Handle_Default(),
+                                                        'masters' => array(
+                                                                array(
+                                                                    'hostname' => '127.0.0.1',
+                                                                    'port' => 3306,
+                                                                    'username' => 'root',
+                                                                    'password' => ''
+                                                                )
+                                                        ),
+                                                        'slaves' => array(
+                                                                array(
+                                                                    'hostname' => '127.0.0.1',
+                                                                    'port' => 3306,
+                                                                    'username' => 'root',
+                                                                    'password' => ''
+                                                                )
+                                                        )
+                                                );
+                                                $db = new Soter_Database_ActiveRecord($config);
+                                                parent::setDb($db);
+                                        </pre>
+                                        <h3 class="title_h3">2.添加数据</h3>
+                                        通过<code>insert($data)</code>方法，我们可以添加数据。
                                         <br>$data 必填：需要添加的数据 例如：<code>array('username' => '张三', 'addtime' => time());</code>
                                         <br>假如我们子类要调用,如下：
                                         <pre class="brush:php">
@@ -111,8 +149,8 @@
                                                 echo parent::insert($data)->execute();
                                                 //上面将输出:1
                                         </pre>
-                                        <h3 class="title_h3">2.更新数据</h3>
-                                        通过update($data, $where)方法，我们可以更新数据。
+                                        <h3 class="title_h3">3.更新数据</h3>
+                                        通过<code>update($data, $where)</code>方法，我们可以更新数据。
                                         <br>$data 必填：需要更新的数据 例如：<code>array('username' => '李四', 'addtime' => time());</code>
                                         <br>$where 必填：可以是$where条件关联数组，还可以是主键值。
                                         <br>假如我们子类要调用,如下：
@@ -131,8 +169,8 @@
                                                 echo parent::update($data, 1)->execute();
                                                 //上面将输出:1
                                         </pre>
-                                        <h3 class="title_h3">3.获取一条或者多条数据</h3>
-                                        通过find($values, $isRows = false, Array $orderBy = array())方法，我们可以获取一条或者多条数据。
+                                        <h3 class="title_h3">4.获取一条或者多条数据</h3>
+                                        通过<code>find($values, $isRows = false, Array $orderBy = array())</code>方法，我们可以获取一条或者多条数据。
                                         <br>$values 必填：可以是一个主键的值或者主键的值数组，还可以是where条件
                                         <br>$isRows 选填：返回多行记录还是单行记录，true：多行，false：单行
                                         <br>$orderBy 选填：当返回多行记录时，可以指定排序。例如：array('time'=>'desc') 或者 array('time'=>'desc','id'=>'asc')
@@ -168,8 +206,8 @@
                                                         [1]=> array(3) { ["id"]=> string(1) "1" ["username"]=> string(6) "刘一" ["addtime"]=> string(10) "1431356499" } 
                                                 }*/
                                         </pre>
-                                        <h3 class="title_h3">4.获取一条或者多条数据</h3>
-                                        通过findAll($where = null, Array $orderBy = array(), $limit = null, $fileds = null)方法，我们可以获取一条或者多条数据。
+                                        <h3 class="title_h3">5.获取一条或者多条数据</h3>
+                                        通过<code>findAll($where = null, Array $orderBy = array(), $limit = null, $fileds = null)</code>方法，我们可以获取一条或者多条数据。
                                         <br>$where 选填：where条件数组
                                         <br>$orderBy 选填：排序，比如：array('time'=>'desc')或者array('time'=>'desc','id'=>'asc')
                                         <br>$limit 选填：limit数量，比如：10
@@ -199,8 +237,8 @@
                                                 var_dump(parent::findAll('', array(), 1, 'username'));
                                                 //上面将输出:array(1) { [0]=> array(1) { ["username"]=> string(6) "刘一" } }
                                         </pre>
-                                        <h3 class="title_h3">4.根据条件获取一个字段的值或者数组</h3>
-                                        通过findCol($col, $where, $isRows = false, Array $orderBy = array())方法，我们可以根据条件获取一个字段的值或者数组。
+                                        <h3 class="title_h3">6.根据条件获取一个字段的值或者数组</h3>
+                                        通过<code>findCol($col, $where, $isRows = false, Array $orderBy = array())</code>方法，我们可以根据条件获取一个字段的值或者数组。
                                         <br>$col 必填：字段名称
                                         <br>$where 必填：可以是一个主键的值或者主键的值数组，还可以是where条件(<b class="text_strong">这个跟find的$values参数一样</b>)
                                         <br>$isRows 选填：返回多行记录还是单行记录，true：多行，false：单行
@@ -220,8 +258,8 @@
                                                 var_dump(parent::findCol('username', $where, true, $order));
                                                 //上面将输出:array(3) { [0]=> string(6) "陈二" [1]=> string(6) "张三" [2]=> string(6) "刘一" }
                                         </pre>
-                                        <h3 class="title_h3">5.根据条件删除记录</h3>
-                                        通过delete($values, Array $cond = NULL)方法，我们可以根据条件删除记录。
+                                        <h3 class="title_h3">7.根据条件删除记录</h3>
+                                        通过<code>delete($values, Array $cond = NULL)</code>方法，我们可以根据条件删除记录。
                                         <br>$values 必填：以是一个主键的值或者主键主键的值数组
                                         <br>$cond 选填：附加的where条件，关联数组
                                         <br>假如我们子类要调用,如下：
@@ -235,18 +273,18 @@
                                                 echo parent::delete($values);
                                                 //上面将输出:1
                                         </pre>
-                                        <h3 class="title_h3">6.分页方法</h3>
-                                        通过 getPage($page, $pagesize, $url, $fields = '*', Array $where = null, $orderBy = array(), $pageBarOrder = array(1, 2, 3, 4, 5, 6), $pageBarACount = 10)方法，我们可以分页获取数据。
+                                        <h3 class="title_h3">8.分页方法</h3>
+                                        通过<code>getPage($page, $pagesize, $url, $fields = '*', Array $where = null, $orderBy = array(), $pageBarOrder = array(1, 2, 3, 4, 5, 6), $pageBarACount = 10)</code>方法，我们可以分页获取数据。
                                         <br>$page 必填：第几页
                                         <br>$pagesize 必填：每页多少条
                                         <br>$url 必填：基础url，里面的{page}会被替换为实际的页码
                                         <br>$fields 选填：select的字段，全部用*，多个字段用逗号分隔
                                         <br>$where 选填：where条件，关联数组
                                         <br>$orderBy 选填：排序字段，比如：array('time'=>'desc')或者array('time'=>'desc','id'=>'asc')
-                                        <br>$pageBarOrder 选填：分页条组成，可以参考<a href="system_functions.html">系统函数手册</a>中分页条方法
-                                        <br>$pageBarACount 选填：分页条a的数量，可以参考<a href="system_functions.html">系统函数手册</a>中分页条方法
+                                        <br>$pageBarOrder 选填：分页条组成，可以参考<a href="system_functions.html">系统方法手册</a>中分页条方法
+                                        <br>$pageBarACount 选填：分页条a的数量，可以参考<a href="system_functions.html">系统方法手册</a>中分页条方法
                                         <pre class="brush:php">
-                                                var_dump(parent::getPage(1, 2, 4));
+                                                var_dump(parent::getPage(1, 2, '#'));
                                                 /*上面将输出:array(2) { 
                                                         ["items"]=> array(2) { 
                                                                 [0]=> array(3) { ["id"]=> string(1) "1" ["username"]=> string(6) "刘一" ["addtime"]=> string(10) "1431356499" } 
@@ -255,7 +293,7 @@
                                                         ["page"]=> "分页代码" 
                                                 }*/
 
-                                                var_dump(parent::getPage(1, 2, 4, 'username'));
+                                                var_dump(parent::getPage(1, 2, '#', 'username'));
                                                 /*上面将输出:array(2) { 
                                                         ["items"]=> array(2) { 
                                                                 [0]=> array(1) { ["username"]=> string(6) "刘一" } 
@@ -265,7 +303,7 @@
                                                 }*/
 
                                                 $where = array('id' => array(1,2,3));
-                                                var_dump(parent::getPage(1, 3, 4, 'username', $where));
+                                                var_dump(parent::getPage(1, 3, '#', 'username', $where));
                                                 /*上面将输出:array(2) { 
                                                         ["items"]=> array(3) { 
                                                                 [0]=> array(1) { ["username"]=> string(6) "刘一" } 
@@ -277,7 +315,7 @@
 
                                                 $where = array('id' => array(1,2,3));
                                                 $order = array('id' => 'desc');
-                                                var_dump(parent::getPage(1, 3, 4, 'username', $where, $order));
+                                                var_dump(parent::getPage(1, 3, '#', 'username', $where, $order));
                                                 /*上面将输出:array(2) { 
                                                         ["items"]=> array(3) { 
                                                                 [0]=> array(1) { ["username"]=> string(6) "张三" } 
@@ -289,7 +327,7 @@
 
                                                 $where = array('id' => array(1,2,3));
                                                 $order = array('id' => 'desc');
-                                                var_dump(parent::getPage(1, 1, 0, 'username', $where, $order, array(1, 2, 3, 4, 5, 6)));
+                                                var_dump(parent::getPage(1, 1, '#', 'username', $where, $order, array(1, 2, 3, 4, 5, 6), 10));
                                                 /*上面将输出:array(2) { 
                                                         ["items"]=> array(3) { 
                                                                 [0]=> array(1) { ["username"]=> string(6) "张三" } 
@@ -298,35 +336,38 @@
                                                 }*/
 
                                         </pre>
-                                        <h3 class="title_h3">7.SQL搜索</h3>
-                                        通过 search($page, $pagesize, $url, $fields, $cond, Array $values = array(), $pageBarOrder = array(1, 2, 3, 4, 5, 6), $pageBarACount = 10)方法，来获取SQL搜索。
+                                        上面的<b>“分页代码”</b>是我们系统方法手册中<b>分页条</b>方法生成代码，了解详细的系统方法,点击进入<a href="system_functions.html">系统方法</a>
+                                        <h3 class="title_h3">9.SQL搜索</h3>
+                                        通过<code>search($page, $pagesize, $url, $fields, $cond, Array $values = array(), $pageBarOrder = array(1, 2, 3, 4, 5, 6), $pageBarACount = 10)</code>方法，来获取SQL搜索。
                                         <br>$page 必填：第几页
                                         <br>$pagesize 必填：每页多少条
                                         <br>$url 必填：基础url，里面的{page}会被替换为实际的页码
                                         <br>$fields 选填：select的字段，全部用*，多个字段用逗号分隔
-                                        <br>$cond 选填：SQL语句where后面的部分，不要带limit
-                                        <br>$values 选填：$cond中的问号的值数组，$cond中使用?可以防止sql注入
-                                        <br>$pageBarOrder 选填：分页条组成，可以参考<a href="system_functions.html">系统函数手册</a>中分页条方法
-                                        <br>$pageBarACount 选填：分页条a的数量，可以参考<a href="system_functions.html">系统函数手册</a>中分页条方法
+                                        <br>$cond 必填：SQL语句where后面的部分，不要带limit
+                                        <br>$values 必填：$cond中的问号的值数组，$cond中使用?可以防止sql注入
+                                        <br>$pageBarOrder 选填：分页条组成，可以参考<a href="system_functions.html">系统方法手册</a>中分页条方法
+                                        <br>$pageBarACount 选填：分页条a的数量，可以参考<a href="system_functions.html">系统方法手册</a>中分页条方法
                                         <pre class="brush:php">
-                                                var_dump(parent::search(1, 2, 4));
+                                                var_dump(parent::search(1, 2, '#', '*','id>?', array(1)));
                                                 /*上面将输出:array(2) { 
                                                         ["items"]=> array(2) { 
-                                                                [0]=> array(3) { ["id"]=> string(1) "1" ["username"]=> string(6) "刘一" ["addtime"]=> string(10) "1431356499" } 
-                                                                [1]=> array(3) { ["id"]=> string(1) "2" ["username"]=> string(6) "陈二" ["addtime"]=> string(10) "1422806400" } 
-                                                        } 
+                                                                [0]=> array(3) { ["id"]=> string(1) "2" ["username"]=> string(6) "陈二" ["addtime"]=> string(10) "1422806400" } 
+                                                                [1]=> array(3) { ["id"]=> string(1) "3" ["username"]=> string(6) "张三" ["addtime"]=> string(10) "1425312000" }
+                                                        }
                                                         ["page"]=> "分页代码" 
                                                 }*/   
 
-                                                var_dump(parent::search(1, 2, 4, 'username'));
+                                                var_dump(parent::search(1, 3, '#', '*','id>?', array(1), array(1,2,3,4,5,6), 10));
                                                 /*上面将输出:array(2) { 
-                                                        ["items"]=> array(2) { 
-                                                                [0]=> array(1) { ["username"]=> string(6) "刘一" } 
-                                                                [1]=> array(1) { ["username"]=> string(6) "陈二" }
-                                                        } 
+                                                        ["items"]=> array(3) { 
+                                                                [0]=> array(3) { ["id"]=> string(1) "2" ["username"]=> string(6) "陈二" ["addtime"]=> string(10) "1422806400" } 
+                                                                [1]=> array(3) { ["id"]=> string(1) "3" ["username"]=> string(6) "张三" ["addtime"]=> string(10) "1425312000" } 
+                                                                [2]=> array(3) { ["id"]=> string(1) "4" ["username"]=> string(6) "李四" ["addtime"]=> string(10) "1428076800" }
+                                                        }
                                                         ["page"]=> "分页代码" 
-                                                }*/     
+                                                }*/
                                         </pre>
+                                        上面的<b>“分页代码”</b>是我们系统方法手册中<b>分页条</b>方法生成代码，了解详细的系统方法,点击进入<a href="system_functions.html">系统方法</a>
                                 </li>
                                 <li>
                                         <h2 class="title_h2">使用Dao层</h2>
