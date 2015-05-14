@@ -150,8 +150,8 @@ class Soter {
 			throw new Soter_Exception_404('Method [ ' . $class . '->' . $method . '() ] not found');
 		}
 		//方法缓存检测
-		$cacheClassName = str_replace($config->getControllerDirName() . '_', '', $class);
-		$cacheMethodName = str_replace($config->getMethodPrefix(), '', $method);
+		$cacheClassName = preg_replace('/^' . Sr::config()->getControllerDirName() . '_/', '', $class);
+		$cacheMethodName = preg_replace('/^' . Sr::config()->getMethodPrefix() . '/', '', $method);
 		$methoKey = $cacheClassName . '::' . $cacheMethodName;
 		$cacheMethodConfig = $config->getMethodCacheConfig();
 		if (!empty($cacheMethodConfig) && isset($cacheMethodConfig[$methoKey]) && $cacheMethodConfig[$methoKey]['cache'] && ($cacheMethoKey = $cacheMethodConfig[$methoKey]['key']())) {
@@ -160,18 +160,14 @@ class Soter {
 				$response = call_user_func_array(array($controllerObject, $method), $route->getArgs());
 				$contents = @ob_get_contents();
 				@ob_end_clean();
-				if (!empty($response)) {
-					$contents.= $response;
-				}
+				$contents.=is_array($response) ? Sr::view()->set($response)->load("$cacheClassName/$cacheMethodName") : $response;
 				Sr::cache()->set($cacheMethoKey, $contents, $cacheMethodConfig[$methoKey]['time']);
 			}
-			echo $contents;
 		} else {
 			$response = call_user_func_array(array($controllerObject, $method), $route->getArgs());
-			if ($response) {
-				echo $response;
-			}
+			$contents=is_array($response) ? Sr::view()->set($response)->load("$cacheClassName/$cacheMethodName") : $response;
 		}
+		echo $contents;
 	}
 
 	/**

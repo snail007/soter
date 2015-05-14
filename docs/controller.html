@@ -69,9 +69,11 @@
 					然后我们就可以通过$route对象的一些方法获取信息。
 					<br>Soter_Route对象有用的方法如下：
 					<br>1.$route->getController() 获取当前访问的控制器类名称，比如:Controller_Welcome
-					<br>2.$route->getMethod() 获取当前访问的方法名称，比如:do_index
-					<br>3.$route->getArgs() 获取url中的所有“参数”，比如:array('10','moive')，没有就是空
-					<br>4.$route->getHmvcModuleName() 获取当前访问的HMVC模块名称，比如:Demo，没有就是空
+					<br>2.$route->getControllerShort() 获取当前访问的不含Controller_前缀的控制器类名称，比如:Welcome
+					<br>3.$route->getMethod() 获取当前访问的方法名称，比如:do_index
+					<br>4.$route->getMethodShort() 获取当前访问的不含前缀的方法名称，比如:index
+					<br>5.$route->getArgs() 获取url中的所有“参数”，比如:array('10','moive')，没有就是空
+					<br>6.$route->getHmvcModuleName() 获取当前访问的HMVC模块名称，比如:Demo，没有就是空
 				</li>
                                 <li>
                                         <h2 class="title_h2">控制器相关的配置</h2>
@@ -88,6 +90,27 @@
                                         <br>那么在这种情况下我们可以设置一个默认的控制器和默认的方法。
 					<br>详细的内容参考<a href="router.html">路由手册</a>的“<b>默认控制器和默认方法</b>”部分。
                                 </li>
+				<li>
+                                        <h2 class="title_h2">自动调用视图</h2>
+					1.默认情况下，我们在控制器方法里直接echo字符串输出数据到浏览器，我们还可以return一个字符串同样可以输出到浏览器。
+					<br>2.如果我们在控制器方法里面return一个数据数组
+					<br>比如下面代码：
+					<pre class="brush:php">
+						class Controller_Welcome extends Soter_Controller {
+
+							public function do_index() {
+								$data=array('test'=>'hello');
+								return $data;
+							}
+						}
+					</pre>
+					可以看到上面的do_index方法里面直接返回了一个数组数据，
+					<br>那么Soter就会自动调用视图文件application/views/<b>Welcome</b>/<b>index</b>.php
+					<br>并通过视图的set方法把数据$data传递给index.php视图文件,视图index.php里面可以直接使用$test变量了。
+					<br>这种模式，视图位置和名称与<b>不含Controller_前缀的控制器名称</b>和<b>不含前缀的方法名称</b>是对应的。
+					<br>控制器方法里面直接return数组，调用的视图文件和方法名称对应关系如下：
+					<br>application/views/<b>不含Controller_前缀的控制器名称</b>/<b>不含前缀的方法名称</b>.php
+				<li>
 				<li>
                                         <h2 class="title_h2">方法缓存</h2>
                                         Soter可以在控制器方法级别上缓存方法的输出，开启这个功能很简单，只需要在入口文件里面进行配置即可。

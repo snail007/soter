@@ -5,6 +5,13 @@ interface Soter_Logger_Writer {
 	public function write(Soter_Exception $exception);
 }
 
+interface Soter_Request {
+
+	public function getPathInfo();
+
+	public function getQueryString();
+}
+
 interface Soter_Uri_Rewriter {
 
 	public function rewrite($uri);

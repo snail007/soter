@@ -251,7 +251,6 @@ abstract class Soter_Router {
 
 	/**
 	 * 
-	 * @param Soter_Request $Soter_Request
 	 * @return \Soter_Route
 	 */
 	public abstract function find();

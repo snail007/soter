@@ -1,20 +1,30 @@
 <?php
 
-class Soter_Request {
+class Soter_Request_Default implements Soter_Request {
 
-	private $uri;
+	private $pathInfo, $queryString;
 
-	public function __construct($uri = '') {
-		$this->setUri($uri);
+	public function __construct() {
+		$this->pathInfo = Sr::arrayGet($_SERVER, 'PATH_INFO', Sr::arrayGet($_SERVER, 'REDIRECT_PATH_INFO'));
+		$this->queryString = Sr::arrayGet($_SERVER, 'QUERY_STRING', '');
 	}
 
-	public function setUri($uri) {
-		$this->uri = $uri;
+	public function getPathInfo() {
+		return $this->pathInfo;
+	}
+
+	public function getQueryString() {
+		return $this->queryString;
+	}
+
+	public function setPathInfo($pathInfo) {
+		$this->pathInfo = $pathInfo;
 		return $this;
 	}
 
-	public function getUri() {
-		return $this->uri;
+	public function setQueryString($queryString) {
+		$this->queryString = $queryString;
+		return $this;
 	}
 
 }
@@ -161,6 +171,14 @@ class Soter_Route {
 		return $this->method;
 	}
 
+	public function getControllerShort() {
+		return preg_replace('/^' . Sr::config()->getControllerDirName() . '_/', '', $this->getController());
+	}
+
+	public function getMethodShort() {
+		return preg_replace('/^' . Sr::config()->getMethodPrefix() . '/', '', $this->getMethod());
+	}
+
 	public function getArgs() {
 		return $this->args;
 	}
@@ -190,8 +208,7 @@ class Soter_Router_Get_Default extends Soter_Router {
 
 	public function find() {
 		$config = Sr::config();
-		$uri = explode('?', $config->getRequest()->getUri());
-		$query = end($uri);
+		$query = $config->getRequest()->getQueryString();
 		parse_str($query, $get);
 		$controllerName = Sr::arrayGet($get, $config->getRouterUrlControllerKey(), '');
 		$methodName = Sr::arrayGet($get, $config->getRouterUrlMethodKey(), '');
@@ -216,7 +233,7 @@ class Soter_Router_PathInfo_Default extends Soter_Router {
 
 	public function find() {
 		$config = Soter::getConfig();
-		$uri = $config->getRequest()->getUri();
+		$uri = $config->getRequest()->getPathInfo();
 		if (empty($uri)) {
 			//没有找到hmvc模块名称，或者控制器名称
 			return $this->route->setFound(FALSE);
@@ -269,7 +286,6 @@ class Soter_Router_PathInfo_Default extends Soter_Router {
 		$method = $config->getMethodPrefix() . current($methodAndParameters);
 		array_shift($methodAndParameters);
 		$parameters = $methodAndParameters;
-		//$config->getMethodPrefix() . $method;
 		return $this->route
 				->setHmvcModuleName($hmvcModuleDirName ? $hmvcModule : '')
 				->setController($controller)

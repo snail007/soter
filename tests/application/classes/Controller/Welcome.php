@@ -3,8 +3,7 @@
 class Controller_Welcome extends Soter_Controller {
 
 	public function do_index() {
-		$sessionDao=Sr::dao('SessionDao');
-		Sr::dump($sessionDao->getPage(1, 1, '', '*', array(), array(), array(1,2,3,4,5,6), 10));
+		 return ;
 	}
 
 	public function do_get() {

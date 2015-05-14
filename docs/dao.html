@@ -232,12 +232,11 @@
                                                 }
 
                                         </pre>
-                                        下面是介绍自带常用方法：
+                                        下面介绍Dao层常用方法：
                                         <h3 class="title_h3">1.设置Dao中使用的数据库操作对象</h3>
                                         通过<code>setDb(Soter_Database_ActiveRecord $db)</code>方法，设置Dao中使用的数据库操作对象。
-                                        <br>默认情况下，<code>Sr::db()</code>连接数据库，如果我们不再使用<code>Sr::db()</code>连接数据库，
+                                        <br>默认情况下Dao层使用<code>setDb()</code>连接数据库，如果我们不再使用<code>Sr::db()</code>连接数据库，
                                         <br>那么我们可以通过<code>setDb()</code>来设置另外一个数据库。
-                                        <br>setDb()的参数$db 必填：<code>setDb()</code>对象
                                         <br>示例如下：
                                         <pre class="brush:php">
                                                 class Dao_Test extends Soter_Dao {
@@ -312,13 +311,8 @@
                                                 $data = array('username' => '张三', 'addtime' => time());
                                                 $userDao = Sr::dao('Test');
                                                 echo $userDao->insert($data);
-                                                //上面将输出:INSERT INTO `test` (`username`,`addtime`) VALUES (?,?)
-
-                                                //如果我们想要直接执行sql,如下:
-                                                $data = array('username' => '张三', 'addtime' => time());
-                                                $userDao = Sr::dao('Test');
-                                                echo $userDao->insert($data)->execute();
                                                 //上面将输出:1
+                                                //返回1说明了，数据表里面的行数受到了影响。因此，我们可以到数据库看到多出了一条"张三"记录，如果返回0说明操作失败。
                                         </pre>
                                         <h3 class="title_h3">3.更新数据</h3>
                                         通过<code>update($data, $where)</code>方法，我们可以更新数据。
@@ -326,36 +320,36 @@
                                         <br>$where 必填：可以是$where条件关联数组，还可以是主键值。
                                         <br>假如我们Business要调用,如下：
                                         <pre class="brush:php">
+                                                //where条件可以字符串,如下：
                                                 $data = array('username' => '王五', 'addtime' => time());
                                                 $userDao = Sr::dao('Test');
                                                 echo $userDao->update($data, 1);
-                                                //上面将输出:UPDATE `test` SET `username` = ? , `addtime` = ? WHERE `id` = ?
+                                                //上面将输出:1
+                                                //返回1说明了，数据表记录受到影响。因此，我们可以到数据库看到把"刘一"改为"王五"，添加时间改当前时间，如果返回0说明操作失败。
 
+                                                //where条件也可以数组,如下：
                                                 $data = array('addtime' => time());
                                                 $where = array('id' => 1, 'username' => '王五');
                                                 $userDao = Sr::dao('Test');
                                                 echo $userDao->update($data, $where);
-                                                //上面将输出:UPDATE `test` SET `addtime` = ? WHERE `id` = ? AND `username` = ?
-
-                                                //如果我们想要直接执行sql,如下:
-                                                $data = array('username' => '张三', 'addtime' => time());
-                                                $userDao = Sr::dao('Test');
-                                                echo $userDao->update($data, 1)->execute();
                                                 //上面将输出:1
+                                                //返回1说明了，数据表记录受到影响。因此，我们可以到数据库看到把"刘一"改为"王五"，添加时间改当前时间，如果返回0说明操作失败。
                                         </pre>
                                         <h3 class="title_h3">4.获取一条或者多条数据</h3>
                                         通过<code>find($values, $isRows = false, Array $orderBy = array())</code>方法，我们可以获取一条或者多条数据。
                                         <br>$values 必填：可以是一个主键的值或者主键的值数组，还可以是where条件
                                         <br>$isRows 选填：返回多行记录还是单行记录，true：多行，false：单行
                                         <br>$orderBy 选填：当返回多行记录时，可以指定排序。例如：array('time'=>'desc') 或者 array('time'=>'desc','id'=>'asc')
-                                        <br>假如我们子类要调用,如下：
+                                        <br>假如我们Business要调用,如下：
                                         <pre class="brush:php">
                                                 $where = 1;
-                                                Sr::dump($this->find($where));
+                                                $userDao = Sr::dao('Test');
+                                                Sr::dump($userDao->find($where));
                                                 //上面将输出:array(3) { ["id"]=> string(1) "1" ["username"]=> string(6) "刘一" ["addtime"]=> string(10) "1431356499" }
 
                                                 $where = array(1,2,3);
-                                                Sr::dump($this->find($where));
+                                                $userDao = Sr::dao('Test');
+                                                Sr::dump($userDao->find($where));
                                                 /*上面将输出:array(3) { 
                                                         [0]=> array(3) { ["id"]=> string(1) "1" ["username"]=> string(6) "刘一" ["addtime"]=> string(10) "1431356499" } 
                                                         [1]=> array(3) { ["id"]=> string(1) "2" ["username"]=> string(6) "陈二" ["addtime"]=> string(10) "1422806400" } 
@@ -363,7 +357,8 @@
                                                 }*/
 
                                                 $where = array('id' => 1, 'username' => '刘一');
-                                                Sr::dump($this->find($where));
+                                                $userDao = Sr::dao('Test');
+                                                Sr::dump($userDao->find($where));
                                                 //上面将输出:array(3) { ["id"]=> string(1) "1" ["username"]=> string(6) "刘一" ["addtime"]=> string(10) "1431356499" }
 
                                                 $where = array('username' => array('刘一', '陈二'));
@@ -374,7 +369,8 @@
                                                 }*/
 
                                                 $where = array('username' => array('刘一', '陈二'));
-                                                Sr::dump($this->find($where, true, array('addtime' => 'asc')));
+                                                $userDao = Sr::dao('Test');
+                                                Sr::dump($userDao->find($where, true, array('addtime' => 'asc')));
                                                 /*上面将输出:array(2) { 
                                                         [0]=> array(3) { ["id"]=> string(1) "2" ["username"]=> string(6) "陈二" ["addtime"]=> string(10) "1422806400" } 
                                                         [1]=> array(3) { ["id"]=> string(1) "1" ["username"]=> string(6) "刘一" ["addtime"]=> string(10) "1431356499" } 
@@ -386,29 +382,33 @@
                                         <br>$orderBy 选填：排序，比如：array('time'=>'desc')或者array('time'=>'desc','id'=>'asc')
                                         <br>$limit 选填：limit数量，比如：10
                                         <br>$fileds 选填：要搜索的字段，比如：id,name。留空默认*
-                                        <br>假如我们子类要调用,如下：
+                                        <br>假如我们Business要调用,如下：
                                         <pre class="brush:php">
                                                 $where = array('id' => 1);
-                                                Sr::dump($this->findAll($where));
+                                                $userDao = Sr::dao('Test');
+                                                Sr::dump($userDao->findAll($where));
                                                 //上面将输出:array(1) { [0]=> array(3) { ["id"]=> string(1) "1" ["username"]=> string(6) "刘一" ["addtime"]=> string(10) "1431356499" } }
 
                                                 $where = array('id' => array(1,2,3));
                                                 $order = array('addtime' => 'asc');
-                                                Sr::dump($this->findAll($where, $order));
+                                                $userDao = Sr::dao('Test');
+                                                Sr::dump($userDao->findAll($where, $order));
                                                 /*上面将输出:array(3) { 
                                                         [0]=> array(3) { ["id"]=> string(1) "2" ["username"]=> string(6) "陈二" ["addtime"]=> string(10) "1422806400" } 
                                                         [1]=> array(3) { ["id"]=> string(1) "3" ["username"]=> string(6) "张三" ["addtime"]=> string(10) "1425312000" } 
                                                         [2]=> array(3) { ["id"]=> string(1) "1" ["username"]=> string(6) "刘一" ["addtime"]=> string(10) "1431356499" } 
                                                 }*/
 
-                                                Sr::dump($this->findAll('', array(), 3));
+                                                $userDao = Sr::dao('Test');
+                                                Sr::dump($userDao->findAll('', array(), 3));
                                                 /*上面将输出:array(3) { 
                                                         [0]=> array(3) { ["id"]=> string(1) "1" ["username"]=> string(6) "刘一" ["addtime"]=> string(10) "1431356499" } 
                                                         [1]=> array(3) { ["id"]=> string(1) "2" ["username"]=> string(6) "陈二" ["addtime"]=> string(10) "1422806400" } 
                                                         [2]=> array(3) { ["id"]=> string(1) "3" ["username"]=> string(6) "张三" ["addtime"]=> string(10) "1425312000" } 
                                                 }*/
 
-                                                Sr::dump($this->findAll('', array(), 1, 'username'));
+                                                $userDao = Sr::dao('Test');
+                                                Sr::dump($userDao->findAll('', array(), 1, 'username'));
                                                 //上面将输出:array(1) { [0]=> array(1) { ["username"]=> string(6) "刘一" } }
                                         </pre>
                                         <h3 class="title_h3">6.根据条件获取一个字段的值或者数组</h3>
@@ -417,35 +417,42 @@
                                         <br>$where 必填：可以是一个主键的值或者主键的值数组，还可以是where条件(<b class="text_strong">这个跟find的$values参数一样</b>)
                                         <br>$isRows 选填：返回多行记录还是单行记录，true：多行，false：单行
                                         <br>$orderBy 选填：当返回多行记录时，可以指定排序，比如：array('time'=>'desc')或者array('time'=>'desc','id'=>'asc')
-                                        <br>假如我们子类要调用,如下：
+                                        <br>假如我们Business要调用,如下：
                                         <pre class="brush:php">
                                                 $where = 1;
-                                                echo $this->findCol('username', $where);
+                                                $userDao = Sr::dao('Test');
+                                                echo $userDao->findCol('username', $where);
                                                 //上面将输出:刘一
                                                 
                                                 $where = array(1,2,3);
-                                                Sr::dump($this->findCol('username', $where, true));
+                                                $userDao = Sr::dao('Test');
+                                                Sr::dump($userDao->findCol('username', $where, true));
                                                 //上面将输出:array(3) { [0]=> string(6) "刘一" [1]=> string(6) "陈二" [2]=> string(6) "张三" }
 
                                                 $where = array(1,2,3);
                                                 $order = array('addtime' => 'asc');
-                                                Sr::dump($this->findCol('username', $where, true, $order));
+                                                $userDao = Sr::dao('Test');
+                                                Sr::dump($userDao->findCol('username', $where, true, $order));
                                                 //上面将输出:array(3) { [0]=> string(6) "陈二" [1]=> string(6) "张三" [2]=> string(6) "刘一" }
                                         </pre>
                                         <h3 class="title_h3">7.根据条件删除记录</h3>
                                         通过<code>delete($values, Array $cond = NULL)</code>方法，我们可以根据条件删除记录。
                                         <br>$values 必填：以是一个主键的值或者主键主键的值数组
                                         <br>$cond 选填：附加的where条件，关联数组
-                                        <br>假如我们子类要调用,如下：
+                                        <br>假如我们Business要调用,如下：
                                         <pre class="brush:php">
                                                 $values = array(1);
-                                                echo $this->delete($values);
+                                                $userDao = Sr::dao('Test');
+                                                echo $userDao->delete($values);
                                                 //上面将输出:1
+                                                //返回1说明了，数据表里面的行数受到了影响，如果返回0说明操作失败。
 
                                                 $values = array(1);
                                                 $cond = array('username' => '刘一');
-                                                echo $this->delete($values);
+                                                $userDao = Sr::dao('Test');
+                                                echo $userDao->delete($values);
                                                 //上面将输出:1
+                                                //返回1说明了，数据表里面的行数受到了影响，如果返回0说明操作失败。
                                         </pre>
                                         <h3 class="title_h3">8.分页方法</h3>
                                         通过<code>getPage($page, $pagesize, $url, $fields = '*', Array $where = null, $orderBy = array(), $pageBarOrder = array(1, 2, 3, 4, 5, 6), $pageBarACount = 10)</code>方法，我们可以分页获取数据。
@@ -457,8 +464,10 @@
                                         <br>$orderBy 选填：排序字段，比如：array('time'=>'desc')或者array('time'=>'desc','id'=>'asc')
                                         <br>$pageBarOrder 选填：分页条组成，可以参考<a href="system_functions.html">系统方法手册</a>中分页条方法
                                         <br>$pageBarACount 选填：分页条a的数量，可以参考<a href="system_functions.html">系统方法手册</a>中分页条方法
+                                        <br>假如我们Business要调用,如下：
                                         <pre class="brush:php">
-                                                Sr::dump($this->getPage(1, 2, '#'));
+                                                $userDao = Sr::dao('Test');
+                                                Sr::dump($userDao->getPage(1, 2, '#'));
                                                 /*上面将输出:array(2) { 
                                                         ["items"]=> array(2) { 
                                                                 [0]=> array(3) { ["id"]=> string(1) "1" ["username"]=> string(6) "刘一" ["addtime"]=> string(10) "1431356499" } 
@@ -467,7 +476,8 @@
                                                         ["page"]=> "分页代码" 
                                                 }*/
 
-                                                Sr::dump($this->getPage(1, 2, '#', 'username'));
+                                                $userDao = Sr::dao('Test');
+                                                Sr::dump($userDao->getPage(1, 2, '#', 'username'));
                                                 /*上面将输出:array(2) { 
                                                         ["items"]=> array(2) { 
                                                                 [0]=> array(1) { ["username"]=> string(6) "刘一" } 
@@ -477,7 +487,8 @@
                                                 }*/
 
                                                 $where = array('id' => array(1,2,3));
-                                                Sr::dump($this->getPage(1, 3, '#', 'username', $where));
+                                                $userDao = Sr::dao('Test');
+                                                Sr::dump($userDao->getPage(1, 3, '#', 'username', $where));
                                                 /*上面将输出:array(2) { 
                                                         ["items"]=> array(3) { 
                                                                 [0]=> array(1) { ["username"]=> string(6) "刘一" } 
@@ -489,7 +500,8 @@
 
                                                 $where = array('id' => array(1,2,3));
                                                 $order = array('id' => 'desc');
-                                                Sr::dump($this->getPage(1, 3, '#', 'username', $where, $order));
+                                                $userDao = Sr::dao('Test');
+                                                Sr::dump($userDao->getPage(1, 3, '#', 'username', $where, $order));
                                                 /*上面将输出:array(2) { 
                                                         ["items"]=> array(3) { 
                                                                 [0]=> array(1) { ["username"]=> string(6) "张三" } 
@@ -501,7 +513,8 @@
 
                                                 $where = array('id' => array(1,2,3));
                                                 $order = array('id' => 'desc');
-                                                Sr::dump($this->getPage(1, 1, '#', 'username', $where, $order, array(1, 2, 3, 4, 5, 6), 10));
+                                                $userDao = Sr::dao('Test');
+                                                Sr::dump($userDao->getPage(1, 1, '#', 'username', $where, $order, array(1, 2, 3, 4, 5, 6), 10));
                                                 /*上面将输出:array(2) { 
                                                         ["items"]=> array(3) { 
                                                                 [0]=> array(1) { ["username"]=> string(6) "张三" } 
@@ -521,8 +534,10 @@
                                         <br>$values 必填：$cond中的问号的值数组，$cond中使用?可以防止sql注入
                                         <br>$pageBarOrder 选填：分页条组成，可以参考<a href="system_functions.html">系统方法手册</a>中分页条方法
                                         <br>$pageBarACount 选填：分页条a的数量，可以参考<a href="system_functions.html">系统方法手册</a>中分页条方法
+                                        <br>假如我们Business要调用,如下：
                                         <pre class="brush:php">
-                                                Sr::dump($this->search(1, 2, '#', '*','id>?', array(1)));
+                                                $userDao = Sr::dao('Test');
+                                                Sr::dump($userDao->search(1, 2, '#', '*','id>?', array(1)));
                                                 /*上面将输出:array(2) { 
                                                         ["items"]=> array(2) { 
                                                                 [0]=> array(3) { ["id"]=> string(1) "2" ["username"]=> string(6) "陈二" ["addtime"]=> string(10) "1422806400" } 
@@ -531,7 +546,8 @@
                                                         ["page"]=> "分页代码" 
                                                 }*/   
 
-                                                Sr::dump($this->search(1, 3, '#', '*','id>?', array(1), array(1,2,3,4,5,6), 10));
+                                                $userDao = Sr::dao('Test');
+                                                Sr::dump($userDao->search(1, 3, '#', '*','id>?', array(1), array(1,2,3,4,5,6), 10));
                                                 /*上面将输出:array(2) { 
                                                         ["items"]=> array(3) { 
                                                                 [0]=> array(3) { ["id"]=> string(1) "2" ["username"]=> string(6) "陈二" ["addtime"]=> string(10) "1422806400" } 

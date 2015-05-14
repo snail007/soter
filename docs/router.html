@@ -20,16 +20,32 @@
 					在入口文件里面我们会发现下面的配置。
 					<pre class="brush:php">
 						//初始化请求
-						->setRequest(new Soter_Request(Sr::arrayGet($_SERVER, 'PATH_INFO')))
+						->setRequest(new Soter_Request_Default())
 						//注册默认pathinfo路由器
 						->addRouter(new Soter_Router_PathInfo_Default())
 						//pathinfo路由器,注册uri重写
 						->setUriRewriter(new Soter_Uri_Rewriter_Default())
 					</pre>
-					从上面我们可以看到Soter初始化请求的时候，注册了一个Soter_Request对象，并在构造方法里面传入了$_SERVER['PATH_INFO']，
-					<br>这个构造方法里面传入的URI就是所有路由器接受的原始PATH_INFO，各种路由器可以按着自己的规则分析这个PATH_INFO，实现不同功能的路由器。
+					从上面我们可以看到Soter初始化请求的时候，注册了一个Soter_Request_Default对象，
+					<br>Soter_Request_Default对象是实现了接口Soter_Request的类对象，这个类对象就是所有
+					<br>路由器用来解析路由信息对象，各种路由器可以按着自己的规则分析这个Soter_Request对象
+					<br>提供的路由信息，实现不同功能的路由器。
 					<br>接着通过addRouter方法注册了系统默认的Soter_Router_PathInfo_Default路由器类，也就是PATH_INFO路由器。
 					<br>PATH_INFO路由器,是通过分析符合形如：/Welcome/user.do这样的URI的路由器。
+					<br>接口Soter_Request代码如下：
+					<pre class="brush:php">
+						interface Soter_Request {
+
+							public function getPathInfo();
+
+							public function getQueryString();
+						}
+					</pre>
+					可以看到Soter_Request接口定义了两个抽象方法，它们的含义如下：
+					<br>1. getPathInfo() 获取URL中的PATH_INFO信息。
+					<br>实现类必须返回<code>PATH_INFO</code>格式的字符串，比如：/Welcome/index.do。
+					<br>2. getQueryString() 获取URL中的QueryString查询字符串信息。
+					<br>实现类必须返回<code>QueryString</code>格式的字符串,比如：c=welcome&c=index。
 					<br><b class="text_strong">PATH_INFO路由器支持的访问规则如下：</b>
 					<br>1.比如：<b>/index.php/Welcome/article.do</b>	
 					<br>访问的就是控制器application/classes/Controller/Welcome.php,中的<b>do_article</b>方法。
@@ -75,9 +91,9 @@
 					<br>然后在rewrite方法里面接收了$uri参数，然后原样返回了。
 					<br>其实我们可以在rewrite方法里面进行比如正则替换之类的，处理$uri,然后把处理之后的$uri返回就行了，
 					<br>然后PATH_INFO路由器最终分析使用的就是返回的$uri;
-					<br><b class="text_strong">提示：rewrite方法接收的$uri中不包含入口文件名称，
+					<br><b class="text_strong">提示：
 						<br>比如：$_SERVER['PATH_INFO']是/Welcome/index.do
-						<br>那么方法里面接收的$uri就是Welcome/index.do</b>
+						<br>那么方法里面接收的$uri就是/Welcome/index.do</b>
 					<br>下面我们自定义一个自己的URI重写类。
 					<br>1.新建文件application/classes/UriRewriter/MyRewriter.php
 					<br>2.输入以下代码：
@@ -85,8 +101,8 @@
 						class UriRewriter_MyRewriter implements Soter_Uri_Rewriter {
 
 							public function rewrite($uri) {
-								if(strpos($uri, 'Welcome/')===0){
-									return str_replace('Welcome/', 'Home/', $uri);
+								if(strpos($uri, '/Welcome/')===0){
+									return str_replace('/Welcome/', '/Home/', $uri);
 								}
 								return $uri;
 							}
@@ -181,9 +197,8 @@
 						class Soter_Router_Get_Default extends Soter_Router {
 
 							public function find() {
-								$config = Sr::config();
-								$uri = explode('?', $config->getRequest()->getUri());
-								$query = end($uri);
+								$config = Sr::config(); 
+								$query = $config->getRequest()->getQueryString();
 								parse_str($query, $get);
 								$controllerName = Sr::arrayGet($get, $config->getRouterUrlControllerKey(), '');
 								$methodName = Sr::arrayGet($get, $config->getRouterUrlMethodKey(), '');
@@ -205,23 +220,20 @@
 					</pre>
 					可以看到Soter_Router_Get_Default继承了抽象类Soter_Router，我们来一行行的分析：
 					<br>第4行：通过Sr::config()获取系统配对象，为下面使用配置信息准备。
-					<br>第5行：通过$config->getRequest()->getUri()获取$uri信息，
-					<br>$config->getRequest()返回的就是我们之前说过的入口文件里面初始化请求注册的那个Soter_Request类对象。
-					<br>$config->getRequest()->getUri()获取的$uri就是如下Soter_Request类构造方法里面传入的字符串。
+					<br>第5行：通过$config->getRequest()->getQueryString()获取URL中的QueryString信息，$query比如是：c=Welcome&a=index
+					<br>$config->getRequest()返回的就是我们之前说过的入口文件里面初始化请求注册的那个Soter_Request_Default类对象。
 					<pre class="brush:php">
 							//初始化请求
-							 ->setRequest(new Soter_Request(Sr::arrayGet($_SERVER, 'REQUEST_URI')))
+							 ->setRequest(new Soter_Request_Default())
 					</pre>
-					然后用系统函数explode用?分割一下$uri,获取get格式的参数，比如：c=Welcome&a=index
-					<br>第6行： 获取get格式的参数赋值给$query，$query比如是：c=Welcome&a=index
-					<br>第7行： 使用系统函数parse_str解析$query为键值的$get数组。
+					<br>第6行： 使用系统函数parse_str解析$query为键值的$get数组。 
 					<br>比如把：c=Welcome&a=index解析为：array('a'=>'index','c'=>'Welcome')
-					<br>第8-10行：使用Soter的获取数组键值的方法Sr::arrayGet分别尝试从$get数组中获取,
+					<br>第7-9行：使用Soter的获取数组键值的方法Sr::arrayGet分别尝试从$get数组中获取,
 					<br>控制器名称$controllerName，方法名称$methodName，hmvc模块名称$hmvcModuleName。
-					<br>第12行：使用Soter的checkHmvc方法检查模块名称$hmvcModuleName是否有效，
-					<br>如果有效就会返回模块对应的文件夹名称,无效会返回false。
-					<br>第13-18行：如果控制器名称存在，方法名存在，就分别加上类名前缀，和方法名前缀。
-					<br>第19-22行：通过路由器的成员变量$this->route设置相关的路由信息，$this->route是路由信息Soter_Route类的一个对象。
+					<br>第11行：使用Soter的checkHmvc方法检查模块名称$hmvcModuleName是否有效，
+					<br>如果有效就会返回模块对应的<b>文件夹名称</b>,无效会返回false。
+					<br>第12-17行：如果控制器名称存在，方法名存在，就分别加上类名前缀，和方法名前缀。
+					<br>第18-21行：通过路由器的成员变量$this->route设置相关的路由信息，$this->route是路由信息Soter_Route类的一个对象。
 					<br>设置hmvc模块名称：->setHmvcModuleName($hmvcModuleDirName ? $hmvcModule : '')，
 					<br>$hmvcModuleDirName=Soter::checkHmvc($hmvcModuleName, false),
 					<br>$hmvcModuleDirName是hmvc的文件夹名称，我们可以通过判断hmvc的文件夹名称是否是是空知道Url里面的hmvc模块是否存在。
@@ -229,8 +241,8 @@
 					<br>设置控制器名称：->setController($controllerName)
 					<br>设置方法名称：->setMethod($methodName)
 					<br>最重要的是：->setFound($hmvcModuleDirName || $controllerName)这个是告诉Soter，当前路由器是否找到了路由信息。
-					<br>get路由器只要找到了存在的hmvc模块或者控制器名称就说明$uri有效，找到了路由信息。
-					<br>Soter就会停止调用下一个注册的路由器处理$uri。如果setFound是false，Soter会继续调用后面注册的路由器进行路由，
+					<br>get路由器只要找到了存在的hmvc模块或者控制器名称就说明找到了路由信息。
+					<br>Soter就会停止调用下一个注册的路由器处理路由。如果setFound是false，Soter会继续调用后面注册的路由器进行路由，
 					<br>直到路由器返回的$route对象setFound是true为止，然后就使用返回的$route对象进行加载控制器，hmvc模块等后续操作。
 					<br><b>提示：</b>
 					<br>我们在入口文件里面可以通过->addRouter注册多个路由器，那么Soter调用路由器的先后顺序是什么样的呢，
@@ -239,7 +251,7 @@
 					<b class="text_strong"><br>到此我们已经把系统的Get路由器分析了一遍，会发现路由器要完成的工作有以下几个，
 						<br>也就是说我们自定义的路由器只要完成这些工作就能让我们的路由器正常工作了。</b>
 					<br>1.自定义路由器类要继承抽象类Soter_Router，并实现find方法。
-					<br>2.解析$config->getRequest()->getUri()获取的$uri信息
+					<br>2.通过$config->getRequest()获取当前的Soter_Request请求对象，然后分析Soter_Request对象提供的路由信息。
 					<br>3.尝试找到hmvc模块名称，并用Soter::checkHmvc($hmvcModuleName, false)检查hmvc模块名称。
 					<br>4.尝试找到控制器名称，方法名称，如果有效然后使用配置对象分别获取前缀信息，转化为完整的控制器类名和完整的方法名称。
 					<br>5.把找到的信息通过成员变量$this->route设置。

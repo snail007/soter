@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         1.0.10
- * @createdtime   2015-05-13 18:42:11
+ * @since         1.0.11
+ * @createdtime   2015-05-14 09:59:07
  */
  
 
@@ -181,8 +181,8 @@ class Soter {
 			throw new Soter_Exception_404('Method [ ' . $class . '->' . $method . '() ] not found');
 		}
 		//方法缓存检测
-		$cacheClassName = str_replace($config->getControllerDirName() . '_', '', $class);
-		$cacheMethodName = str_replace($config->getMethodPrefix(), '', $method);
+		$cacheClassName = preg_replace('/^' . Sr::config()->getControllerDirName() . '_/', '', $class);
+		$cacheMethodName = preg_replace('/^' . Sr::config()->getMethodPrefix() . '/', '', $method);
 		$methoKey = $cacheClassName . '::' . $cacheMethodName;
 		$cacheMethodConfig = $config->getMethodCacheConfig();
 		if (!empty($cacheMethodConfig) && isset($cacheMethodConfig[$methoKey]) && $cacheMethodConfig[$methoKey]['cache'] && ($cacheMethoKey = $cacheMethodConfig[$methoKey]['key']())) {
@@ -191,18 +191,14 @@ class Soter {
 				$response = call_user_func_array(array($controllerObject, $method), $route->getArgs());
 				$contents = @ob_get_contents();
 				@ob_end_clean();
-				if (!empty($response)) {
-					$contents.= $response;
-				}
+				$contents.=is_array($response) ? Sr::view()->set($response)->load("$cacheClassName/$cacheMethodName") : $response;
 				Sr::cache()->set($cacheMethoKey, $contents, $cacheMethodConfig[$methoKey]['time']);
 			}
-			echo $contents;
 		} else {
 			$response = call_user_func_array(array($controllerObject, $method), $route->getArgs());
-			if ($response) {
-				echo $response;
-			}
+			$contents=is_array($response) ? Sr::view()->set($response)->load("$cacheClassName/$cacheMethodName") : $response;
 		}
+		echo $contents;
 	}
 
 	/**
@@ -2987,6 +2983,13 @@ interface Soter_Logger_Writer {
 	public function write(Soter_Exception $exception);
 }
 
+interface Soter_Request {
+
+	public function getPathInfo();
+
+	public function getQueryString();
+}
+
 interface Soter_Uri_Rewriter {
 
 	public function rewrite($uri);
@@ -3275,7 +3278,6 @@ abstract class Soter_Router {
 
 	/**
 	 * 
-	 * @param Soter_Request $Soter_Request
 	 * @return \Soter_Route
 	 */
 	public abstract function find();
@@ -3482,21 +3484,31 @@ class Soter_Exception_Database extends Soter_Exception {
 }
 
 
-class Soter_Request {
+class Soter_Request_Default implements Soter_Request {
 
-	private $uri;
+	private $pathInfo, $queryString;
 
-	public function __construct($uri = '') {
-		$this->setUri($uri);
+	public function __construct() {
+		$this->pathInfo = Sr::arrayGet($_SERVER, 'PATH_INFO', Sr::arrayGet($_SERVER, 'REDIRECT_PATH_INFO'));
+		$this->queryString = Sr::arrayGet($_SERVER, 'QUERY_STRING', '');
 	}
 
-	public function setUri($uri) {
-		$this->uri = $uri;
+	public function getPathInfo() {
+		return $this->pathInfo;
+	}
+
+	public function getQueryString() {
+		return $this->queryString;
+	}
+
+	public function setPathInfo($pathInfo) {
+		$this->pathInfo = $pathInfo;
 		return $this;
 	}
 
-	public function getUri() {
-		return $this->uri;
+	public function setQueryString($queryString) {
+		$this->queryString = $queryString;
+		return $this;
 	}
 
 }
@@ -3643,6 +3655,14 @@ class Soter_Route {
 		return $this->method;
 	}
 
+	public function getControllerShort() {
+		return preg_replace('/^' . Sr::config()->getControllerDirName() . '_/', '', $this->getController());
+	}
+
+	public function getMethodShort() {
+		return preg_replace('/^' . Sr::config()->getMethodPrefix() . '/', '', $this->getMethod());
+	}
+
 	public function getArgs() {
 		return $this->args;
 	}
@@ -3672,8 +3692,7 @@ class Soter_Router_Get_Default extends Soter_Router {
 
 	public function find() {
 		$config = Sr::config();
-		$uri = explode('?', $config->getRequest()->getUri());
-		$query = end($uri);
+		$query = $config->getRequest()->getQueryString();
 		parse_str($query, $get);
 		$controllerName = Sr::arrayGet($get, $config->getRouterUrlControllerKey(), '');
 		$methodName = Sr::arrayGet($get, $config->getRouterUrlMethodKey(), '');
@@ -3698,7 +3717,7 @@ class Soter_Router_PathInfo_Default extends Soter_Router {
 
 	public function find() {
 		$config = Soter::getConfig();
-		$uri = $config->getRequest()->getUri();
+		$uri = $config->getRequest()->getPathInfo();
 		if (empty($uri)) {
 			//没有找到hmvc模块名称，或者控制器名称
 			return $this->route->setFound(FALSE);
@@ -3751,7 +3770,6 @@ class Soter_Router_PathInfo_Default extends Soter_Router {
 		$method = $config->getMethodPrefix() . current($methodAndParameters);
 		array_shift($methodAndParameters);
 		$parameters = $methodAndParameters;
-		//$config->getMethodPrefix() . $method;
 		return $this->route
 				->setHmvcModuleName($hmvcModuleDirName ? $hmvcModule : '')
 				->setController($controller)
