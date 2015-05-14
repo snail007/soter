@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         1.0.11
- * @createdtime   2015-05-14 10:18:26
+ * @since         1.0.12
+ * @createdtime   2015-05-14 11:25:40
  */
  
 
@@ -288,7 +288,7 @@ class Sr {
 		$args = func_get_args();
 		empty($args) ? null : call_user_func_array('var_dump', $args);
 		$html = @ob_get_clean();
-		echo!self::isCli() ? htmlentities($html) : $html;
+		echo!self::isCli() ? htmlspecialchars($html) : $html;
 		echo!self::isCli() ? "</pre>" : "\n";
 	}
 
