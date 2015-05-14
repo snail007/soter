@@ -39,7 +39,7 @@ if (Sr::getOpt('version')) {
 }
 if (Sr::getOpt('docs')) {
 	$contents =  file_get_contents($docIndex=DIST_DIR.'../soter-docs/index.html');
-	$contents=  preg_replace('/v\d+.\d+.\d+/', $ver, $contents);
+	$contents=  preg_replace('/v\d+.\d+.\d+/', 'v'.$ver, $contents);
 	file_put_contents($docIndex, $contents);
 }
 
