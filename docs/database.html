@@ -364,8 +364,35 @@
 					默认情况下使用Sr::db()操作数据库，Sr::db()连接的是默认数据库组，也就是上面<code>'default_group' => 'mysql',</code>设置的，
 					<br>上面设置的默认组是mysql，那么Sr::db()操作数据库用的就是mysql配置组。
 					<h3 class="title_h3">2.手动指定组方式</h3>
-					比如我们有另外一个数据库组配置“mysql_bbs”，我们可以手动指定组$bbs=Sr::db('mysql_bbs')，
-					<br>然后我们就可以使用$bbs操作mysql_bbs组连接的数据库了。
+					有时候我们有多个不同的数据库，需要分别连接它们进行数据操作。
+					<br>我们只要把它们的配置组信息配置在database.php配置文件里面即可，
+					<br>赋予一个组名比如：mysql_site,mysql_forum,然后我们就可以用下面的代码使用它们。
+					<pre class="brush:php">
+						$site=Sr::db('mysql_site');
+						$forum=Sr::db('mysql_forum');
+						//下面就可以用$site和$forum进行各种操作数据库了，比如查询数据：$site->from('user')->execute()->rows();
+					</pre>
+					配置例子(省略了细节配置)：
+					<pre class="brush:php">
+						array(
+							//默认组
+							'default_group' => 'mysql',
+							//组名=>配置
+							//mysql配置示例
+							'mysql' => array(
+								'driverType' => 'mysql',
+								 ....
+							    ),
+							'mysql_site' => array(
+								'driverType' => 'mysql',
+								 ....
+							    ),
+							'mysql_forum' => array(
+								'driverType' => 'mysql',
+								 ....
+							    )
+						)
+					</pre>
 					<h3 class="title_h3">3.传递配置组信息方式</h3>
 					我们还可以直接传递Sr::db()一个数据库配置组信息数组，
 					<br>比如：
@@ -795,73 +822,6 @@
 							//发生异常回滚事务
 							Sr::db()->rollback();
 						}
-					</pre>
-				</li>
-				<li><h3 class="title_h2">连接到不同的数据库</h3>
-					默认情况下我们使用Sr::db()操作数据库，使用的是我们配置的默认组。
-					<br>如果要连接到其它数据库我们可以通过下面两个方式实现。
-					<h3 class="title_h3">1.使用配置组名</h3>
-					有时候我们有多个不同的数据库，需要分别连接它们进行数据操作。
-					<br>我们只要把它们的配置组信息配置在database.php配置文件里面即可，
-					<br>赋予一个组名比如：mysql_site,mysql_forum,然后我们就可以用下面的代码使用它们。
-					<pre class="brush:php">
-						$site=Sr::db('mysql_site');
-						$forum=Sr::db('mysql_forum');
-						//下面就可以用$site和$forum进行各种操作数据库了，比如查询数据：$site->from('user')->execute()->rows();
-					</pre>
-					配置例子(省略了细节配置)：
-					<pre class="brush:php">
-						array(
-							//默认组
-							'default_group' => 'mysql',
-							//组名=>配置
-							//mysql配置示例
-							'mysql' => array(
-								'driverType' => 'mysql',
-								 ....
-							    ),
-							'mysql_site' => array(
-								'driverType' => 'mysql',
-								 ....
-							    ),
-							'mysql_forum' => array(
-								'driverType' => 'mysql',
-								 ....
-							    )
-						)
-					</pre>
-					<h3 class="title_h3">2.使用配置数组</h3>
-					我们还可以直接传递给Sr::db()一个数据库组配置信息，直接连接这个数据库。
-					<br>比如配置信息如下：
-					<pre class="brush:php">
-						$config = array(
-								'driverType' => 'mysql',
-								'database' => 'test',
-								'tablePrefix' => 'test_',
-								'debug' => true,
-								'slowQueryDebug' => FALSE,
-								'slowQueryTime' => 100, //单位毫秒，1秒=1000毫秒
-								'slowQueryHandle' => new Soter_Database_SlowQuery_Handle_Default(),
-								'indexDebug' => FALSE,
-								'minIndexType' => 'index',
-								'indexHandle' => new Soter_Database_Index_Handle_Default(),
-								'masters' => array(
-								    array(
-									'hostname' => '127.0.0.1',
-									'port' => 3306,
-									'username' => 'root',
-									'password' => 'admin'
-								    )
-								),
-								'slaves' => array(
-								    
-								)
-							    );
-					</pre>
-					然后我们可以通过下面的代码连接配置数组的数据库。
-					<pre class="brush:php">
-						$db=Sr::db($config);
-						//然后就可以使用$db进行各种数据库查询了
 					</pre>
 				</li>
 			</ol>
