@@ -1,10 +1,12 @@
 if (parent == self) {
 	document.write('<p> Powered By Soter &copy; ' + new Date().getFullYear() + '</p>');
 	var goPage = window.location.hash.substr(1);
-	console.log(goPage);
 	if (goPage) {
 		$('#mainBody').attr('src', $('.leftNav').find('a[href$="' + goPage + '.html"]').eq(0).attr('href'));
 	}
+	$('.leftNav').find('a').click(function(){
+		$('#loadingInfo').show();
+	});
 } else {
 	if (document.title) {
 		top.document.title = document.title + "_Soter使用手册";

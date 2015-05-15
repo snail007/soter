@@ -9,7 +9,7 @@
 	<body>
 		<div class="container-fluid">
 			<div class="jumbotron" style="margin-bottom: 0">
-				<h1>Soter 使用手册 v1.0.14</h1>
+				<h1>Soter 使用手册 v1.0.15</h1>
 				<p>来吧骚年，带你进入soter的奇幻世界...</p>
 
 			</div>
@@ -45,7 +45,8 @@
 					</ol>
 				</div>
 				<div class="col-md-10">
-                                        <iframe src="default.html" name="mainBody"  id="mainBody" scrolling="no" frameborder="0" width="100%" onload="this.height = this.contentWindow.document.documentElement.scrollHeight;
+					<div id="loadingInfo" style="display:none;">正在加载...</div>
+                                        <iframe src="default.html" name="mainBody"  id="mainBody" scrolling="no" frameborder="0" width="100%" onload="$('#loadingInfo').hide();this.height = this.contentWindow.document.documentElement.scrollHeight;
 							$(window).scrollTop(250)"></iframe>
 				</div>
 			</div>
