@@ -60,7 +60,7 @@ class TestCache extends UnitTestCase {
 			$this->assertTrue($cache->clean());
 			$this->assertFalse($cache->get('test'));
 			$this->assertTrue($cache->set('test', 'testvalue', 1));
-			sleep(2);
+			sleep(3);
 			$this->assertEqual($cache->get('test'), null);
 		}
 	}

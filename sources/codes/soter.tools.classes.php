@@ -1374,6 +1374,7 @@ class Soter_Cache_Apc implements Soter_Cache {
 	public function clean() {
 		@apc_clear_cache();
 		@apc_clear_cache("user");
+		return true;
 	}
 
 	public function delete($key) {
