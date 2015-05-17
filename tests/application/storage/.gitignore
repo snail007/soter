@@ -1,7 +1,6 @@
 *
 logs/*
 *-debug/*
-!logs
 !*-debug
 !.htaccess
 !.gitignore
