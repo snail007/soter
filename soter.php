@@ -26,7 +26,7 @@
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         v1.0.16
- * @createdtime   2015-05-17 19:20:20
+ * @createdtime   2015-05-17 19:54:19
  */
  
 
@@ -4326,6 +4326,7 @@ class Soter_Cache_Apc implements Soter_Cache {
 	public function clean() {
 		@apc_clear_cache();
 		@apc_clear_cache("user");
+		return true;
 	}
 	public function delete($key) {
 		return apc_delete($key);
