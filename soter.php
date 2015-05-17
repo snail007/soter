@@ -25,19 +25,16 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         1.0.15
- * @createdtime   2015-05-15 18:47:52
+ * @since         v1.0.16
+ * @createdtime   2015-05-17 19:20:20
  */
  
-
 
 /**
  * @property Soter_Config $soterConfig
  */
 class Soter {
-
 	private static $soterConfig;
-
 	/**
 	 * 包类库自动加载器
 	 * @param type $className
@@ -52,7 +49,6 @@ class Soter {
 			}
 		}
 	}
-
 	/**
 	 * 初始化框架配置
 	 * @return \Soter_Config
@@ -76,7 +72,6 @@ class Soter {
 		}
 		return self::$soterConfig;
 	}
-
 	/**
 	 * 获取运行配置
 	 * @return Soter_Config
@@ -84,7 +79,6 @@ class Soter {
 	public static function &getConfig() {
 		return self::$soterConfig;
 	}
-
 	/**
 	 * 运行调度
 	 */
@@ -115,7 +109,6 @@ class Soter {
 			}
 		}
 	}
-
 	/**
 	 * web模式运行
 	 * @throws Soter_Exception_404
@@ -151,7 +144,6 @@ class Soter {
 			Sr::sessionStart();
 		}
 		//session初始化完毕
-
 		$class = '';
 		$method = '';
 		foreach ($config->getRouters() as $router) {
@@ -196,11 +188,10 @@ class Soter {
 			}
 		} else {
 			$response = call_user_func_array(array($controllerObject, $method), $route->getArgs());
-			$contents=is_array($response) ? Sr::view()->set($response)->load("$cacheClassName/$cacheMethodName") : $response;
+			$contents = is_array($response) ? Sr::view()->set($response)->load("$cacheClassName/$cacheMethodName") : $response;
 		}
 		echo $contents;
 	}
-
 	/**
 	 * 命令行模式运行
 	 */
@@ -229,17 +220,15 @@ class Soter {
 		$args = empty($args) ? array() : $args;
 		$taskObject->execute(new Soter_CliArgs($args));
 	}
-
 	/**
 	 * 插件模式运行
 	 */
 	private static function runPlugin() {
 		//插件模式
 	}
-
 	/**
 	 * 检测并加载hmvc模块,成功返回模块文件夹名称，失败返回false或抛出异常
-	 * @staticvar array $loadedModules  
+	 * @staticvar array $loadedModules
 	 * @param type $hmvcModuleName  hmvc模块在URI中的名称，即注册配置hmvc模块数组的键名称
 	 * @throws Soter_Exception_404
 	 */
@@ -269,19 +258,14 @@ class Soter {
 		}
 		return FALSE;
 	}
-
 }
-
 class Sr {
-
 	const ENV_TESTING = 1; //测试环境
 	const ENV_PRODUCTION = 2; //产品环境
 	const ENV_DEVELOPMENT = 3; //开发环境
-
 	static function arrayGet($array, $key, $default = null) {
 		return isset($array[$key]) ? $array[$key] : $default;
 	}
-
 	static function dump() {
 		echo!self::isCli() ? '<pre style="line-height:1.5em;font-size:14px;">' : "\n";
 		@ob_start();
@@ -291,7 +275,6 @@ class Sr {
 		echo!self::isCli() ? htmlspecialchars($html) : $html;
 		echo!self::isCli() ? "</pre>" : "\n";
 	}
-
 	static function includeOnce($filePath) {
 		static $includeFiles = array();
 		$key = self::realPath($filePath);
@@ -300,7 +283,6 @@ class Sr {
 			$includeFiles[$key] = 1;
 		}
 	}
-
 	static function realPath($path, $addSlash = false) {
 		//是linux系统么？
 		$unipath = PATH_SEPARATOR == ':';
@@ -329,11 +311,9 @@ class Sr {
 		$path = str_replace(array('/', '\\'), '/', $path);
 		return $path . ($addSlash ? '/' : '');
 	}
-
 	static function isCli() {
 		return PHP_SAPI == 'cli';
 	}
-
 	static function stripSlashes($var) {
 		if (!get_magic_quotes_gpc()) {
 			return $var;
@@ -351,7 +331,6 @@ class Sr {
 		}
 		return $var;
 	}
-
 	static function business($businessName) {
 		$name = Soter::getConfig()->getBusinessDirName() . '_' . $businessName;
 		$object = self::factory($name);
@@ -360,7 +339,6 @@ class Sr {
 		}
 		return $object;
 	}
-
 	static function dao($daoName) {
 		$name = Soter::getConfig()->getDaoDirName() . '_' . $daoName;
 		$object = self::factory($name);
@@ -369,7 +347,6 @@ class Sr {
 		}
 		return $object;
 	}
-
 	static function model($modelName) {
 		$name = Soter::getConfig()->getModelDirName() . '_' . $modelName;
 		$object = self::factory($name);
@@ -378,11 +355,9 @@ class Sr {
 		}
 		return $object;
 	}
-
 	static function library($className) {
 		return self::factory($className);
 	}
-
 	static function functions($functionFilename) {
 		static $loadedFunctionsFile = array();
 		if (isset($loadedFunctionsFile[$functionFilename])) {
@@ -404,7 +379,6 @@ class Sr {
 			throw new Soter_Exception_404('functions file [ ' . $functionFilename . '.php ] not found');
 		}
 	}
-
 	/**
 	 * 超级工厂方法
 	 * @param type $className      可以是完整的控制器类名，模型类名，类库类名
@@ -425,7 +399,6 @@ class Sr {
 		}
 		return new $className();
 	}
-
 	/**
 	 * 判断是否是插件模式运行
 	 * @return type
@@ -433,7 +406,6 @@ class Sr {
 	static function isPluginMode() {
 		return (defined('SOTER_RUN_MODE_PLUGIN') && SOTER_RUN_MODE_PLUGIN);
 	}
-
 	/**
 	 * 1.不传递参数返回系统配置对象（Soter_Config）。<br/>
 	 * 2.传递参数加载具体的配置<br/>
@@ -486,7 +458,6 @@ class Sr {
 			return $cfg;
 		}
 	}
-
 	/**
 	 * 解析命令行参数 $GLOBALS['argv'] 到一个数组<br>
 	 * 参数形式支持:		<br>
@@ -531,35 +502,29 @@ class Sr {
 		}
 		return empty($key) ? $result : (isset($result[$key]) ? $result[$key] : null);
 	}
-
 	static function get($key = null, $default = null, $xssClean = false) {
 		$value = is_null($key) ? $_GET : self::arrayGet($_GET, $key, $default);
 		return $xssClean ? self::xssClean($value) : $value;
 	}
-
 	static function getPost($key, $default = null, $xssClean = false) {
 		$getValue = self::arrayGet($_GET, $key);
 		$value = is_null($getValue) ? self::arrayGet($_POST, $key, $default) : $getValue;
 		return $xssClean ? self::xssClean($value) : $value;
 	}
-
 	static function post($key = null, $default = null, $xssClean = false) {
 		$value = is_null($key) ? $_POST : self::arrayGet($_POST, $key, $default);
 		return $xssClean ? self::xssClean($value) : $value;
 	}
-
 	static function postGet($key, $default = null, $xssClean = false) {
 		$postValue = self::arrayGet($_POST, $key);
 		$value = is_null($postValue) ? self::arrayGet($_GET, $key, $default) : $postValue;
 		return $xssClean ? self::xssClean($value) : $value;
 	}
-
 	static function session($key = null, $default = null, $xssClean = false) {
 		self::sessionStart();
 		$value = is_null($key) ? $_SESSION : self::arrayGet($_SESSION, $key, $default);
 		return $xssClean ? self::xssClean($value) : $value;
 	}
-
 	static function sessionSet($key = null, $value = null) {
 		self::sessionStart();
 		if (is_array($key)) {
@@ -568,11 +533,9 @@ class Sr {
 			$_SESSION[$key] = $value;
 		}
 	}
-
 	static function server($key = null, $default = null) {
 		return is_null($key) ? $_SERVER : self::arrayGet($_SERVER, strtoupper($key), $default);
 	}
-
 	/**
 	 * 获取原始的POST数据，即php://input获取到的
 	 * @return type
@@ -580,7 +543,6 @@ class Sr {
 	static function postRawBody() {
 		return file_get_contents('php://input');
 	}
-
 	/**
 	 * 获取一个cookie
 	 * 提醒:
@@ -593,12 +555,10 @@ class Sr {
 		$value = self::cookieRaw($key, $default, $xssClean);
 		return $xssClean ? self::xssClean($value) : $value;
 	}
-
 	static function cookieRaw($key = null, $default = null, $xssClean = false) {
 		$value = is_null($key) ? $_COOKIE : self::arrayGet($_COOKIE, $key, $default);
 		return $xssClean ? self::xssClean($value) : $value;
 	}
-
 	/**
 	 * 设置一个cookie，该方法会在key前面加上系统配置里面的getCookiePrefix()前缀<br>
 	 * 如果不想加前缀，可以使用方法：Sr::setCookieRaw()<br>
@@ -608,7 +568,6 @@ class Sr {
 		$key = Sr::config()->getCookiePrefix() . $key;
 		return self::setCookieRaw($key, $value, $life, $path, $domian, $http_only);
 	}
-
 	static function setCookieRaw($key, $value, $life = null, $path = '/', $domian = null, $httpOnly = false) {
 		header('P3P: CP="CURa ADMa DEVa PSAo PSDo OUR BUS UNI PUR INT DEM STA PRE COM NAV OTC NOI DSP COR"');
 		if (!is_null($domian)) {
@@ -629,7 +588,6 @@ class Sr {
 		setcookie($key, $value, ($life ? $life + time() : null), $path, $autoDomain, (self::server('SERVER_PORT') == 443 ? 1 : 0), $httpOnly);
 		$_COOKIE[$key] = $value;
 	}
-
 	static function xssClean($var) {
 		if (is_array($var)) {
 			foreach ($var as $key => $val) {
@@ -644,27 +602,22 @@ class Sr {
 		}
 		return $var;
 	}
-
 	private static function xssClean0($data) {
 		// Fix &entity\n;
 		$data = str_replace(array('&amp;', '&lt;', '&gt;'), array('&amp;amp;', '&amp;lt;', '&amp;gt;'), $data);
 		$data = preg_replace('/(&#*\w+)[\x00-\x20]+;/u', '$1;', $data);
 		$data = preg_replace('/(&#x*[0-9A-F]+);*/iu', '$1;', $data);
 		$data = html_entity_decode($data, ENT_COMPAT, 'UTF-8');
-
 		// Remove any attribute starting with "on" or xmlns
 		$data = preg_replace('#(<[^>]+?[\x00-\x20"\'])(?:on|xmlns)[^>]*+>#iu', '$1>', $data);
-
 		// Remove javascript: and vbscript: protocols
 		$data = preg_replace('#([a-z]*)[\x00-\x20]*=[\x00-\x20]*([`\'"]*)[\x00-\x20]*j[\x00-\x20]*a[\x00-\x20]*v[\x00-\x20]*a[\x00-\x20]*s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:#iu', '$1=$2nojavascript...', $data);
 		$data = preg_replace('#([a-z]*)[\x00-\x20]*=([\'"]*)[\x00-\x20]*v[\x00-\x20]*b[\x00-\x20]*s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:#iu', '$1=$2novbscript...', $data);
 		$data = preg_replace('#([a-z]*)[\x00-\x20]*=([\'"]*)[\x00-\x20]*-moz-binding[\x00-\x20]*:#u', '$1=$2nomozbinding...', $data);
-
 		// Only works in IE: <span style="width: expression(alert('Ping!'));"></span>
 		$data = preg_replace('#(<[^>]+?)style[\x00-\x20]*=[\x00-\x20]*[`\'"]*.*?expression[\x00-\x20]*\([^>]*+>#i', '$1>', $data);
 		$data = preg_replace('#(<[^>]+?)style[\x00-\x20]*=[\x00-\x20]*[`\'"]*.*?behaviour[\x00-\x20]*\([^>]*+>#i', '$1>', $data);
 		$data = preg_replace('#(<[^>]+?)style[\x00-\x20]*=[\x00-\x20]*[`\'"]*.*?s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:*[^>]*+>#iu', '$1>', $data);
-
 		// Remove namespaced elements (we do not need them)
 		$data = preg_replace('#</*\w+:\w[^>]*+>#i', '', $data);
 		do {
@@ -672,11 +625,9 @@ class Sr {
 			$old_data = $data;
 			$data = preg_replace('#</*(?:applet|b(?:ase|gsound|link)|embed|iframe|frame(?:set)?|i(?:frame|layer)|l(?:ayer|ink)|meta|object|s(?:cript|tyle)|title|xml)[^>]*+>#i', '', $data);
 		} while ($old_data !== $data);
-
 		// we are done...
 		return $data;
 	}
-
 	/**
 	 * 服务器的hostname
 	 * @return type
@@ -684,7 +635,6 @@ class Sr {
 	static function hostname() {
 		return function_exists('gethostname') ? gethostname() : (function_exists('php_uname') ? php_uname('n') : 'unknown');
 	}
-
 	/**
 	 * 服务器的ip
 	 * @return type
@@ -692,7 +642,6 @@ class Sr {
 	static function serverIp() {
 		return self::isCli() ? gethostbyname(self::hostname()) : Sr::server('SERVER_ADDR');
 	}
-
 	static function clientIp() {
 		if ($ip = self::checkClientIp(Sr::arrayGet($_SERVER, 'HTTP_X_FORWARDED_FOR'))) {
 			return $ip;
@@ -710,7 +659,6 @@ class Sr {
 			return "Unknown";
 		}
 	}
-
 	private static function checkClientIp($ip) {
 		if (empty($ip)) {
 			return false;
@@ -723,15 +671,12 @@ class Sr {
 		}
 		return FALSE;
 	}
-
 	static function strBeginsWith($str, $sub) {
 		return ( substr($str, 0, strlen($sub)) == $sub );
 	}
-
 	static function strEndsWith($str, $sub) {
 		return ( substr($str, strlen($str) - strlen($sub)) == $sub );
 	}
-
 	/**
 	 * 获取IP段信息<br>
 	 * $ipAddr格式：192.168.1.10/24、192.168.1.10/32<br>
@@ -749,22 +694,18 @@ class Sr {
 	static function ipInfo($ipAddr, $key = null) {
 		$ipAddr = str_replace(" ", "", $ipAddr);    //去除字符串中的空格
 		$arr = explode('/', $ipAddr); //对IP段进行解剖
-
 		$ipAddr = $arr[0];    //得到IP地址
 		$ipAddrArr = explode('.', $ipAddr);
 		foreach ($ipAddrArr as &$v) {
 			$v = intval($v); //去掉192.023.20.01其中的023的0
 		}
 		$ipAddr = implode('.', $ipAddrArr); //修正后的ip地址
-
 		$netbits = intval((isset($arr[1]) ? $arr[1] : 0));   //得到掩码位
-
 		$subnetMask = long2ip(ip2long("255.255.255.255") << (32 - $netbits));
 		$ip = ip2long($ipAddr);
 		$nm = ip2long($subnetMask);
 		$nw = ($ip & $nm);
 		$bc = $nw | (~$nm);
-
 		$ips = array();
 		$ips['netmask'] = long2ip($nm);     //网络掩码
 		$ips['count'] = ($bc - $nw - 1);      //可用IP数目
@@ -783,10 +724,8 @@ class Sr {
 		$nw = sprintf('%u', $nw);
 		$ips['netaddress'] = long2ip($nw);       //网络地址
 		$ips['broadcast'] = long2ip($bc);       //广播地址
-
 		return is_null($key) ? $ips : $ips[$key];
 	}
-
 	/**
 	 * 获取数据库操作对象
 	 * @staticvar array $instances
@@ -817,11 +756,9 @@ class Sr {
 			return $instances[$group];
 		}
 	}
-
 	static function createSqlite3Database($path) {
 		return new PDO('sqlite:' . $path);
 	}
-
 	/**
 	 * 获取当前UNIX毫秒时间戳
 	 * @return type
@@ -832,7 +769,6 @@ class Sr {
 		$currentTime = (float) sprintf('%.0f', (floatval($s1) + floatval($s2)) * 1000);
 		return $currentTime;
 	}
-
 	/**
 	 * 屏蔽路径中系统的绝对路径部分，转换为安全的用于显示
 	 * @param type $path
@@ -848,7 +784,6 @@ class Sr {
 		$relPath = str_replace($siteRoot, '', rtrim(self::config()->getApplicationDir(), '/'));
 		return '~APPPATH~' . str_replace($relPath, '', $_path);
 	}
-
 	/**
 	 * 获取缓存操作对象
 	 * @param type $cacheHandle
@@ -860,7 +795,6 @@ class Sr {
 		}
 		return self::config()->getCacheHandle();
 	}
-
 	/**
 	 * 删除文件夹和子文件夹
 	 * @param string $dirPath   文件夹路径
@@ -889,7 +823,6 @@ class Sr {
 		}
 		return true;
 	}
-
 	static function view() {
 		static $view;
 		if (!$view) {
@@ -897,13 +830,12 @@ class Sr {
 		}
 		return $view;
 	}
-
 	/**
 	 * 获取入口文件所在目录url路径。
 	 * 只能在web访问时使用，在命令行下面会抛出异常。
 	 * @param type $subpath  子路径或者文件路径，如果非空就会被附加在入口文件所在目录的后面
-	 * @return type           
-	 * @throws Exception     
+	 * @return type
+	 * @throws Exception
 	 */
 	static function urlPath($subpath = null, $addSlash = true) {
 		if (self::isCli()) {
@@ -917,10 +849,9 @@ class Sr {
 			chdir($old_path);
 			$path = str_replace(array("/", "\\"), '/', realpath('.') . ($subpath ? '/' . trim($subpath, '/\\') : ''));
 			$path = self::realPath($path) . ($addSlash ? '/' : '');
-			return str_replace($root, '', $path);
+			return preg_replace('|^' . $root . '|', '', $path);
 		}
 	}
-
 	/**
 	 * 生成控制器方法的url
 	 * @param type $action   控制器方法
@@ -941,11 +872,10 @@ class Sr {
 		}
 		return $url;
 	}
-
 	/**
 	 * $source_data和$map的key一致，$map的value是返回数据的key
 	 * 根据$map的key读取$source_data中的数据，结果是以map的value为key的数数组
-	 * 
+	 *
 	 * @param Array $map 字段映射数组,格式：array('表单name名称'=>'表字段名称',...)
 	 */
 	static function readData(Array $map, $sourceData = null) {
@@ -958,7 +888,6 @@ class Sr {
 		}
 		return $data;
 	}
-
 	static function checkData($data, $rules, &$returnData, &$errorMessage, &$db = null) {
 		static $checkRules;
 		if (empty($checkRules)) {
@@ -982,7 +911,6 @@ class Sr {
 				    if (is_array($value)) {
 					    $i = 0;
 					    foreach ($value as $k => $v) {
-
 						    $returnValue[$k] = empty($v) ? (isset($args[$i]) ? $args[$i] : $args[0]) : $v;
 						    $i++;
 					    }
@@ -1532,13 +1460,11 @@ class Sr {
 			}
 			return true;
 		}
-
 		static function sessionStart() {
 			if (!isset($_SESSION)) {
 				session_start();
 			}
 		}
-
 		/**
 		 * 分页方法
 		 * @param type $total 一共多少记录
@@ -1608,7 +1534,6 @@ class Sr {
 			}
 			return $pages > 1 ? implode("", $output) : '';
 		}
-
 		static function json() {
 			$args = func_get_args();
 			$handle = Sr::config()->getOutputJsonRender();
@@ -1618,7 +1543,6 @@ class Sr {
 				return '';
 			}
 		}
-
 		static function redirect($url, $msg = null, $time = 3, $view = null) {
 			$time = intval($time) ? intval($time) : 3;
 			header("refresh:{$time};url={$url}"); //单位秒
@@ -1630,7 +1554,6 @@ class Sr {
 			}
 			exit();
 		}
-
 		static function message($msg, $url = null, $time = 3, $view = null) {
 			$time = intval($time) ? intval($time) : 3;
 			if (!empty($url)) {
@@ -1644,22 +1567,17 @@ class Sr {
 			}
 			exit();
 		}
-
 	}
 	
-
 /**
  * SoterPDO is simple and smart wrapper for PDO
  */
 class Soter_PDO extends PDO {
-
 	protected $transactionCounter = 0;
 	private $isLast;
-
 	public function isInTransaction() {
 		return !$this->isLast;
 	}
-
 	public function beginTransaction() {
 		if (!$this->transactionCounter++) {
 			return parent::beginTransaction();
@@ -1667,7 +1585,6 @@ class Soter_PDO extends PDO {
 		$this->exec('SAVEPOINT trans' . $this->transactionCounter);
 		return $this->transactionCounter >= 0;
 	}
-
 	public function commit() {
 		if (!--$this->transactionCounter) {
 			$this->isLast = true;
@@ -1676,7 +1593,6 @@ class Soter_PDO extends PDO {
 		$this->isLast = false;
 		return $this->transactionCounter >= 0;
 	}
-
 	public function rollback() {
 		if (--$this->transactionCounter) {
 			$this->exec('ROLLBACK TO trans' . $this->transactionCounter + 1);
@@ -1684,11 +1600,8 @@ class Soter_PDO extends PDO {
 		}
 		return parent::rollback();
 	}
-
 }
-
 abstract class Soter_Database {
-
 	private $driverType,
 		$database,
 		$tablePrefix,
@@ -1717,17 +1630,13 @@ abstract class Soter_Database {
 		$_cacheKey,
 		$_masterPdo = null,
 		$_locked = false
-
 	;
-
 	public function __construct(Array $config = array()) {
 		$this->setConfig($config);
 	}
-
 	public function &getLastPdoInstance() {
 		return $this->_lastPdoInstance;
 	}
-
 	/**
 	 * 锁定数据库连接，后面的读写都使用同一个主数据库连接
 	 */
@@ -1735,7 +1644,6 @@ abstract class Soter_Database {
 		$this->_locked = true;
 		return $this;
 	}
-
 	/**
 	 * 解锁数据库连接，后面的读写使用不同的数据库连接
 	 */
@@ -1743,7 +1651,6 @@ abstract class Soter_Database {
 		$this->_locked = false;
 		return $this;
 	}
-
 	/**
 	 * 数据库连接是否处于锁定状态
 	 * @return bool
@@ -1751,7 +1658,6 @@ abstract class Soter_Database {
 	public function isLocked() {
 		return $this->_locked;
 	}
-
 	public function lastId() {
 		if (strtolower($this->getDriverType()) == 'sqlite') {
 			//sqlite3的insertBatch是模拟的，
@@ -1763,73 +1669,57 @@ abstract class Soter_Database {
 			return $this->_lastInsertId;
 		}
 	}
-
 	public function error() {
 		return $this->_errorMsg;
 	}
-
 	public function lastSql() {
 		return $this->_lastSql;
 	}
-
 	public function getSlowQueryDebug() {
 		return $this->slowQueryDebug;
 	}
-
 	public function getMinIndexType() {
 		return $this->minIndexType;
 	}
-
 	public function getIndexDebug() {
 		return $this->indexDebug;
 	}
-
 	public function setSlowQueryDebug($slowQueryDebug) {
 		$this->slowQueryDebug = $slowQueryDebug;
 		return $this;
 	}
-
 	public function setMinIndexType($minIndexType) {
 		$this->minIndexType = $minIndexType;
 		return $this;
 	}
-
 	public function setIndexDebug($indexDebug) {
 		$this->indexDebug = $indexDebug;
 		return $this;
 	}
-
 	public function getSlowQueryTime() {
 		return $this->slowQueryTime;
 	}
-
 	public function &getSlowQueryHandle() {
 		return $this->slowQueryHandle;
 	}
-
 	public function &getIndexHandle() {
 		return $this->indexHandle;
 	}
-
 	public function setSlowQueryTime($slowQueryTime) {
 		$this->slowQueryTime = $slowQueryTime;
 		return $this;
 	}
-
 	public function setSlowQueryHandle(Soter_Database_SlowQuery_Handle $slowQueryHandle) {
 		$this->slowQueryHandle = $slowQueryHandle;
 		return $this;
 	}
-
 	public function setIndexHandle(Soter_Database_Index_Handle $indexHandle) {
 		$this->indexHandle = $indexHandle;
 		return $this;
 	}
-
 	public function getConfig() {
 		return $this->_config;
 	}
-
 	public function setConfig(Array $config = array()) {
 		foreach (($this->_config = array_merge($this->getDefaultConfig(), $config)) as $key => $value) {
 			$this->{$key} = $value;
@@ -1846,105 +1736,82 @@ abstract class Soter_Database {
 		$this->_masterPdo = '';
 		$this->_locked = false;
 	}
-
 	public function getDriverType() {
 		return $this->driverType;
 	}
-
 	public function getMasters() {
 		return $this->masters;
 	}
-
 	public function getMaster($key) {
 		return $this->masters[$key];
 	}
-
 	public function getSlaves() {
 		return $this->slaves;
 	}
-
 	public function getSlave($key) {
 		return $this->slaves[$key];
 	}
-
 	public function getDatabase() {
 		return $this->database;
 	}
-
 	public function getTablePrefix() {
 		return $this->tablePrefix;
 	}
-
 	public function getPconnect() {
 		return $this->pconnect;
 	}
-
 	public function getDebug() {
 		return $this->debug;
 	}
-
 	public function getCharset() {
 		return $this->charset;
 	}
-
 	public function getCollate() {
 		return $this->collate;
 	}
-
 	public function getTablePrefixSqlIdentifier() {
 		return $this->tablePrefixSqlIdentifier;
 	}
-
 	public function setDriverType($driverType) {
 		$this->driverType = $driverType;
 		return $this;
 	}
-
 	public function setMasters($masters) {
 		$this->masters = $masters;
 		return $this;
 	}
-
 	public function setSlaves($slaves) {
 		$this->slaves = $slaves;
 		return $this;
 	}
-
 	public function setDatabase($database) {
 		$this->database = $database;
 		return $this;
 	}
-
 	public function setTablePrefix($tablePrefix) {
 		$this->tablePrefix = $tablePrefix;
 		return $this;
 	}
-
 	public function setPconnect($pconnect) {
 		$this->pconnect = $pconnect;
 		return $this;
 	}
-
 	public function setDebug($debug) {
 		$this->debug = $debug;
 		return $this;
 	}
-
 	public function setCharset($charset) {
 		$this->charset = $charset;
 		return $this;
 	}
-
 	public function setCollate($collate) {
 		$this->collate = $collate;
 		return $this;
 	}
-
 	public function setTablePrefixSqlIdentifier($tablePrefixSqlIdentifier) {
 		$this->tablePrefixSqlIdentifier = $tablePrefixSqlIdentifier;
 		return $this;
 	}
-
 	public static function getDefaultConfig() {
 		return array(
 		    'driverType' => 'mysql',
@@ -1964,8 +1831,8 @@ abstract class Soter_Database {
 		    /**
 		     * 索引使用的最小情况，只有小于最小情况的时候才会记录sql到日志
 		     * minIndexType值从好到坏依次是:
-		     * system > const > eq_ref > ref > fulltext > ref_or_null 
-		     * > index_merge > unique_subquery > index_subquery > range 
+		     * system > const > eq_ref > ref > fulltext > ref_or_null
+		     * > index_merge > unique_subquery > index_subquery > range
 		     * > index > ALL一般来说，得保证查询至少达到range级别，最好能达到ref
 		     */
 		    'minIndexType' => 'ALL',
@@ -1981,15 +1848,12 @@ abstract class Soter_Database {
 		    'slaves' => array()
 		);
 	}
-
 	private function _isSqlite() {
 		return strtolower($this->getDriverType()) == 'sqlite';
 	}
-
 	private function _isMysql() {
 		return strtolower($this->getDriverType()) == 'mysql';
 	}
-
 	private function _init() {
 		$info = array(
 		    'master' => array(
@@ -2039,7 +1903,6 @@ abstract class Soter_Database {
 			$this->_displayError($e);
 		}
 	}
-
 	public function begin() {
 		if (!$this->_init()) {
 			return FALSE;
@@ -2047,7 +1910,6 @@ abstract class Soter_Database {
 		$this->_masterPdo->beginTransaction();
 		$this->_isInTransaction = TRUE;
 	}
-
 	public function commit() {
 		if (!$this->_init()) {
 			return FALSE;
@@ -2055,26 +1917,22 @@ abstract class Soter_Database {
 		$this->_masterPdo->commit();
 		$this->_isInTransaction = $this->_masterPdo->isInTransaction();
 	}
-
 	public function rollback() {
 		if (!$this->_init()) {
 			return FALSE;
 		}
 		$this->_masterPdo->rollback();
 	}
-
 	public function cache($cacheTime, $cacheKey = '') {
 		$this->_cacheTime = (int) $cacheTime;
 		$this->_cacheKey = $cacheKey;
 		return $this;
 	}
-
 	private function _checkPrefixIdentifier($str) {
 		$prefix = $this->getTablePrefix();
 		$identifier = $this->getTablePrefixSqlIdentifier();
 		return $identifier && $prefix ? str_replace($identifier, $prefix, $str) : $str;
 	}
-
 	/**
 	 * 执行一个sql语句，写入型的返回bool或者影响的行数（insert,delete,replace,update），搜索型的返回结果集
 	 * @param type $sql       sql语句
@@ -2085,12 +1943,10 @@ abstract class Soter_Database {
 		if (!$this->_init()) {
 			return FALSE;
 		}
-
 		$startTime = Sr::microtime();
 		$sql = $sql ? $this->_checkPrefixIdentifier($sql) : $this->getSql();
 		$this->_lastSql = $sql;
 		$values = !empty($values) ? $values : $this->_getValues();
-
 		//读查询缓存
 		$cacheHandle = null;
 		if ($this->_cacheTime) {
@@ -2104,7 +1960,6 @@ abstract class Soter_Database {
 				return $return;
 			}
 		}
-
 		$isWriteType = $this->_isWriteType($sql);
 		$isWritetRowsType = $this->_isWriteRowsType($sql);
 		$isWriteInsertType = $this->_isWriteInsertType($sql);
@@ -2157,7 +2012,6 @@ abstract class Soter_Database {
 			}
 			//查询消耗的时间
 			$usingTime = (Sr::microtime() - $startTime) . '';
-
 			//explain查询
 			$explainRows = array();
 			if ($this->slowQueryDebug && $this->indexDebug) {
@@ -2213,28 +2067,24 @@ abstract class Soter_Database {
 		$this->_reset();
 		return $return;
 	}
-
 	private function _isWriteType($sql) {
 		if (!preg_match('/^\s*"?(SET|INSERT|UPDATE|DELETE|REPLACE|CREATE|DROP|TRUNCATE|LOAD DATA|COPY|ALTER|GRANT|REVOKE|LOCK|UNLOCK)\s+/i', $sql)) {
 			return FALSE;
 		}
 		return TRUE;
 	}
-
 	private function _isWriteInsertType($sql) {
 		if (!preg_match('/^\s*"?(INSERT|REPLACE)\s+/i', $sql)) {
 			return FALSE;
 		}
 		return TRUE;
 	}
-
 	private function _isWriteRowsType($sql) {
 		if (!preg_match('/^\s*"?(INSERT|UPDATE|DELETE|REPLACE)\s+/i', $sql)) {
 			return FALSE;
 		}
 		return TRUE;
 	}
-
 	protected function _displayError($message, $code = 0) {
 		$sql = $this->_lastSql ? ' , ' . "\n" . 'with query : ' . $this->_lastSql : '';
 		if ($message instanceof Exception) {
@@ -2246,23 +2096,17 @@ abstract class Soter_Database {
 			if ($message instanceof Exception) {
 				throw new Soter_Exception_Database($this->_errorMsg, 500);
 			} else {
-
 				throw new Soter_Exception_Database($message . $sql, $code);
 			}
 		}
 	}
-
 	public function getSqlValues() {
 		return $this->_getValues();
 	}
-
 	public abstract function getSql();
-
 	protected abstract function _getValues();
 }
-
 class Soter_Database_ActiveRecord extends Soter_Database {
-
 	private $arSelect
 		, $arFrom
 		, $arJoin
@@ -2282,18 +2126,14 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		, $_currentSql
 	;
 	protected $_lastInsertBatchCount = 0
-
 	;
-
 	protected function _getValues() {
 		return $this->_values;
 	}
-
 	public function __construct(Array $config = array()) {
 		parent::__construct($config);
 		$this->_reset();
 	}
-
 	protected function _reset() {
 		$this->arSelect = array();
 		$this->arFrom = array();
@@ -2313,14 +2153,12 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		$this->_sqlType = 'select';
 		$this->_currentSql = '';
 	}
-
 	public function select($select) {
 		foreach (explode(',', $select) as $key) {
 			$this->arSelect[] = $key;
 		}
 		return $this;
 	}
-
 	public function from($from, $as = '') {
 		$this->arFrom = array($from, $as);
 		if ($as) {
@@ -2328,19 +2166,16 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		}
 		return $this;
 	}
-
 	public function join($table, $on, $type = '') {
 		$this->arJoin[] = array($table, $on, strtoupper($type));
 		return $this;
 	}
-
 	public function where($where, $leftWrap = 'AND', $rightWrap = '') {
 		if (!empty($where) && is_array($where)) {
 			$this->arWhere[] = array($where, $leftWrap, $rightWrap, count($this->arWhere));
 		}
 		return $this;
 	}
-
 	public function groupBy($key) {
 		$key = explode(',', $key);
 		foreach ($key as $k) {
@@ -2348,22 +2183,18 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		}
 		return $this;
 	}
-
 	public function having($having, $leftWrap = 'AND', $rightWrap = '') {
 		$this->arHaving[] = array($having, $leftWrap, $rightWrap, count($this->arHaving));
 		return $this;
 	}
-
 	public function orderBy($key, $type = 'desc') {
 		$this->arOrderby[$key] = $type;
 		return $this;
 	}
-
 	public function limit($offset, $count) {
 		$this->arLimit = "$offset , $count";
 		return $this;
 	}
-
 	public function insert($table, array $data) {
 		$this->_sqlType = 'insert';
 		$this->arInsert = $data;
@@ -2371,14 +2202,12 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		$this->from($table);
 		return $this;
 	}
-
 	public function replace($table, array $data) {
 		$this->_sqlType = 'replace';
 		$this->arInsert = $data;
 		$this->from($table);
 		return $this;
 	}
-
 	private function _compileInsert() {
 		$keys = array();
 		$values = array();
@@ -2392,7 +2221,6 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		}
 		return '';
 	}
-
 	public function insertBatch($table, array $data) {
 		$this->_sqlType = 'insertBatch';
 		$this->arInsertBatch = $data;
@@ -2400,7 +2228,6 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		$this->from($table);
 		return $this;
 	}
-
 	public function replaceBatch($table, array $data) {
 		$this->_sqlType = 'replaceBatch';
 		$this->arInsertBatch = $data;
@@ -2408,7 +2235,6 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		$this->from($table);
 		return $this;
 	}
-
 	private function _compileInsertBatch() {
 		$keys = array();
 		$values = array();
@@ -2428,14 +2254,12 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		}
 		return '';
 	}
-
 	public function delete($table, array $where = array()) {
 		$this->from($table);
 		$this->where($where);
 		$this->_sqlType = 'delete';
 		return $this;
 	}
-
 	public function update($table, array $data = array(), array $where = array()) {
 		$this->from($table);
 		$this->where($where);
@@ -2450,10 +2274,9 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		}
 		return $this;
 	}
-
 	/**
 	 * 批量更新
-	 * 
+	 *
 	 * @param array $values 必须包含$index字段
 	 * @param string $index  唯一字段名称，一般是主键id
 	 * @return int
@@ -2470,7 +2293,6 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		}
 		return $this;
 	}
-
 	private function _compileUpdateBatch() {
 		list($values, $index) = $this->arUpdateBatch;
 		if (count($values) && isset($values[0][$index])) {
@@ -2499,13 +2321,11 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		}
 		return '';
 	}
-
 	public function set($key, $value, $wrap = true) {
 		$this->_sqlType = 'update';
 		$this->arSet[$key] = array($value, $wrap);
 		return $this;
 	}
-
 	/**
 	 * 加表前缀，保护字段名和表名
 	 * @param String $str 比如：user.id , id
@@ -2519,7 +2339,6 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 			return $this->_protectIdentifier($_key[0]);
 		}
 	}
-
 	public function getSql() {
 		//在没有execute之前，防止多次调用导致values重复添加，这里在execute之前只编译一次，以后直接返回
 		//execute之后$this->_currentSql会被_reset为空
@@ -2554,7 +2373,6 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		}
 		return $this->_currentSql;
 	}
-
 	private function _getUpdateSql() {
 		$sql[] = "\n" . 'UPDATE ';
 		$sql[] = $this->_getFrom();
@@ -2564,7 +2382,6 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		$sql[] = $this->_getLimit();
 		return implode(' ', $sql);
 	}
-
 	private function _getUpdateBatchSql() {
 		$sql[] = "\n" . 'UPDATE ';
 		$sql[] = $this->_getFrom();
@@ -2573,43 +2390,36 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		$sql[] = $this->_getWhere();
 		return implode(' ', $sql);
 	}
-
 	private function _getInsertSql() {
 		$sql[] = "\n" . 'INSERT INTO ';
 		$sql[] = $this->_getFrom();
 		$sql[] = $this->_compileInsert();
 		return implode(' ', $sql);
 	}
-
 	private function _getInsertBatchSql() {
 		$sql[] = "\n" . 'INSERT INTO ';
 		$sql[] = $this->_getFrom();
 		$sql[] = $this->_compileInsertBatch();
-
 		return implode(' ', $sql);
 	}
-
 	private function _getReplaceSql() {
 		$sql[] = "\n" . 'REPLACE INTO ';
 		$sql[] = $this->_getFrom();
 		$sql[] = $this->_compileInsert();
 		return implode(' ', $sql);
 	}
-
 	private function _getReplaceBatchSql() {
 		$sql[] = "\n" . 'REPLACE INTO ';
 		$sql[] = $this->_getFrom();
 		$sql[] = $this->_compileInsertBatch();
 		return implode(' ', $sql);
 	}
-
 	private function _getDeleteSql() {
 		$sql[] = "\n" . 'DELETE FROM ';
 		$sql[] = $this->_getFrom();
 		$sql[] = $this->_getWhere();
 		return implode(' ', $sql);
 	}
-
 	private function _getSelectSql() {
 		$select = $this->_compileSelect();
 		$from = $this->_getFrom();
@@ -2641,7 +2451,6 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		;
 		return $sql;
 	}
-
 	private function _compileSet() {
 		$set = array();
 		foreach ($this->arSet as $key => $value) {
@@ -2655,7 +2464,6 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		}
 		return implode(' , ', $set);
 	}
-
 	private function _compileGroupBy() {
 		$groupBy = array();
 		foreach ($this->arGroupby as $key) {
@@ -2668,7 +2476,6 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		}
 		return implode(' , ', $groupBy);
 	}
-
 	private function _compileOrderBy() {
 		$orderby = array();
 		foreach ($this->arOrderby as $key => $type) {
@@ -2682,7 +2489,6 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		}
 		return implode(' , ', $orderby);
 	}
-
 	private function _compileWhere($where, $leftWrap = 'AND', $rightWrap = '', $index = -1) {
 		$_where = array();
 		if ($index == 0 && strtoupper(trim($leftWrap)) == 'AND') {
@@ -2728,7 +2534,6 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		}
 		return ' ' . $leftWrap . ' ' . implode(' AND ', $_where) . $rightWrap . ' ';
 	}
-
 	private function _compileSelect() {
 		$selects = $this->arSelect;
 		if (empty($selects)) {
@@ -2750,7 +2555,6 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		}
 		return implode(',', $selects);
 	}
-
 	private function _compileFrom($from, $as = '') {
 		if ($as) {
 			$this->_asTable[$as] = 1;
@@ -2758,7 +2562,6 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		}
 		return $this->_protectIdentifier($this->_checkPrefix($from)) . $as;
 	}
-
 	private function _compileJoin($table, $on, $type = '') {
 		if (is_array($table)) {
 			$this->_asTable[current($table)] = 1;
@@ -2766,7 +2569,6 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		} else {
 			$table = $this->_protectIdentifier($this->_checkPrefix($table));
 		}
-
 		list($left, $right) = explode('=', $on);
 		$_left = explode('.', $left);
 		$_right = explode('.', $right);
@@ -2777,7 +2579,6 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		} else {
 			$left = $this->_protectIdentifier($left);
 		}
-
 		if (count($_right) == 2) {
 			$_right[0] = $this->_protectIdentifier($this->_checkPrefix($_right[0]));
 			$_right[1] = $this->_protectIdentifier($_right[1]);
@@ -2788,7 +2589,6 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		$on = $left . ' = ' . $right;
 		return ' ' . $type . ' JOIN ' . $table . ' ON ' . $on . ' ';
 	}
-
 	private function _checkPrefix($str) {
 		$prefix = $this->getTablePrefix();
 		if ($prefix && strpos($str, $prefix) === FALSE) {
@@ -2798,7 +2598,6 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		}
 		return $str;
 	}
-
 	private function _protectIdentifier($str) {
 		if (stripos($str, '(')) {
 			return $str;
@@ -2810,7 +2609,6 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 			return "`$str`";
 		}
 	}
-
 	private function _getFrom() {
 		$table = ' ' . call_user_func_array(array($this, '_compileFrom'), $this->arFrom) . ' ';
 		foreach ($this->arJoin as $join) {
@@ -2818,7 +2616,6 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		}
 		return $table;
 	}
-
 	private function _getWhere() {
 		$where = '';
 		//如果where中存在空的in，说明搜索条件一定是假，那么用0代表where假条件
@@ -2844,7 +2641,6 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		}
 		return $where;
 	}
-
 	private function _getLimit() {
 		$limit = $this->arLimit;
 		if ($limit) {
@@ -2852,28 +2648,20 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		}
 		return $limit;
 	}
-
 	public function __toString() {
 		return $this->getSql();
 	}
-
 }
-
 class Soter_Database_Resultset {
-
 	private $_resultSet = array(),
 		$_rowsKey = ''
-
 	;
-
 	public function __construct($resultSet) {
 		$this->_resultSet = $resultSet;
 	}
-
 	public function total() {
 		return count($this->_resultSet);
 	}
-
 	public function rows($isAssoc = true) {
 		$key = $this->_rowsKey;
 		$this->_rowsKey = '';
@@ -2903,7 +2691,6 @@ class Soter_Database_Resultset {
 			}
 		}
 	}
-
 	public function row($index = null, $isAssoc = true) {
 		if (!is_null($index) && isset($this->_resultSet[$index])) {
 			return $isAssoc ? $this->_resultSet[$index] : array_values($this->_resultSet[$index]);
@@ -2912,13 +2699,11 @@ class Soter_Database_Resultset {
 			return $isAssoc ? (is_array($row) ? $row : array()) : array_values($row);
 		}
 	}
-
 	public function object($beanClassName, $index = null) {
 		$beanDirName = Sr::config()->getBeanDirName();
 		if (stripos($beanClassName, $beanDirName . '_') === false) {
 			$beanClassName = $beanDirName . '_' . $beanClassName;
 		}
-
 		$object = new $beanClassName();
 		if (!($object instanceof Soter_Bean)) {
 			throw new Soter_Exception_500('error class [ ' . $beanClassName . ' ] , need instanceof Soter_Bean');
@@ -2930,7 +2715,6 @@ class Soter_Database_Resultset {
 		}
 		return $object;
 	}
-
 	public function objects($beanClassName) {
 		$beanDirName = Sr::config()->getBeanDirName();
 		if (stripos($beanClassName, $beanDirName . '_') === false) {
@@ -2952,7 +2736,6 @@ class Soter_Database_Resultset {
 		}
 		return $objects;
 	}
-
 	public function values($columnName) {
 		$columns = array();
 		foreach ($this->_resultSet as $row) {
@@ -2964,85 +2747,56 @@ class Soter_Database_Resultset {
 		}
 		return $columns;
 	}
-
 	public function value($columnName, $default = null, $index = null) {
 		$row = $this->row($index);
 		return ($columnName && isset($row[$columnName])) ? $row[$columnName] : $default;
 	}
-
 	public function key($columnName) {
 		$this->_rowsKey = $columnName;
 		return $this;
 	}
-
 }
-
 
 interface Soter_Logger_Writer {
-
 	public function write(Soter_Exception $exception);
 }
-
 interface Soter_Request {
-
 	public function getPathInfo();
-
 	public function getQueryString();
 }
-
 interface Soter_Uri_Rewriter {
-
 	public function rewrite($uri);
 }
-
 interface Soter_Exception_Handle {
-
 	public function handle(Soter_Exception $exception);
 }
-
 interface Soter_Maintain_Handle {
-
 	public function handle();
 }
-
 interface Soter_Database_SlowQuery_Handle {
-
 	public function handle($sql, $explainString, $time);
 }
-
 interface Soter_Database_Index_Handle {
-
 	public function handle($sql, $explainString, $time);
 }
-
 interface Soter_Cache {
-
 	public function set($key, $value, $cacheTime);
-
 	public function get($key);
-
 	public function delete($key);
-
 	public function clean();
 }
-
 
 abstract class Soter_Controller {
 	
 }
-
 abstract class Soter_Model {
 	
 }
-
 abstract class Soter_Dao {
-
 	private $db;
-
 	public function __construct() {
 		$this->db = Sr::db();
 	}
-
 	/**
 	 * 设置Dao中使用的数据库操作对象
 	 * @param Soter_Database_ActiveRecord $db
@@ -3052,7 +2806,6 @@ abstract class Soter_Dao {
 		$this->db = $db;
 		return $this;
 	}
-
 	/**
 	 * 获取Dao中使用的数据库操作对象
 	 * @return Soter_Database_ActiveRecord
@@ -3060,13 +2813,9 @@ abstract class Soter_Dao {
 	public function &getDb() {
 		return $this->db;
 	}
-
 	public abstract function getTable();
-
 	public abstract function getPrimaryKey();
-
 	public abstract function getColumns();
-
 	/**
 	 * 添加数据
 	 * @param array $data  需要添加的数据
@@ -3075,7 +2824,6 @@ abstract class Soter_Dao {
 	public function insert($data) {
 		return $this->getDb()->insert($this->getTable(), $data)->execute();
 	}
-
 	/**
 	 * 更新数据
 	 * @param type $data  需要更新的数据
@@ -3086,7 +2834,6 @@ abstract class Soter_Dao {
 		$where = is_array($where) ? $where : array($this->getPrimaryKey() => $where);
 		return $this->getDb()->where($where)->update($this->getTable(), $data)->execute();
 	}
-
 	/**
 	 * 获取一条或者多条数据
 	 * @param type $values      可以是一个主键的值或者主键的值数组，还可以是where条件
@@ -3122,7 +2869,6 @@ abstract class Soter_Dao {
 			return $rs->row();
 		}
 	}
-
 	/**
 	 * 获取所有数据
 	 * @param type $where   where条件数组
@@ -3146,7 +2892,6 @@ abstract class Soter_Dao {
 		}
 		return $this->getDb()->from($this->getTable())->execute()->rows();
 	}
-
 	/**
 	 * 根据条件获取一个字段的值或者数组
 	 * @param type $col         字段名称
@@ -3167,9 +2912,8 @@ abstract class Soter_Dao {
 			return $vals;
 		}
 	}
-
 	/**
-	 * 
+	 *
 	 * 根据条件删除记录
 	 * @param type $values 可以是一个主键的值或者主键主键的值数组
 	 * @param type $cond   附加的where条件，关联数组
@@ -3187,7 +2931,6 @@ abstract class Soter_Dao {
 		}
 		return $this->getDb()->delete($this->getTable())->execute();
 	}
-
 	/**
 	 * 分页方法
 	 * @param int $page       第几页
@@ -3202,7 +2945,6 @@ abstract class Soter_Dao {
 	 */
 	public function getPage($page, $pagesize, $url, $fields = '*', Array $where = null, Array $orderBy = array(), $pageBarOrder = array(1, 2, 3, 4, 5, 6), $pageBarACount = 10) {
 		$data = array();
-
 		if (is_array($where)) {
 			$this->getDb()->where($where);
 		}
@@ -3224,7 +2966,6 @@ abstract class Soter_Dao {
 		$data['page'] = Sr::page($total, $page, $pagesize, $url, $pageBarOrder, $pageBarACount);
 		return $data;
 	}
-
 	/**
 	 * SQL搜索
 	 * @param type $page      第几页
@@ -3249,51 +2990,37 @@ abstract class Soter_Dao {
 		$data['page'] = Sr::page($total, $page, $pagesize, $url, $pageBarOrder, $pageBarACount);
 		return $data;
 	}
-
 }
-
 abstract class Soter_Business {
 	
 }
-
 abstract class Soter_Bean {
 	
 }
-
 abstract class Soter_Task {
-
 	abstract function execute(Soter_CliArgs $args);
 }
-
 /**
  * @property Soter_Route $route
  */
 abstract class Soter_Router {
-
 	protected $route;
-
 	public function __construct() {
 		$this->route = new Soter_Route();
 	}
-
 	/**
-	 * 
+	 *
 	 * @return \Soter_Route
 	 */
 	public abstract function find();
-
 	public function &route() {
 		return $this->route;
 	}
-
 }
-
 abstract class Soter_Exception extends Exception {
-
 	protected $errorMessage, $errorCode, $errorFile, $errorLine, $errorType, $trace,
 		$httpStatusLine = 'HTTP/1.0 500 Internal Server Error',
 		$exceptionName = 'Soter_Exception';
-
 	public function __construct($errorMessage = '', $errorCode = 0, $errorType = 'Exception', $errorFile = '', $errorLine = '0') {
 		parent::__construct($errorMessage, $errorCode);
 		$this->errorMessage = $errorMessage;
@@ -3303,7 +3030,6 @@ abstract class Soter_Exception extends Exception {
 		$this->errorLine = $errorLine;
 		$this->trace = debug_backtrace(false);
 	}
-
 	public function errorType2string($errorType) {
 		$value = $errorType;
 		$levelNames = array(
@@ -3340,27 +3066,21 @@ abstract class Soter_Exception extends Exception {
 		}
 		return implode(' | ', $levels);
 	}
-
 	public function getErrorMessage() {
 		return $this->errorMessage;
 	}
-
 	public function getErrorCode() {
 		return $this->errorCode;
 	}
-
 	public function getErrorFile($safePath = FALSE) {
 		return $safePath ? Sr::safePath($this->errorFile) : $this->errorFile;
 	}
-
 	public function getErrorLine() {
 		return $this->errorLine;
 	}
-
 	public function getErrorType() {
 		return $this->errorType2string($this->errorCode);
 	}
-
 	public function render($isJson = FALSE, $return = FALSE) {
 		if ($isJson) {
 			$string = $this->renderJson();
@@ -3375,15 +3095,12 @@ abstract class Soter_Exception extends Exception {
 			echo $string;
 		}
 	}
-
 	public function getTraceCliString() {
 		return $this->getTraceString(TRUE);
 	}
-
 	public function getTraceHtmlString() {
 		return $this->getTraceString(FALSE);
 	}
-
 	private function getTraceString($isCli) {
 		$trace = $this->trace;
 		array_shift($trace);
@@ -3410,14 +3127,12 @@ abstract class Soter_Exception extends Exception {
 		$str.=$isCli ? "\n" : '</div>';
 		return $str;
 	}
-
 	public function renderCli() {
 		return "$this->exceptionName [ " . $this->getErrorType() . " ]\n"
 			. "Line: " . $this->getErrorLine() . ". " . $this->getErrorFile() . "\n"
 			. "Message: " . $this->getErrorMessage() . "\n"
 			. "Time: " . date('Y/m/d H:i:s T') . "\n";
 	}
-
 	public function renderHtml() {
 		return '<body style="padding:0;margin:0;background:black;color:whitesmoke;">'
 			. '<div style="padding:10px;background:red;font-size:18px;">' . $this->exceptionName . ' [ ' . $this->getErrorType() . ' ] </div>'
@@ -3427,7 +3142,6 @@ abstract class Soter_Exception extends Exception {
 			. '<font color="whitesmoke">Time: </font>' . date('Y/m/d H:i:s T') . '</div>'
 			. '</body>';
 	}
-
 	public function renderJson() {
 		$render = soter::getConfig()->getExceptionJsonRender();
 		if (is_callable($render)) {
@@ -3435,22 +3149,16 @@ abstract class Soter_Exception extends Exception {
 		}
 		return '';
 	}
-
 	public function setHttpHeader() {
 		header($this->httpStatusLine);
 		return $this;
 	}
-
 	public function __toString() {
 		return $this->render(FALSE, TRUE);
 	}
-
 }
-
 abstract class Soter_Session {
-
 	protected $config;
-
 	public function __construct($configFileName) {
 		if (is_array($configFileName)) {
 			$this->config = $configFileName;
@@ -3458,65 +3166,45 @@ abstract class Soter_Session {
 			$this->config = Sr::config($configFileName);
 		}
 	}
-
 	public abstract function init();
 }
 
-
 class Soter_Exception_404 extends Soter_Exception {
-
 	protected $exceptionName = 'Soter_Exception_404',
 			$httpStatusLine = 'HTTP/1.0 404 Not Found';
 }
-
 class Soter_Exception_500 extends Soter_Exception {
-
 	protected $exceptionName = 'Soter_Exception_500',
 			$httpStatusLine = 'HTTP/1.0 500 Internal Server Error';
-
 }
-
 class Soter_Exception_Database extends Soter_Exception {
-
 	protected $exceptionName = 'Soter_Exception_Database',
 			$httpStatusLine = 'HTTP/1.0 500 Internal Server Error';
-
 }
 
-
 class Soter_Request_Default implements Soter_Request {
-
 	private $pathInfo, $queryString;
-
 	public function __construct() {
 		$this->pathInfo = Sr::arrayGet($_SERVER, 'PATH_INFO', Sr::arrayGet($_SERVER, 'REDIRECT_PATH_INFO'));
 		$this->queryString = Sr::arrayGet($_SERVER, 'QUERY_STRING', '');
 	}
-
 	public function getPathInfo() {
 		return $this->pathInfo;
 	}
-
 	public function getQueryString() {
 		return $this->queryString;
 	}
-
 	public function setPathInfo($pathInfo) {
 		$this->pathInfo = $pathInfo;
 		return $this;
 	}
-
 	public function setQueryString($queryString) {
 		$this->queryString = $queryString;
 		return $this;
 	}
-
 }
-
 class Soter_View {
-
 	private static $vars = array();
-
 	public function add($key, $value = array()) {
 		if (is_array($key)) {
 			foreach ($key as $k => $v) {
@@ -3531,7 +3219,6 @@ class Soter_View {
 		}
 		return $this;
 	}
-
 	public function set($key, $value = array()) {
 		if (is_array($key)) {
 			foreach ($key as $k => $v) {
@@ -3542,7 +3229,6 @@ class Soter_View {
 		}
 		return $this;
 	}
-
 	private function _load($path, $data = array(), $return = false) {
 		if (!file_exists($path)) {
 			throw new Soter_Exception_500('view file : [ ' . $path . ' ] not found');
@@ -3562,7 +3248,6 @@ class Soter_View {
 			return;
 		}
 	}
-
 	/**
 	 * 加载一个视图<br/>
 	 * @param string $viewName 视图名称
@@ -3590,7 +3275,6 @@ class Soter_View {
 		}
 		return $this->_load($path, $data, $return);
 	}
-
 	/**
 	 * 加载主项目的视图<br/>
 	 * 这个一般是在hmvc模块中使用到，用于复用主项目的视图文件，比如通用的header等。<br/>
@@ -3604,92 +3288,68 @@ class Soter_View {
 		$path = $config->getPrimaryApplicationDir() . $config->getViewsDirName() . '/' . $viewName . '.php';
 		return $this->_load($path, $data, $return);
 	}
-
 }
-
 class Soter_CliArgs {
-
 	private $args;
-
 	public function __construct() {
 		$this->args = Sr::getOpt();
 	}
-
 	public function get($key = null, $default = null) {
 		if (empty($key)) {
 			return $this->args;
 		}
 		return Sr::arrayGet($this->args, $key, $default);
 	}
-
 }
-
 class Soter_Route {
-
 	private $found = false;
 	private $controller, $method, $args, $hmvcModuleName;
-
 	public function getHmvcModuleName() {
 		return $this->hmvcModuleName;
 	}
-
 	public function setHmvcModuleName($hmvcModuleName) {
 		$this->hmvcModuleName = $hmvcModuleName;
 		return $this;
 	}
-
 	public function found() {
 		return $this->found;
 	}
-
 	public function setFound($found) {
 		$this->found = $found;
 		return $this;
 	}
-
 	public function getController() {
 		return $this->controller;
 	}
-
 	public function getMethod() {
 		return $this->method;
 	}
-
 	public function getControllerShort() {
 		return preg_replace('/^' . Sr::config()->getControllerDirName() . '_/', '', $this->getController());
 	}
-
 	public function getMethodShort() {
 		return preg_replace('/^' . Sr::config()->getMethodPrefix() . '/', '', $this->getMethod());
 	}
-
 	public function getArgs() {
 		return $this->args;
 	}
-
 	public function __construct() {
 		$this->args = array();
 	}
-
 	public function setController($controller) {
 		$this->controller = $controller;
 		return $this;
 	}
-
 	public function setMethod($method) {
 		$this->method = $method;
 		return $this;
 	}
-
 	public function setArgs(array $args) {
 		$this->args = $args;
 		return $this;
 	}
-
 }
-
 class Soter_Router_Get_Default extends Soter_Router {
-
 	public function find() {
 		$config = Sr::config();
 		$query = $config->getRequest()->getQueryString();
@@ -3710,11 +3370,8 @@ class Soter_Router_Get_Default extends Soter_Router {
 				->setMethod($methodName)
 				->setFound($hmvcModuleDirName || $controllerName);
 	}
-
 }
-
 class Soter_Router_PathInfo_Default extends Soter_Router {
-
 	public function find() {
 		$config = Soter::getConfig();
 		$uri = $config->getRequest()->getPathInfo();
@@ -3739,12 +3396,11 @@ class Soter_Router_PathInfo_Default extends Soter_Router {
 		$controller = $config->getDefaultController();
 		$method = $config->getDefaultMethod();
 		$subfix = $config->getMethodUriSubfix();
-
 		/**
 		 * 到此，如果上面$uri被去除掉hmvc模块名称后，$uri有可能是空
 		 * 或者$uri有控制器名称或者方法-参数名称
-		 * 形如：1.Welcome/article-001.do , 2.Welcome/article-001.do , 
-		 *      3.article-001.do ,4.article.do , 5.Welcome/User , 6.Welcome 
+		 * 形如：1.Welcome/article-001.do , 2.Welcome/article-001.do ,
+		 *      3.article-001.do ,4.article.do , 5.Welcome/User , 6.Welcome
 		 */
 		if ($uri) {
 			//解析路径
@@ -3777,14 +3433,11 @@ class Soter_Router_PathInfo_Default extends Soter_Router {
 				->setArgs($parameters)
 				->setFound(TRUE);
 	}
-
 }
-
 /**
  * @property Soter_Exception_Handle $exceptionHandle
  */
 class Soter_Config {
-
 	private $applicationDir = '', //项目目录
 		$primaryApplicationDir = '', //主项目目录
 		$indexDir = '', //入口文件目录
@@ -3838,62 +3491,49 @@ class Soter_Config {
 		$dataCheckRules,
 		$outputJsonRender,
 		$exceptionJsonRender
-
 	;
-
 	public function getExceptionJsonRender() {
 		return $this->exceptionJsonRender;
 	}
-
 	public function setExceptionJsonRender($exceptionJsonRender) {
 		$this->exceptionJsonRender = $exceptionJsonRender;
 		return $this;
 	}
-
 	public function getOutputJsonRender() {
 		return $this->outputJsonRender;
 	}
-
 	public function setOutputJsonRender($outputJsonHandle) {
 		$this->outputJsonRender = $outputJsonHandle;
 		return $this;
 	}
-
 	public function getDataCheckRules() {
 		return $this->dataCheckRules;
 	}
-
 	public function setDataCheckRules($dataCheckRules) {
 		$this->dataCheckRules = is_array($dataCheckRules) ? $dataCheckRules : Sr::config($dataCheckRules);
 		return $this;
 	}
-
 	public function getMethodCacheConfig() {
 		return $this->methodCacheConfig;
 	}
-
 	public function setMethodCacheConfig($methodCacheConfig) {
 		$this->methodCacheConfig = is_array($methodCacheConfig) ? $methodCacheConfig : Sr::config($methodCacheConfig);
 		return $this;
 	}
-
 	public function getViewsDirName() {
 		return $this->viewsDirName;
 	}
-
 	public function setViewsDirName($viewsDirName) {
 		$this->viewsDirName = $viewsDirName;
 		return $this;
 	}
-
 	/**
-	 * 
+	 *
 	 * @return Soter_Cache
 	 */
 	public function getCacheHandle() {
 		return $this->cacheHandle;
 	}
-
 	public function setCacheHandle($cacheHandle) {
 		if ($cacheHandle instanceof Soter_Cache) {
 			$this->cacheHandle = $cacheHandle;
@@ -3902,17 +3542,14 @@ class Soter_Config {
 		}
 		return $this;
 	}
-
 	/**
-	 * 
+	 *
 	 * @return Soter_Session
 	 */
 	public function getSessionHandle() {
 		return $this->sessionHandle;
 	}
-
 	public function setSessionHandle($sessionHandle) {
-
 		if ($sessionHandle instanceof Soter_Session) {
 			$this->sessionHandle = $sessionHandle;
 		} else {
@@ -3920,7 +3557,6 @@ class Soter_Config {
 		}
 		return $this;
 	}
-
 	public function getSessionConfig() {
 		if (empty($this->sessionConfig)) {
 			$this->sessionConfig = array(
@@ -3933,7 +3569,6 @@ class Soter_Config {
 		}
 		return $this->sessionConfig;
 	}
-
 	public function setSessionConfig($sessionConfig) {
 		if (is_array($sessionConfig)) {
 			$this->sessionConfig = $sessionConfig;
@@ -3942,7 +3577,6 @@ class Soter_Config {
 		}
 		return $this;
 	}
-
 	public function getDatabseConfig($group = null) {
 		if (empty($group)) {
 			return $this->databseConfig;
@@ -3950,101 +3584,80 @@ class Soter_Config {
 			return isset($this->databseConfig[$group]) ? $this->databseConfig[$group] : array();
 		}
 	}
-
 	public function setDatabseConfig($databseConfig) {
 		$this->databseConfig = is_array($databseConfig) ? $databseConfig : Sr::config($databseConfig);
 		return $this;
 	}
-
 	public function getIsMaintainMode() {
 		return $this->isMaintainMode;
 	}
-
 	public function getMaintainModeHandle() {
 		return $this->maintainModeHandle;
 	}
-
 	public function setIsMaintainMode($isMaintainMode) {
 		$this->isMaintainMode = $isMaintainMode;
 		return $this;
 	}
-
 	public function setMaintainModeHandle(Soter_Maintain_Handle $maintainModeHandle) {
 		$this->maintainModeHandle = $maintainModeHandle;
 		return $this;
 	}
-
 	public function getMaintainIpWhitelist() {
 		return $this->maintainIpWhitelist;
 	}
-
 	public function setMaintainIpWhitelist($maintainIpWhitelist) {
 		$this->maintainIpWhitelist = $maintainIpWhitelist;
 		return $this;
 	}
-
 	public function getMethodParametersDelimiter() {
 		return $this->methodParametersDelimiter;
 	}
-
 	public function setMethodParametersDelimiter($methodParametersDelimiter) {
 		$this->methodParametersDelimiter = $methodParametersDelimiter;
 		return $this;
 	}
-
 	public function getRouterUrlModuleKey() {
 		return $this->routerUrlModuleKey;
 	}
-
 	public function getRouterUrlControllerKey() {
 		return $this->routerUrlControllerKey;
 	}
-
 	public function getRouterUrlMethodKey() {
 		return $this->routerUrlMethodKey;
 	}
-
 	public function setRouterUrlModuleKey($routerUrlModuleKey) {
 		$this->routerUrlModuleKey = $routerUrlModuleKey;
 		return $this;
 	}
-
 	public function setRouterUrlControllerKey($routerUrlControllerKey) {
 		$this->routerUrlControllerKey = $routerUrlControllerKey;
 		return $this;
 	}
-
 	public function setRouterUrlMethodKey($routerUrlMethodKey) {
 		$this->routerUrlMethodKey = $routerUrlMethodKey;
 		return $this;
 	}
-
 	/**
-	 * 
+	 *
 	 * @return Soter_Uri_Rewriter
 	 */
 	public function getUriRewriter() {
 		return $this->uriRewriter;
 	}
-
 	public function setUriRewriter(Soter_Uri_Rewriter $uriRewriter) {
 		$this->uriRewriter = $uriRewriter;
 		return $this;
 	}
-
 	public function getPrimaryApplicationDir() {
 		return $this->primaryApplicationDir;
 	}
-
 	public function setPrimaryApplicationDir($primaryApplicationDir) {
 		$this->primaryApplicationDir = Sr::realPath($primaryApplicationDir) . '/';
 		return $this;
 	}
-
 	public function getBackendServerIpWhitelist() {
 		return $this->backendServerIpWhitelist;
 	}
-
 	/**
 	 * 如果服务器是ngix之类代理转发请求到后端apache运行的PHP<br>
 	 * 那么这里应该设置信任的nginx所在服务器的ip<br>
@@ -4057,20 +3670,16 @@ class Soter_Config {
 		$this->backendServerIpWhitelist = $backendServerIpWhitelist;
 		return $this;
 	}
-
 	public function getCookiePrefix() {
 		return $this->cookiePrefix;
 	}
-
 	public function setCookiePrefix($cookiePrefix) {
 		$this->cookiePrefix = $cookiePrefix;
 		return $this;
 	}
-
 	public function getLogsSubDirNameFormat() {
 		return $this->logsSubDirNameFormat;
 	}
-
 	/**
 	 * 设置日志子目录格式，参数就是date()函数的第一个参数,默认是 Y-m-d/H
 	 * @param type $logsSubDirNameFormat
@@ -4080,68 +3689,54 @@ class Soter_Config {
 		$this->logsSubDirNameFormat = $logsSubDirNameFormat;
 		return $this;
 	}
-
 	public function addAutoloadFunctions(Array $funciontsFileNameArray) {
 		foreach ($funciontsFileNameArray as $functionsFileName) {
 			Sr::functions($functionsFileName);
 		}
 		return $this;
 	}
-
 	public function getFunctionsDirName() {
 		return $this->functionsDirName;
 	}
-
 	public function setFunctionsDirName($functionsDirName) {
 		$this->functionsDirName = $functionsDirName;
 		return $this;
 	}
-
 	public function getModelDirName() {
 		return $this->modelDirName;
 	}
-
 	public function setModelDirName($modelDirName) {
 		$this->modelDirName = $modelDirName;
 		return $this;
 	}
-
 	public function getBeanDirName() {
 		return $this->beanDirName;
 	}
-
 	public function setBeanDirName($beanDirName) {
 		$this->beanDirName = $beanDirName;
 		return $this;
 	}
-
 	public function getBusinessDirName() {
 		return $this->businessDirName;
 	}
-
 	public function getDaoDirName() {
 		return $this->daoDirName;
 	}
-
 	public function getTaskDirName() {
 		return $this->taskDirName;
 	}
-
 	public function setBusinessDirName($businessDirName) {
 		$this->businessDirName = $businessDirName;
 		return $this;
 	}
-
 	public function setDaoDirName($daoDirName) {
 		$this->daoDirName = $daoDirName;
 		return $this;
 	}
-
 	public function setTaskDirName($taskDirName) {
 		$this->taskDirName = $taskDirName;
 		return $this;
 	}
-
 	public function getServerEnvironment($environment) {
 		switch (strtoupper($environment)) {
 			case strtoupper($this->getServerEnvironmentDevelopmentValue()):
@@ -4157,34 +3752,27 @@ class Soter_Config {
 				$this->getServerEnvironmentProductionValue() . ']');
 		}
 	}
-
 	public function getServerEnvironmentTestingValue() {
 		return $this->serverEnvironmentTestingValue;
 	}
-
 	public function getServerEnvironmentProductionValue() {
 		return $this->serverEnvironmentProductionValue;
 	}
-
 	public function getServerEnvironmentDevelopmentValue() {
 		return $this->serverEnvironmentDevelopmentValue;
 	}
-
 	public function setServerEnvironmentDevelopmentValue($serverEnvironmentDevelopmentValue) {
 		$this->serverEnvironmentDevelopmentValue = $serverEnvironmentDevelopmentValue;
 		return $this;
 	}
-
 	public function setServerEnvironmentTestingValue($serverEnvironmentTestingValue) {
 		$this->serverEnvironmentTestingValue = $serverEnvironmentTestingValue;
 		return $this;
 	}
-
 	public function setServerEnvironmentProductionValue($serverEnvironmentProductionValue) {
 		$this->serverEnvironmentProductionValue = $serverEnvironmentProductionValue;
 		return $this;
 	}
-
 	/**
 	 * 获取当前运行环境下，配置文件目录路径
 	 * @return type
@@ -4204,11 +3792,9 @@ class Soter_Config {
 		}
 		return $name;
 	}
-
 	public function getEnvironment() {
 		return $this->environment;
 	}
-
 	public function setEnvironment($environment) {
 		if (!in_array($environment, array(Sr::ENV_DEVELOPMENT, Sr::ENV_PRODUCTION, Sr::ENV_TESTING))) {
 			throw new Soter_Exception_500('wrong parameter value[' . $environment . '] of setEnvironment(), should be one of [Sr::ENV_DEVELOPMENT,Sr::ENV_PRODUCTION,Sr::ENV_TESTING]');
@@ -4216,117 +3802,92 @@ class Soter_Config {
 		$this->environment = $environment;
 		return $this;
 	}
-
 	public function getConfigDirName() {
 		return $this->configDirName;
 	}
-
 	public function getConfigTestingDirName() {
 		return $this->configTestingDirName;
 	}
-
 	public function getConfigProductionDirName() {
 		return $this->configProductionDirName;
 	}
-
 	public function getConfigDevelopmentDirName() {
 		return $this->configDevelopmentDirName;
 	}
-
 	public function setConfigDirName($configDirName) {
 		$this->configDirName = $configDirName;
 		return $this;
 	}
-
 	public function setConfigTestingDirName($configTestingDirName) {
 		$this->configTestingDirName = $configTestingDirName;
 		return $this;
 	}
-
 	public function setConfigProductionDirName($configProductionDirName) {
 		$this->configProductionDirName = $configProductionDirName;
 		return $this;
 	}
-
 	public function setConfigDevelopmentDirName($configDevelopmentDirName) {
 		$this->configDevelopmentDirName = $configDevelopmentDirName;
 		return $this;
 	}
-
 	/**
-	 * 
+	 *
 	 * @return Soter_Route
 	 */
 	public function getRoute() {
 		return empty($this->route) ? new Soter_Route() : $this->route;
 	}
-
 	public function setRoute($route) {
 		$this->route = $route;
 		return $this;
 	}
-
 	public function getLibraryDirName() {
 		return $this->libraryDirName;
 	}
-
 	public function setLibraryDirName($libraryDirName) {
 		$this->libraryDirName = $libraryDirName;
 		return $this;
 	}
-
 	public function getHmvcDirName() {
 		return $this->hmvcDirName;
 	}
-
 	public function setHmvcDirName($hmvcDirName) {
 		$this->hmvcDirName = $hmvcDirName;
 		return $this;
 	}
-
 	public function getHmvcModules() {
 		return $this->hmvcModules;
 	}
-
 	public function setHmvcModules($hmvcModules) {
 		$this->hmvcModules = $hmvcModules;
 		return $this;
 	}
-
 	public function getControllerDirName() {
 		return $this->controllerDirName;
 	}
-
 	public function setControllerDirName($controllerDirName) {
 		$this->controllerDirName = $controllerDirName;
 		return $this;
 	}
-
 	public function getExceptionHandle() {
 		return $this->exceptionHandle;
 	}
-
 	public function setExceptionHandle($exceptionHandle) {
 		$this->exceptionHandle = $exceptionHandle;
 		return $this;
 	}
-
 	public function getApplicationDir() {
 		return $this->applicationDir;
 	}
-
 	public function getIndexDir() {
 		return $this->indexDir;
 	}
-
 	public function getIndexName() {
 		return $this->indexName;
 	}
-
 	public function getLoggerWriterContainer() {
 		return $this->loggerWriterContainer;
 	}
-
 	public function setApplicationDir($applicationDir) {
 		$this->applicationDir = Sr::realPath($applicationDir) . '/';
 		if (empty($this->primaryApplicationDir)) {
@@ -4334,35 +3895,28 @@ class Soter_Config {
 		}
 		return $this;
 	}
-
 	public function setIndexDir($indexDir) {
 		$this->indexDir = Sr::realPath($indexDir) . '/';
 		return $this;
 	}
-
 	public function setIndexName($indexName) {
 		$this->indexName = $indexName;
 		return $this;
 	}
-
 	public function setLoggerWriterContainer(Soter_Logger_Writer $loggerWriterContainer) {
 		$this->loggerWriterContainer = $loggerWriterContainer;
 		return $this;
 	}
-
 	public function getMethodPrefix() {
 		return $this->methodPrefix;
 	}
-
 	public function getMethodUriSubfix() {
 		return $this->methodUriSubfix;
 	}
-
 	public function setMethodPrefix($methodPrefix) {
 		$this->methodPrefix = $methodPrefix;
 		return $this;
 	}
-
 	public function setMethodUriSubfix($methodUriSubfix) {
 		if (!$methodUriSubfix) {
 			throw new Soter_Exception_500('"Method Uri Subfix" can not be empty.');
@@ -4370,45 +3924,36 @@ class Soter_Config {
 		$this->methodUriSubfix = $methodUriSubfix;
 		return $this;
 	}
-
 	public function getDefaultController() {
 		return $this->defaultController;
 	}
-
 	public function getDefaultMethod() {
 		return $this->defaultMethod;
 	}
-
 	public function setDefaultController($defaultController) {
 		$this->defaultController = $defaultController;
 		return $this;
 	}
-
 	public function setDefaultMethod($defaultMethod) {
 		$this->defaultMethod = $defaultMethod;
 		return $this;
 	}
-
 	public function getClassesDirName() {
 		return $this->classesDirName;
 	}
-
 	public function setClassesDirName($classesDirName) {
 		$this->classesDirName = $classesDirName;
 		return $this;
 	}
-
 	public function getPackages() {
 		return array_merge($this->packageMasterContainer, $this->packageContainer);
 	}
-
 	public function addMasterPackages(Array $packagesPath) {
 		foreach ($packagesPath as $packagePath) {
 			$this->addMasterPackage($packagePath);
 		}
 		return $this;
 	}
-
 	public function addMasterPackage($packagePath) {
 		$packagePath = Sr::realPath($packagePath) . '/';
 		if (!in_array($packagePath, $this->packageMasterContainer)) {
@@ -4420,14 +3965,12 @@ class Soter_Config {
 		}
 		return $this;
 	}
-
 	public function addPackages(Array $packagesPath) {
 		foreach ($packagesPath as $packagePath) {
 			$this->addPackage($packagePath);
 		}
 		return $this;
 	}
-
 	public function addPackage($packagePath) {
 		$packagePath = Sr::realPath($packagePath) . '/';
 		if (!in_array($packagePath, $this->packageContainer)) {
@@ -4439,7 +3982,6 @@ class Soter_Config {
 		}
 		return $this;
 	}
-
 	/**
 	 * 加载项目目录下的bootstrap.php配置
 	 */
@@ -4449,71 +3991,55 @@ class Soter_Config {
 			Sr::includeOnce($bootstrap);
 		}
 	}
-
 	public function getShowError() {
 		return $this->showError;
 	}
-
 	public function getRoutersContainer() {
 		return $this->routersContainer;
 	}
-
 	public function setShowError($showError) {
 		$this->showError = $showError;
 		return $this;
 	}
-
 	/**
-	 * 
+	 *
 	 * @return Soter_Request
 	 */
 	public function getRequest() {
 		return $this->request;
 	}
-
 	public function setRequest(Soter_Request $request) {
 		$this->request = $request;
 		return $this;
 	}
-
 	public function addRouter(Soter_Router $router) {
 		array_unshift($this->routersContainer, $router);
 		return $this;
 	}
-
 	public function getRouters() {
 		return $this->routersContainer;
 	}
-
 	public function addLoggerWriter(Soter_Logger_Writer $loggerWriter) {
 		$this->loggerWriterContainer[] = $loggerWriter;
 		return $this;
 	}
-
 	public function getLoggerWriters() {
 		return $this->loggerWriterContainer;
 	}
-
 	public function getIsRewrite() {
 		return $this->isRewrite;
 	}
-
 	public function setTimeZone($timeZone) {
 		date_default_timezone_set($timeZone);
 		return $this;
 	}
-
 	public function setIsRewrite($isRewrite) {
 		$this->isRewrite = $isRewrite;
 		return $this;
 	}
-
 }
-
 class Soter_Logger_Writer_Dispatcher {
-
 	private static $instance;
-
 	public static function initialize() {
 		if (empty(self::$instance)) {
 			self::$instance = new self();
@@ -4525,23 +4051,19 @@ class Soter_Logger_Writer_Dispatcher {
 			register_shutdown_function(array(self::$instance, 'handleFatal'));
 		}
 	}
-
 	final public function handleException(Exception $exception) {
-
 		if (is_subclass_of($exception, 'Soter_Exception')) {
 			$this->dispatch($exception);
 		} else {
 			$this->dispatch(new Soter_Exception_500($exception->getMessage(), $exception->getCode(), get_class($exception), $exception->getFile(), $exception->getLine()));
 		}
 	}
-
 	final public function handleError($code, $message, $file, $line) {
 		if (0 == error_reporting()) {
 			return;
 		}
 		$this->dispatch(new Soter_Exception_500($message, $code, 'General Error', $file, $line));
 	}
-
 	final public function handleFatal() {
 		if (0 == error_reporting()) {
 			return;
@@ -4553,7 +4075,6 @@ class Soter_Logger_Writer_Dispatcher {
 		}
 		$this->dispatch(new Soter_Exception_500($lastError['message'], $lastError['type'], 'Fatal Error', $lastError['file'], $lastError['line']));
 	}
-
 	final public function dispatch(Soter_Exception $exception) {
 		$config = Sr::config();
 		ini_set('display_errors', TRUE);
@@ -4571,17 +4092,12 @@ class Soter_Logger_Writer_Dispatcher {
 		}
 		exit();
 	}
-
 }
-
 class Soter_Logger_FileWriter implements Soter_Logger_Writer {
-
 	private $logsDirPath;
-
 	public function __construct($logsDirPath) {
 		$this->logsDirPath = Sr::realPath($logsDirPath) . '/' . date(Sr::config()->getLogsSubDirNameFormat()) . '/';
 	}
-
 	public function write(Soter_Exception $exception) {
 		$content = 'Domain : ' . Sr::server('http_host') . "\n"
 			. 'ClientIP : ' . Sr::server('SERVER_ADDR') . "\n"
@@ -4601,36 +4117,24 @@ class Soter_Logger_FileWriter implements Soter_Logger_Writer {
 		}
 		file_put_contents($logsFilePath, $content, LOCK_EX | FILE_APPEND);
 	}
-
 }
-
 class Soter_Maintain_Handle_Default implements Soter_Maintain_Handle {
-
 	public function handle() {
 		header('Content-type: text/html;charset=utf-8');
 		echo '<center><h2>server is under maintenance</h2><h3>服务器维护中</h3>' . date('Y/m/d H:i:s e') . '</center>';
 	}
-
 }
-
 class Soter_Uri_Rewriter_Default implements Soter_Uri_Rewriter {
-
 	public function rewrite($uri) {
 		return $uri;
 	}
-
 }
-
 class Soter_Exception_Handle_Default implements Soter_Exception_Handle {
-
 	public function handle(Soter_Exception $exception) {
 		$exception->render();
 	}
-
 }
-
 class Soter_Database_SlowQuery_Handle_Default implements Soter_Database_SlowQuery_Handle {
-
 	public function handle($sql, $explainString, $time) {
 		$dir = Sr::config()->getPrimaryApplicationDir() . 'storage/slow-query-debug/';
 		$file = $dir . 'slow-query-debug.php';
@@ -4646,11 +4150,8 @@ class Soter_Database_SlowQuery_Handle_Default implements Soter_Database_SlowQuer
 		}
 		file_put_contents($file, $content, LOCK_EX | FILE_APPEND);
 	}
-
 }
-
 class Soter_Database_Index_Handle_Default implements Soter_Database_Index_Handle {
-
 	public function handle($sql, $explainString, $time) {
 		$dir = Sr::config()->getPrimaryApplicationDir() . 'storage/index-debug/';
 		$file = $dir . 'index-debug.php';
@@ -4666,13 +4167,9 @@ class Soter_Database_Index_Handle_Default implements Soter_Database_Index_Handle
 		}
 		file_put_contents($file, $content, LOCK_EX | FILE_APPEND);
 	}
-
 }
-
 class Soter_Cache_File implements Soter_Cache {
-
 	private $_cacheDirPath;
-
 	public function __construct($cacheFileName = '') {
 		$cacheDirPath = empty($cacheFileName) ? Sr::config()->getPrimaryApplicationDir() . 'storage/cache/' : Sr::config($cacheFileName);
 		$this->_cacheDirPath = Sr::realPath($cacheDirPath) . '/';
@@ -4683,17 +4180,14 @@ class Soter_Cache_File implements Soter_Cache {
 			throw new Soter_Exception_500('cache dir [ ' . Sr::safePath($this->_cacheDirPath) . ' ] not writable');
 		}
 	}
-
 	private function _hashKey($key) {
 		return md5($key);
 	}
-
 	private function _hashKeyPath($key) {
 		$key = md5($key);
 		$len = strlen($key);
 		return $this->_cacheDirPath . $key{$len - 1} . '/' . $key{$len - 2} . '/' . $key{$len - 3} . '/';
 	}
-
 	private function pack($userData, $cacheTime) {
 		$cacheTime = (int) $cacheTime;
 		return @serialize(array(
@@ -4701,7 +4195,6 @@ class Soter_Cache_File implements Soter_Cache {
 			    'expireTime' => ($cacheTime == 0 ? 0 : time() + $cacheTime)
 		));
 	}
-
 	private function unpack($cacheData) {
 		$cacheData = @unserialize($cacheData);
 		if (is_array($cacheData) && isset($cacheData['userData']) && isset($cacheData['expireTime'])) {
@@ -4713,11 +4206,9 @@ class Soter_Cache_File implements Soter_Cache {
 			return NULL;
 		}
 	}
-
 	public function clean() {
 		return Sr::rmdir($this->_cacheDirPath, false);
 	}
-
 	public function delete($key) {
 		if (empty($key)) {
 			return false;
@@ -4729,7 +4220,6 @@ class Soter_Cache_File implements Soter_Cache {
 		}
 		return true;
 	}
-
 	public function get($key) {
 		if (empty($key)) {
 			return null;
@@ -4743,7 +4233,6 @@ class Soter_Cache_File implements Soter_Cache {
 		}
 		return NULL;
 	}
-
 	public function set($key, $value, $cacheTime) {
 		if (empty($key)) {
 			return false;
@@ -4760,13 +4249,9 @@ class Soter_Cache_File implements Soter_Cache {
 		}
 		return file_put_contents($filePath, $cacheData, LOCK_EX);
 	}
-
 }
-
 class Soter_Cache_Memcached implements Soter_Cache {
-
 	private $config, $handle;
-
 	public function __construct($configFileName) {
 		if (is_array($configFileName)) {
 			$this->config = $configFileName;
@@ -4774,7 +4259,6 @@ class Soter_Cache_Memcached implements Soter_Cache {
 			$this->config = Sr::config($configFileName);
 		}
 	}
-
 	private function _init() {
 		if (empty($this->handle)) {
 			$this->handle = new Memcached();
@@ -4787,33 +4271,25 @@ class Soter_Cache_Memcached implements Soter_Cache {
 			}
 		}
 	}
-
 	public function clean() {
 		$this->_init();
 		$this->handle->flush();
 	}
-
 	public function delete($key) {
 		$this->_init();
 		$this->handle->delete($key);
 	}
-
 	public function get($key) {
 		$this->_init();
 		return ($data = $this->handle->get($key)) ? $data : null;
 	}
-
 	public function set($key, $value, $cacheTime) {
 		$this->_init();
 		return $this->handle->set($key, $value, $cacheTime > 0 ? (time() + $cacheTime) : 0);
 	}
-
 }
-
 class Soter_Cache_Memcache implements Soter_Cache {
-
 	private $config, $handle;
-
 	public function __construct($configFileName) {
 		if (is_array($configFileName)) {
 			$this->config = $configFileName;
@@ -4821,7 +4297,6 @@ class Soter_Cache_Memcache implements Soter_Cache {
 			$this->config = Sr::config($configFileName);
 		}
 	}
-
 	private function _init() {
 		if (empty($this->handle)) {
 			$this->handle = new Memcache();
@@ -4830,40 +4305,31 @@ class Soter_Cache_Memcache implements Soter_Cache {
 			}
 		}
 	}
-
 	public function clean() {
 		$this->_init();
 		return $this->handle->flush();
 	}
-
 	public function delete($key) {
 		$this->_init();
 		return $this->handle->delete($key);
 	}
-
 	public function get($key) {
 		$this->_init();
 		return ($data = $this->handle->get($key)) ? $data : null;
 	}
-
 	public function set($key, $value, $cacheTime) {
 		$this->_init();
 		return $this->handle->set($key, $value, false, $cacheTime);
 	}
-
 }
-
 class Soter_Cache_Apc implements Soter_Cache {
-
 	public function clean() {
 		@apc_clear_cache();
 		@apc_clear_cache("user");
 	}
-
 	public function delete($key) {
 		return apc_delete($key);
 	}
-
 	public function get($key) {
 		$data = apc_fetch($key, $bo);
 		if ($bo === false) {
@@ -4871,17 +4337,12 @@ class Soter_Cache_Apc implements Soter_Cache {
 		}
 		return $data;
 	}
-
 	public function set($key, $value, $cacheTime) {
 		return apc_store($key, $value, $cacheTime);
 	}
-
 }
-
 class Soter_Cache_Redis implements Soter_Cache {
-
 	private $config, $handle;
-
 	private function _init() {
 		if (empty($this->handle)) {
 			$this->handle = array();
@@ -4910,7 +4371,6 @@ class Soter_Cache_Redis implements Soter_Cache {
 			}
 		}
 	}
-
 	public function __construct($configFileName) {
 		if (is_array($configFileName)) {
 			$this->config = $configFileName;
@@ -4918,7 +4378,6 @@ class Soter_Cache_Redis implements Soter_Cache {
 			$this->config = Sr::config($configFileName);
 		}
 	}
-
 	public function clean() {
 		$this->_init();
 		$status = true;
@@ -4927,7 +4386,6 @@ class Soter_Cache_Redis implements Soter_Cache {
 		}
 		return $status;
 	}
-
 	public function delete($key) {
 		$this->_init();
 		$status = true;
@@ -4936,7 +4394,6 @@ class Soter_Cache_Redis implements Soter_Cache {
 		}
 		return $status;
 	}
-
 	public function get($key) {
 		$this->_init();
 		$k = array_rand($this->handle['slaves']);
@@ -4947,7 +4404,6 @@ class Soter_Cache_Redis implements Soter_Cache {
 			return null;
 		}
 	}
-
 	public function set($key, $value, $cacheTime) {
 		$this->_init();
 		$value = serialize($value);
@@ -4959,11 +4415,8 @@ class Soter_Cache_Redis implements Soter_Cache {
 			}
 		}
 	}
-
 }
-
 class Soter_Generator extends Soter_Task {
-
 	public function execute(Soter_CliArgs $args) {
 		$config = Sr::config();
 		$name = $args->get('name');
@@ -5020,7 +4473,6 @@ class Soter_Generator extends Soter_Task {
 			$this->writeFile($classname, $method, $parentClass, $file, $tip);
 		}
 	}
-
 	private function writeFile($classname, $method, $parentClass, $file, $tip) {
 		$dir = dirname($file);
 		if (!is_dir($dir)) {
@@ -5031,11 +4483,8 @@ class Soter_Generator extends Soter_Task {
 			echo "[ Successfull ]\n{$tip} [ $classname ] created successfully \n" . $file;
 		}
 	}
-
 }
-
 class Soter_Generator_Mysql extends Soter_Task {
-
 	public function execute(Soter_CliArgs $args) {
 		$config = Sr::config();
 		$name = $args->get('name');
@@ -5054,7 +4503,6 @@ class Soter_Generator_Mysql extends Soter_Task {
 		}
 		$columns = self::getTableFieldsInfo($table, $dbGroup);
 		$primaryKey = '';
-
 		$classesDir = $config->getPrimaryApplicationDir() . $config->getClassesDirName() . '/';
 		$info = array(
 		    'bean' => array(
@@ -5119,7 +4567,6 @@ class Soter_Generator_Mysql extends Soter_Task {
 			}
 		}
 	}
-
 	private static function getTableFieldsInfo($tableName, $db) {
 		if (!is_object($db)) {
 			$db = Sr::db($db);
@@ -5144,48 +4591,34 @@ class Soter_Generator_Mysql extends Soter_Task {
 		}
 		return $info;
 	}
-
 }
-
 class Soter_Session_Redis extends Soter_Session {
-
 	public function init() {
 		ini_set('session.save_handler', 'redis');
 		ini_set('session.save_path', $this->config['path']);
 	}
-
 }
-
 class Soter_Session_Memcached extends Soter_Session {
-
 	public function init() {
 		ini_set('session.save_handler', 'memcached');
 		ini_set('session.save_path', $this->config['path']);
 	}
-
 }
-
 class Soter_Session_Memcache extends Soter_Session {
-
 	public function init() {
 		ini_set('session.save_handler', 'memcache');
 		ini_set('session.save_path', $this->config['path']);
 	}
-
 }
-
 class Soter_Session_Mongodb extends Soter_Session {
-
 	private $__mongo_collection = NULL;
 	private $__current_session = NULL;
 	private $__mongo_conn = NULL;
-
 	public function __construct($configFileName) {
 		parent::__construct($configFileName);
 		$cfg = Sr::config()->getSessionConfig();
 		$this->config['lifetime'] = $cfg['lifetime'];
 	}
-
 	public function connect() {
 		if (is_object($this->__mongo_collection)) {
 			return;
@@ -5212,21 +4645,17 @@ class Soter_Session_Mongodb extends Soter_Session {
 			throw new Soter_Exception_500('can not connect to mongodb server');
 		}
 	}
-
 	public function init() {
 		session_set_save_handler(array(&$this, 'open'), array(&$this, 'close'), array(&$this, 'read'), array(&$this, 'write'), array(&$this, 'destroy'), array(&$this, 'gc'));
 	}
-
 	public function open($session_path, $session_name) {
 		$this->connect();
 		return true;
 	}
-
 	public function close() {
 		$this->__mongo_conn->close();
 		return true;
 	}
-
 	public function read($session_id) {
 		$result = NULL;
 		$ret = '';
@@ -5242,7 +4671,6 @@ class Soter_Session_Mongodb extends Soter_Session {
 		}
 		return $ret;
 	}
-
 	public function write($session_id, $data) {
 		$result = true;
 		$expiry = time() + $this->config['lifetime'];
@@ -5268,41 +4696,33 @@ class Soter_Session_Mongodb extends Soter_Session {
 		}
 		return true;
 	}
-
 	public function destroy($session_id) {
 		unset($_SESSION);
 		$query['_id'] = $session_id;
 		$this->__mongo_collection->remove($query);
 		return true;
 	}
-
 	public function gc($max = 0) {
 		$query = array();
 		$query['expiry'] = array(':lt' => time());
 		$this->__mongo_collection->remove($query, array('justOne' => false));
 		return true;
 	}
-
 }
-
 /**
  * @property Soter_Database_ActiveRecord $dbConnection Description
  */
 class Soter_Session_Mysql extends Soter_Session {
-
 	protected $dbConnection;
 	protected $dbTable;
-
 	public function __construct($configFileName) {
 		parent::__construct($configFileName);
 		$cfg = Sr::config()->getSessionConfig();
 		$this->config['lifetime'] = $cfg['lifetime'];
 	}
-
 	public function init() {
 		session_set_save_handler(array($this, 'open'), array($this, 'close'), array($this, 'read'), array($this, 'write'), array($this, 'destroy'), array($this, 'gc'));
 	}
-
 	public function connect() {
 		$this->dbTable = $this->config['table'];
 		if ($this->config['group']) {
@@ -5318,18 +4738,15 @@ class Soter_Session_Mysql extends Soter_Session {
 			$this->dbConnection = Sr::db($dbConfig);
 		}
 	}
-
 	public function open($save_path, $session_name) {
 		if (!is_object($this->dbConnection)) {
 			$this->connect();
 		}
 		return TRUE;
 	}
-
 	public function close() {
 		return $this->dbConnection->close();
 	}
-
 	public function read($id) {
 		$result = $this->dbConnection->from($this->dbTable)->where(array('id' => $id))->execute();
 		if ($result->total()) {
@@ -5343,7 +4760,6 @@ class Soter_Session_Mysql extends Soter_Session {
 		}
 		return true;
 	}
-
 	public function write($id, $sessionData) {
 		$data['id'] = $id;
 		$data['data'] = $sessionData;
@@ -5351,14 +4767,11 @@ class Soter_Session_Mysql extends Soter_Session {
 		$this->dbConnection->replace($this->dbTable, $data);
 		return $this->dbConnection->execute();
 	}
-
 	public function destroy($id) {
 		unset($_SESSION);
 		return $this->dbConnection->delete($this->dbTable, array('id' => $id))->execute();
 	}
-
 	public function gc($max = 0) {
 		return $this->dbConnection->delete($this->dbTable, array('timestamp <' => time()))->execute();
 	}
-
 }

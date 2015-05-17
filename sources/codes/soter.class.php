@@ -165,7 +165,7 @@ class Soter {
 			}
 		} else {
 			$response = call_user_func_array(array($controllerObject, $method), $route->getArgs());
-			$contents=is_array($response) ? Sr::view()->set($response)->load("$cacheClassName/$cacheMethodName") : $response;
+			$contents = is_array($response) ? Sr::view()->set($response)->load("$cacheClassName/$cacheMethodName") : $response;
 		}
 		echo $contents;
 	}
@@ -886,7 +886,7 @@ class Sr {
 			chdir($old_path);
 			$path = str_replace(array("/", "\\"), '/', realpath('.') . ($subpath ? '/' . trim($subpath, '/\\') : ''));
 			$path = self::realPath($path) . ($addSlash ? '/' : '');
-			return str_replace($root, '', $path);
+			return preg_replace('|^' . $root . '|', '', $path);
 		}
 	}
 
