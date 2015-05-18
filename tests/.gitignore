@@ -1,3 +1,5 @@
 test.sqlite3
 test.sqlite3-journal
 .htaccess
+.htaccess
+application/packages/extensions
