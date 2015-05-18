@@ -555,4 +555,9 @@ class TestDataCheck extends UnitTestCase {
 		$this->assertTrue(Sr::checkData($data, array('test' => array('range[3#10]#' => '')), $returnData, $errorMessage));
 	}
 
+	public function testUserDefined() {
+		$data['test'] = 'aaaaa';
+		$this->assertTrue(Sr::checkData($data, array('test' => array('myRule' => '')), $returnData, $errorMessage));
+	}
+
 }

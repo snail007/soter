@@ -1618,5 +1618,24 @@ class Sr {
 			exit();
 		}
 
+		public static function __callStatic($name, $arguments) {
+			$methods = self::config()->getSrMethods();
+			if (empty($methods[$name])) {
+				throw new soter_exception_500($name . ' not found in ->setSrMethods() or it is empty');
+			}
+			if (is_string($methods[$name])) {
+				$className = $methods[$name] . '_' . self::arrayGet($arguments, 0);
+				if ($className) {
+					return Sr::factory($className);
+				} else {
+					throw new soter_exception_500($methods[$name] . '() need argument of class name ');
+				}
+			} elseif (is_callable($methods[$name])) {
+				return call_user_func_array($methods[$name], $arguments);
+			} else {
+				throw new soter_exception_500($name . ' unknown type of method [ ' . $name . ' ]');
+			}
+		}
+
 	}
 	

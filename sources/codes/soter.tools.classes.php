@@ -353,9 +353,19 @@ class Soter_Config {
 		$methodCacheConfig,
 		$dataCheckRules,
 		$outputJsonRender,
-		$exceptionJsonRender
+		$exceptionJsonRender,
+		$srMethods = array()
 
 	;
+
+	public function getSrMethods() {
+		return $this->srMethods;
+	}
+
+	public function setSrMethods(array $srMethods) {
+		$this->srMethods = $srMethods;
+		return $this;
+	}
 
 	public function getExceptionJsonRender() {
 		return $this->exceptionJsonRender;
