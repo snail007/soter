@@ -41,14 +41,14 @@
 						$image->create();//这样就会向浏览器输出一张图片	
 					</pre>
 					提示：
-					<br>1.所有参数都可以省略
+					<br><b>1.所有参数都可以省略</b>
 					<br>默认是：宽80 高20 字符数4 验证码$_SESSION键名称captcha_code
 					<br>第四个参数即把验证码存到$_SESSION['captcha_code'],第四个参数如果为null，则不会在$_SESSION中设置验证码。
-					2.设置验证码组成
-					验证码组成类型，有三种：1.number（纯数字） 2.letter（纯字母） 3.both（数字和数字）
-					默认是：both
-					可以通过$image->setCodeMode('类型')进行设置
-					比如下面的代码：
+					<br><b>2.设置验证码组成</b>
+					<br>验证码组成类型，有三种：1.number（纯数字） 2.letter（纯字母） 3.both（数字和数字）
+					<br>默认是：both
+					<br>可以通过$image->setCodeMode('类型')进行设置
+					<br>比如下面的代码：
 					<pre class="brush:php">
 						$image=Sr::extension('Captcha');
 						$image->setCodeMode('number')
