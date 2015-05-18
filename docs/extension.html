@@ -27,8 +27,25 @@
 						Sr::extension('Captcha')	
 					</pre>
 				</li>
+				<li><h2 class="title_h2">验证码</h2>
+					验证码是拓展包提供的功能，需要安装拓展包才能使用。
+					<br>可以通过<code>Sr::extension('Captcha')</code>实例化一个验证码类。
+					<br>使用方法，比如下面的代码：
+					<pre class="brush:php">
+						// 1.完整示例
+						$image=Sr::extension('Captcha');
+						$image->config('宽度','高度','字符个数','验证码session索引');
+						$code=$image->create();//这样就会向浏览器输出一张图片,并返回验证码图片上的内容
+						//2.简单示例:
+						$image=Sr::extension('Captcha');
+						$image->create();//这样就会向浏览器输出一张图片	
+					</pre>
+					提示：
+					<br>所有参数都可以省略
+					<br>默认是：宽80 高20 字符数4 验证码$_SESSION键名称captcha_code
+					<br>第四个参数即把验证码存到$_SESSION['captcha_code'],第四个参数如果为null，则不会在$_SESSION中设置验证码。
+				</li>
 			</ol>
-
 		</fieldset>
 		<script src="js/inc.foot.js"></script>
 	</body>
