@@ -9,6 +9,7 @@ document.write('<'+'script src="js/style.js"></'+'script>');
 document.write('<'+'script src="js/shCore.js"></'+'script>');
 document.write('<'+'script src="js/shBrushPhp.js"></'+'script>');
 document.write('<'+'script src="js/shBrushSql.js"></'+'script>');
+document.write('<'+'script src="js/shBrushXml.js"></'+'script>');
 document.write('<'+'script type="text/javascript">');
 document.write('SyntaxHighlighter.config.clipboardSwf = "js/clipboard.swf";SyntaxHighlighter.all();');
 document.write('</'+'script>');

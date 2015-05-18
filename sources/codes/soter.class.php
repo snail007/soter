@@ -352,6 +352,10 @@ class Sr {
 		return self::factory($className);
 	}
 
+	static function extension($className) {
+		return self::factory('Soter_' . $className);
+	}
+
 	static function functions($functionFilename) {
 		static $loadedFunctionsFile = array();
 		if (isset($loadedFunctionsFile[$functionFilename])) {

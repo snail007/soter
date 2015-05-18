@@ -162,6 +162,22 @@
 					最后我们在控制器里面故意触发一个错误，比如我们在Welcome控制器的index方法里面调用不存在的方法，none();
 					<br>然后访问比如：http://127.0.0.1/index.php/Welcome/index.do
 					<br>然后我们就能发现入口文件目录里面多了个logger.txt文件里面记录了错误信息。
+                                        <br><b class="text_strong">温馨提示：</b>
+                                        <br>我们可以从上面看到<code>renderJson()</code>方法，<code>renderJson()</code>方法里面的内容可以根据我们个人爱好来自定义。
+                                        <br>我们可以在入口文件看到<code>->setExceptionJsonRender</code>方法，<code>->setExceptionJsonRender</code>方法就是来自定义<code>renderJson()</code>方法里面内容。
+                                        <br>示例如下:
+                                        <pre class="brush:php">
+                                                ->setExceptionJsonRender(function(Exception $e) {
+                                                        $json['file'] = $e->getErrorFile();
+                                                        $json['line'] = $e->getErrorLine();
+                                                        $json['message'] = $e->getErrorMessage();
+                                                        $json['type'] = $e->getErrorType();
+                                                        $json['code'] = $e->getErrorCode();
+                                                        $json['time'] = date('Y/m/d H:i:s T');
+                                                        $json['trace'] = $e->getTraceCliString();
+                                                        return @json_encode($json);
+                                                })
+                                        </pre>
 				</li>
 			</ol>
 		</fieldset>

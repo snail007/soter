@@ -1,15 +1,109 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>输出</title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script src="js/inc.js"></script>
-    </head>
-    <body>
-        <fieldset>
-	    <legend>输出</legend>
-        </fieldset>
-        <script src="js/inc.foot.js"></script>
-    </body>
+        <head>
+                <title>输出</title>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <script src="js/inc.js"></script>
+        </head>
+        <body>
+                <fieldset>
+                        <legend>输出</legend>
+                        <ol>
+                                <li>
+                                        <h2 class="title_h2">重定向</h2>
+                                        通过<code>Sr::redirect($url, $msg = null, $time = 3, $view = null)</code>方法，进行重定向。
+                                        <br>$url 必填：是跳转到的地址
+                                        <br>$msg 选填：是跳转的时候的提示信息
+                                        <br>$time 选填：是提示信息显示多久后跳转，单位秒
+                                        <br>$view 选填：是视图的名称不含后缀,使用视图显示提示信息,视图里面可以直接使用$url,$msg,$time三个变量
+                                        <br>示例如下:
+                                        <br>1.直接跳转到百度
+                                        <pre class="brush:php">
+                                                Sr::redirect("http://www.baidu.com/");
+                                        </pre>
+                                        2.跳转到百度,并显示提示信息
+                                        <pre class="brush:php">
+                                                Sr::redirect("http://www.baidu.com/",'正在跳转...');
+                                        </pre>
+                                        3.跳转到百度,并使用视图<b>(view/message.php)</b>显示提示信息 
+                                        <pre class="brush:php">
+                                                Sr::redirect("http://www.baidu.com/",'正在跳转...',3,'message');
+                                        </pre>
+                                        新建<code>view/message.php</code>内容如下：
+                                        <pre class="brush:xml">
+                                                &lt;!DOCTYPE html&gt;
+                                                &lt;html&gt;
+                                                    &lt;head&gt;
+                                                        &lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8"&gt;
+                                                        &lt;title&gt;&lt;/title&gt;
+                                                    &lt;/head&gt;
+                                                    &lt;body&gt;
+                                                        &lt;?php
+                                                        echo $msg.'&lt;br/&gt;'.$time."秒后跳转到".$url;
+                                                        ?&gt;
+                                                    &lt;/body&gt;
+                                                &lt;/html&gt;
+                                        </pre>
+                                </li>
+                                <li>
+                                        <h2 class="title_h2">输出提示信息</h2>
+                                        通过<code>Sr::message($msg, $url = null, $time = 3, $view = null)</code>方法，输出操作后的提示信息。
+                                        <br>$msg 必填：是提示信息
+                                        <br>$url 选填：是跳转到的地址
+                                        <br>$time 选填：是提示信息显示多久后跳转，单位秒
+                                        <br>$view 选填：是视图的名称不含后缀,使用视图显示提示信息,视图里面可以直接使用$url,$msg,$time三个变量
+                                        <br>示例如下:
+                                        1.提示添加成功
+                                        <pre class="brush:php">
+                                                Sr::message("添加成功");
+                                        </pre>
+                                        2.提示添加成功,并使用视图<b>(view/message.php)</b>显示提示信息，5秒后跳转到列表页
+                                        <pre class="brush:php">
+                                                Sr::message("添加成功",'http://www.baidu.com/',5,'message');
+                                        </pre>
+                                        新建<code>view/message.php</code>内容如下：
+                                        <pre class="brush:xml">
+                                                &lt;!DOCTYPE html&gt;
+                                                &lt;html&gt;
+                                                    &lt;head&gt;
+                                                        &lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8"&gt;
+                                                        &lt;title&gt;&lt;/title&gt;
+                                                    &lt;/head&gt;
+                                                    &lt;body&gt;
+                                                        &lt;?php
+                                                        echo $msg.'&lt;br/&gt;'.$time."秒后跳转到".$url;
+                                                        ?&gt;
+                                                    &lt;/body&gt;
+                                                &lt;/html&gt;
+                                        </pre>
+                                </li>
+                                <li>
+                                        <h2 class="title_h2">json输出</h2>
+                                        通过<code>Sr::json()</code>方法,来输出json格式。
+                                        <br>$code 选填：状态码
+                                        <br>$message 选填：信息
+                                        <br>$data 选填：数据
+                                        <br>示例如下：
+                                        <pre class="brush:php">
+                                                //输出code为"200"，message为"success"和data为"array('添加成功')"的json格式
+                                                echo Sr::json(200, 'success', array('添加成功'));
+                                        </pre>
+                                        当然，我们也可以自定义json输出格式内容。
+                                        <br>我们可以从入口文件里面看到<code>->setOutputJsonRender</code>方法，<code>->setOutputJsonRender</code>方法就是来自定义json输出格式内容。
+                                        <br>示例如下：
+                                        <pre class="brush:php">
+                                                ->setOutputJsonRender(function() {
+                                                        $args = func_get_args();
+                                                        $code = Sr::arrayGet($args, 0, '');
+                                                        $message = Sr::arrayGet($args, 1, '');
+                                                        $data = Sr::arrayGet($args, 2, '');
+                                                        return @json_encode(array('code' => $code, 'message' => $message, 'data' => $data));
+                                                })
+                                        </pre>
+                                </li>
+                        </ol>
+                </fieldset>
+                <script src="js/inc.foot.js"></script>
+        </body>
 </html>
