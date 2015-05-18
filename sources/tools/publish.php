@@ -32,7 +32,7 @@ require dirname(__FILE__) . '/../codes/index.php';
 define('SRC_DIR', dirname(__FILE__) . '/../codes/');
 define('DIST_DIR', dirname(__FILE__) . '/../../');
 date_default_timezone_set('PRC');
-$ver = "1.0.21";
+$ver = "1.0.22";
 
 if (Sr::getOpt('version')) {
 	$ver = Sr::getOpt('version');

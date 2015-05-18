@@ -3,7 +3,9 @@
 class Controller_Welcome extends Soter_Controller {
 
 	public function do_index() {
-		phpinfo();
+		
+		$image=Sr::extension('Captcha');
+		$image->setCodeMode('number')->create();
 		
 	}
 

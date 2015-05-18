@@ -44,6 +44,7 @@
 					<br><b>1.所有参数都可以省略</b>
 					<br>默认是：宽80 高20 字符数4 验证码$_SESSION键名称captcha_code
 					<br>第四个参数即把验证码存到$_SESSION['captcha_code'],第四个参数如果为null，则不会在$_SESSION中设置验证码。
+					<br>当第四个参数是null的时候，可以通过<code>$image->getCheckCode()</code>获取写到图片上的验证码字符串
 					<br><b>2.设置验证码组成</b>
 					<br>验证码组成类型，有三种：1.number（纯数字） 2.letter（纯字母） 3.both（数字和数字）
 					<br>默认是：both
