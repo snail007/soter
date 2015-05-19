@@ -30,7 +30,7 @@ class testDbSqlite extends UnitTestCase {
 		    'pconnect' => true,
 		    'tablePrefix' => 'test_',
 		    'tablePrefixSqlIdentifier' => '_tablePrefix_',
-		    'database' => 'test.sdb', //sqlite3数据库路径
+		    'database' => 'test.sqlite3', //sqlite3数据库路径
 		    //是否开启慢查询记录
 		    'slowQueryDebug' => true,
 		    'slowQueryTime' => 3000, //单位毫秒，1秒=1000毫秒
