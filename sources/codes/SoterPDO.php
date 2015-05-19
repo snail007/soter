@@ -512,8 +512,9 @@ abstract class Soter_Database {
 
 			//explain查询
 			$explainRows = array();
-			if ($this->slowQueryDebug && $this->indexDebug) {
-				$sth = $this->connectionMasters[0]->prepare('EXPLAIN ' . $sql);
+			if ($this->_isMysql() && ($this->slowQueryDebug || $this->indexDebug)) {
+				reset($this->connectionMasters);
+				$sth = $this->connectionMasters[key($this->connectionMasters)]->prepare('EXPLAIN ' . $sql);
 				$sth->execute($this->_getValues());
 				$explainRows = $sth->fetchAll(PDO::FETCH_ASSOC);
 			}
@@ -526,7 +527,7 @@ abstract class Soter_Database {
 			//不满足索引条件的查询记录
 			if ($this->indexDebug && $this->indexHandle instanceof Soter_Database_Index_Handle) {
 				$badIndex = false;
-				if (strtolower($this->getDriverType()) == 'mysql') {
+				if ($this->_isMysql()) {
 					$order = array(
 					    'system' => 1, 'const' => 2, 'eq_ref' => 3, 'ref' => 4,
 					    'fulltext' => 5, 'ref_or_null' => 6, 'index_merge' => 7, 'unique_subquery' => 8,
@@ -596,7 +597,7 @@ abstract class Soter_Database {
 		}
 		if ($this->getDebug() || $this->_isInTransaction) {
 			if ($message instanceof Exception) {
-				throw new Soter_Exception_Database($this->_errorMsg, 500);
+				throw new Soter_Exception_Database($this->_errorMsg, 500,'Soter_Exception_Database',$message->getFile(),$message->getLine());
 			} else {
 
 				throw new Soter_Exception_Database($message . $sql, $code);
