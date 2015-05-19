@@ -71,6 +71,117 @@
 						$code=$image->create();//这样就会向浏览器输出一张图片,并返回验证码图片上的内容
 					</pre>
 				</li>
+                                <li>
+                                        <h2 class="title_h2">HTTP操作类</h2>
+                                        主要功能：
+                                        <br>1.模拟登录，cookie自动管理，也可以手动结合自动管理cookie。
+                                        <br>2.抓取数据，支持get，post。
+                                        <br>特点：
+                                        <br>1.基于CURL
+                                        <br>2.使用方便灵活，即使禁止了CURL的自动30x跳转处理，该类也能正常处理30x重定向。
+                                        <br><b class="text_strong">示例如下：</b>
+                                        <br><b>1.get</b>
+                                        <pre class="brush:php">
+                                                $http = Sr::extension('Http');
+                                                //返回的是页面内容
+                                                $data = $http->get('https://www.baidu.com/');                                                
+                                                //如果有传递数据，可以传递第二个参数
+                                                $args['code'] = '1';
+                                                $data = $http->get('https://baidu.com/',$args);
+                                                //如果要设置本次请求的头部信息，可以传递第三个参数
+                                                //$header是附加的HTTP头，比如：array('Connection:keep-alive','Cache-Control:max-age=0')，注意冒号前后不能有空格，默认 null
+                                                $header = array('Connection:keep-alive','Cache-Control:max-age=0');
+                                                $data = $http->get('https://baidu.com/',null,$header);
+                                                //默认get和post是不自动处理30x跳转的，可以通过指定第四个参数来控制遇到301或302时跳转的最大次数，默认 0 不跳转
+                                                $data = $http->get('https://baidu.com/',null,null,1);
+                                        </pre>
+                                        <b>2.post</b>
+                                        <pre class="brush:php">
+                                                $http = Sr::extension('Http');
+                                                $user = '用户名';
+                                                $pass = '密码';
+                                                $data['user_login'] = $user;
+                                                $data['user_pwd'] = md5($pass);
+                                                $data=$http->setReferer('http://www.liepin.com/')->post('http://www.liepin.com/user/ajaxlogin/', $data);
+                                                var_dump($data);
+                                                $error_code=$http->errorCode();//获取curl出错代码（大于零的数），如果没有错误，返回0
+                                                $error_msg=$http->errorMsg();  //获取curl出错字符串信息，如果没有错误，返回空
+                                                $http_code=$http->code();      //返回的http状态码
+                                                if($error_code){
+                                                    exit($error_msg);
+                                                }
+                                                $is_redirect=$http->isRedirect();//是否是重定向
+                                                if($is_redirect){
+                                                    //do something
+                                                    $http_location=$http->location();//获取重定向的地址
+                                                }else{
+                                                    //do something
+                                                }
+                                        </pre>
+                                        <b>3.模拟登录 猎聘网 并抓取简历</b>
+                                        <br>1.新建Functions函数文件application/functions/liepin.php
+                                        <br>输入以下代码：
+                                        <pre class="brush:php">
+                                                &lt;?php
+
+                                                /**
+                                                * 猎聘网
+                                                * @param type $user
+                                                * @param type $pass
+                                                * @param type $save_path
+                                                * @param type $error_msg
+                                                * @return boolean
+                                                */
+                                                function liepin($user, $pass, $save_path, &$error_msg) {
+                                                        include_once 'simple_html_dom.php';//可以到https://github.com/samacs/simple_html_dom里面去下载
+                                                        $http = Sr::extension('Http');
+                                                        $data['isMd5'] = 1;
+                                                        $data['layer_from'] = 'wwwindex_rightbox_new';
+                                                        $data['user_login'] = $user;
+                                                        $data['user_pwd'] = md5($pass);
+                                                        $data['chk_remember_pwd'] = 'on';
+                                                        $http->setReferer('http://www.liepin.com/')->post('http://www.liepin.com/user/ajaxlogin/', $data);
+                                                        $index = $http->get('http://c.liepin.com/');
+                                                        $html = str_get_html($index);
+                                                        $e = $html->find('a[href^=/resume/download?res_id_encode]', 0);
+                                                        if ($e && $e->href) {
+                                                                //登录成功
+                                                                //下载简历
+                                                                $doc = $http->setReferer('http://www.liepin.com/')->get('http://c.liepin.com' . $e->href);
+                                                                if ($doc) {
+                                                                        file_put_contents($save_path, $doc);
+                                                                        $error_msg = null;
+                                                                        return true;
+                                                                } else {
+                                                                        //获取简历失败
+                                                                        $error_msg = '获取简历失败';
+                                                                        return false;
+                                                                }
+                                                        } else {
+                                                                //登录失败
+                                                                $error_msg = '登录失败或者简历可能为空';
+                                                                return false;
+                                                        }
+                                                } 
+                                        </pre>
+                                        2.创建控制器文件application/classes/Controller/Welcome.php 
+                                        <pre class="brush:php">
+                                                &lt;?php
+
+                                                class Controller_Welcome extends Soter_Controller {
+
+                                                        public function do_liepins() {
+                                                                Sr::functions('liepin');
+                                                                $error_msg = '';
+                                                                if (liepin('用户名', '密码', 'zhaopin_resume.doc', $error_msg)) {
+                                                                        echo 'okay';
+                                                                } else {
+                                                                        echo $error_msg;
+                                                                }
+                                                        }
+                                                }  
+                                        </pre>
+                                </li>
 			</ol>
 		</fieldset>
 		<script src="js/inc.foot.js"></script>
