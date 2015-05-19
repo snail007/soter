@@ -120,5 +120,13 @@ class TestCache extends UnitTestCase {
 		sleep(2);
 		$this->assertEqual($cache->get('test'), null);
 	}
+	public function testSrCache(){
+		Sr::config()->setCacheConfig('cache');
+		$this->assertIsA(Sr::cache('file'), 'Soter_Cache_File');
+		$this->assertIsA(Sr::cache('apc'), 'Soter_Cache_Apc');
+		$this->assertIsA(Sr::cache('memcache'), 'Soter_Cache_Memcache');
+		$this->assertIsA(Sr::cache('memcached'), 'Soter_Cache_Memcached');
+		$this->assertIsA(Sr::cache('redis'), 'Soter_Cache_Redis');
+	}
 
 }

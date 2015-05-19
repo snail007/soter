@@ -36,12 +36,12 @@ class Soter_View {
 	public function add($key, $value = array()) {
 		if (is_array($key)) {
 			foreach ($key as $k => $v) {
-				if (!isset(self::$vars[$k])) {
+				if (!Sr::arrayKeyExists($k,self::$vars)) {
 					self::$vars[$k] = $v;
 				}
 			}
 		} else {
-			if (!isset(self::$vars[$key])) {
+			if (!Sr::arrayKeyExists($key,self::$vars)) {
 				self::$vars[$key] = $value;
 			}
 		}
@@ -347,7 +347,8 @@ class Soter_Config {
 		$maintainIpWhitelist = array(),
 		$maintainModeHandle,
 		$databseConfig,
-		$cacheHandle,
+		$cacheHandles = array(),
+		$cacheConfig,
 		$sessionConfig,
 		$sessionHandle,
 		$methodCacheConfig,
@@ -416,15 +417,47 @@ class Soter_Config {
 	 * 
 	 * @return Soter_Cache
 	 */
-	public function getCacheHandle() {
-		return $this->cacheHandle;
+	public function getCacheHandle($key = '') {
+		if (empty($this->cacheConfig)) {
+			$this->cacheConfig = array(
+			    'default_type' => 'file',
+			    'drivers' => array(
+				'file' => $this->getPrimaryApplicationDir() . 'storage/cache/',
+			    )
+			);
+		}
+		$classMap = array('file' => 'Soter_Cache_File', 'memcache' => 'Soter_Cache_Memcache', 'memcached' => 'Soter_Cache_Memcached', 'apc' => 'Soter_Cache_Apc', 'redis' => 'Soter_Cache_Redis');
+		$className = $classMap[$key];
+		if (is_array($key)) {
+			reset($key);
+			$key = key($key);
+			$config = current($key);
+			return is_null($config) ? new $className() : new $className($config);
+		} else {
+			$key = $key ? $key : $this->cacheConfig['default_type'];
+
+			if (!Sr::arrayKeyExists($key,$classMap)||!Sr::arrayKeyExists("drivers.$key",$this->cacheConfig)) {
+				throw new Soter_Exception_500('unknown cache type [ ' . $key . ' ]');
+			}
+			if (!Sr::arrayKeyExists($key,$this->cacheHandles)) {
+				$config = $this->cacheConfig['drivers'][$key];
+				$this->cacheHandles[$key] = is_null($config) ? new $className() : new $className($config);
+			}
+			return $this->cacheHandles[$key];
+		}
 	}
 
-	public function setCacheHandle($cacheHandle) {
-		if ($cacheHandle instanceof Soter_Cache) {
-			$this->cacheHandle = $cacheHandle;
+	public function getCacheConfig() {
+		return $this->cacheConfig;
+	}
+
+	public function setCacheConfig($cacheConfig) {
+		if (is_string($cacheConfig)) {
+			$this->cacheConfig = Sr::config($cacheConfig);
+		} elseif (is_array($cacheConfig)) {
+			$this->cacheConfig = $cacheConfig;
 		} else {
-			$this->cacheHandle = Sr::config($cacheHandle);
+			throw new Soter_Exception_500('unknown type of cache configure , it should be a string or an array .');
 		}
 		return $this;
 	}
@@ -473,7 +506,7 @@ class Soter_Config {
 		if (empty($group)) {
 			return $this->databseConfig;
 		} else {
-			return isset($this->databseConfig[$group]) ? $this->databseConfig[$group] : array();
+			return Sr::arrayKeyExists($group,$this->databseConfig) ? $this->databseConfig[$group] : array();
 		}
 	}
 
@@ -1074,7 +1107,7 @@ class Soter_Logger_Writer_Dispatcher {
 		}
 		$lastError = error_get_last();
 		$fatalError = array(1, 256, 64, 16, 4, 4096);
-		if (!isset($lastError["type"]) || !in_array($lastError["type"], $fatalError)) {
+		if (!Sr::arrayKeyExists("type",$lastError) || !in_array($lastError["type"], $fatalError)) {
 			return;
 		}
 		$this->dispatch(new Soter_Exception_500($lastError['message'], $lastError['type'], 'Fatal Error', $lastError['file'], $lastError['line']));
@@ -1199,8 +1232,8 @@ class Soter_Cache_File implements Soter_Cache {
 
 	private $_cacheDirPath;
 
-	public function __construct($cacheFileName = '') {
-		$cacheDirPath = empty($cacheFileName) ? Sr::config()->getPrimaryApplicationDir() . 'storage/cache/' : Sr::config($cacheFileName);
+	public function __construct($cacheDirPath = '') {
+		$cacheDirPath = empty($cacheDirPath) ? Sr::config()->getPrimaryApplicationDir() . 'storage/cache/' : $cacheDirPath;
 		$this->_cacheDirPath = Sr::realPath($cacheDirPath) . '/';
 		if (!is_dir($this->_cacheDirPath)) {
 			mkdir($this->_cacheDirPath, 0700, true);
@@ -1230,7 +1263,7 @@ class Soter_Cache_File implements Soter_Cache {
 
 	private function unpack($cacheData) {
 		$cacheData = @unserialize($cacheData);
-		if (is_array($cacheData) && isset($cacheData['userData']) && isset($cacheData['expireTime'])) {
+		if (is_array($cacheData) && Sr::arrayKeyExists('userData',$cacheData) && Sr::arrayKeyExists('expireTime',$cacheData)) {
 			if ($cacheData['expireTime'] == 0) {
 				return $cacheData['userData'];
 			}
@@ -1293,12 +1326,8 @@ class Soter_Cache_Memcached implements Soter_Cache {
 
 	private $config, $handle;
 
-	public function __construct($configFileName) {
-		if (is_array($configFileName)) {
-			$this->config = $configFileName;
-		} else {
-			$this->config = Sr::config($configFileName);
-		}
+	public function __construct($config) {
+		$this->config = $config;
 	}
 
 	private function _init() {
@@ -1340,12 +1369,8 @@ class Soter_Cache_Memcache implements Soter_Cache {
 
 	private $config, $handle;
 
-	public function __construct($configFileName) {
-		if (is_array($configFileName)) {
-			$this->config = $configFileName;
-		} else {
-			$this->config = Sr::config($configFileName);
-		}
+	public function __construct($config) {
+		$this->config = $config;
 	}
 
 	private function _init() {
@@ -1438,12 +1463,8 @@ class Soter_Cache_Redis implements Soter_Cache {
 		}
 	}
 
-	public function __construct($configFileName) {
-		if (is_array($configFileName)) {
-			$this->config = $configFileName;
-		} else {
-			$this->config = Sr::config($configFileName);
-		}
+	public function __construct($config) {
+		$this->config = $config;
 	}
 
 	public function clean() {
@@ -1529,7 +1550,7 @@ class Soter_Generator extends Soter_Task {
 			'nameTip' => 'Task'
 		    )
 		);
-		if (!isset($info[$type])) {
+		if (!Sr::arrayKeyExists($type,$info)) {
 			exit('[ Error ]' . "\n" . 'Type : [ ' . $type . ' ]');
 		}
 		$classname = $info[$type]['dir'] . '_' . $name;
@@ -1595,7 +1616,7 @@ class Soter_Generator_Mysql extends Soter_Task {
 			'nameTip' => 'Dao'
 		    ),
 		);
-		if (!isset($info[$type])) {
+		if (!Sr::arrayKeyExists($type,$info)) {
 			exit('[ Error ]' . "\n" . 'Type : [ ' . $type . ' ]');
 		}
 		$classname = $info[$type]['dir'] . '_' . $name;

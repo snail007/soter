@@ -360,7 +360,7 @@ abstract class Soter_Database {
 				$configGroup = $this->{$group[0]}();
 				$connections = &$this->{$group[1]};
 				foreach ($configGroup as $key => $config) {
-					if (!isset($connections[$key])) {
+					if (!Sr::arrayKeyExists($key, $connections)) {
 						$options[PDO::ATTR_ERRMODE] = PDO::ERRMODE_EXCEPTION;
 						$options[PDO::ATTR_PERSISTENT] = $this->getPconnect();
 						if ($this->_isMysql()) {
@@ -534,7 +534,7 @@ abstract class Soter_Database {
 					    'index_subquery' => 9, 'range' => 10, 'index' => 11, 'all' => 12,
 					);
 					foreach ($explainRows as $row) {
-						if (isset($order[strtolower($row['type'])]) && isset($order[strtolower($this->getMinIndexType())])) {
+						if (Sr::arrayKeyExists(strtolower($row['type']), $order) && Sr::arrayKeyExists(strtolower($this->getMinIndexType()), $order)) {
 							$key = $order[strtolower($row['type'])];
 							$minKey = $order[strtolower($this->getMinIndexType())];
 							if ($key > $minKey) {
@@ -597,7 +597,7 @@ abstract class Soter_Database {
 		}
 		if ($this->getDebug() || $this->_isInTransaction) {
 			if ($message instanceof Exception) {
-				throw new Soter_Exception_Database($this->_errorMsg, 500,'Soter_Exception_Database',$message->getFile(),$message->getLine());
+				throw new Soter_Exception_Database($this->_errorMsg, 500, 'Soter_Exception_Database', $message->getFile(), $message->getLine());
 			} else {
 
 				throw new Soter_Exception_Database($message . $sql, $code);
@@ -826,7 +826,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 
 	private function _compileUpdateBatch() {
 		list($values, $index) = $this->arUpdateBatch;
-		if (count($values) && isset($values[0][$index])) {
+		if (count($values) && Sr::arrayKeyExists("0.$index", $values)) {
 			$ids = array();
 			$final = array();
 			foreach ($values as $key => $val) {
@@ -1145,7 +1145,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 	private function _checkPrefix($str) {
 		$prefix = $this->getTablePrefix();
 		if ($prefix && strpos($str, $prefix) === FALSE) {
-			if (!isset($this->_asTable[$str])) {
+			if (!Sr::arrayKeyExists($str,$this->_asTable)) {
 				return $prefix . $str;
 			}
 		}
@@ -1258,7 +1258,7 @@ class Soter_Database_Resultset {
 	}
 
 	public function row($index = null, $isAssoc = true) {
-		if (!is_null($index) && isset($this->_resultSet[$index])) {
+		if (!is_null($index) && Sr::arrayKeyExists($index,$this->_resultSet)) {
 			return $isAssoc ? $this->_resultSet[$index] : array_values($this->_resultSet[$index]);
 		} else {
 			$row = current($this->_resultSet);
@@ -1309,7 +1309,7 @@ class Soter_Database_Resultset {
 	public function values($columnName) {
 		$columns = array();
 		foreach ($this->_resultSet as $row) {
-			if (isset($row[$columnName])) {
+			if (Sr::arrayKeyExists($columnName,$row)) {
 				$columns[] = $row[$columnName];
 			} else {
 				return array();
@@ -1320,7 +1320,7 @@ class Soter_Database_Resultset {
 
 	public function value($columnName, $default = null, $index = null) {
 		$row = $this->row($index);
-		return ($columnName && isset($row[$columnName])) ? $row[$columnName] : $default;
+		return ($columnName && Sr::arrayKeyExists($columnName,$row)) ? $row[$columnName] : $default;
 	}
 
 	public function key($columnName) {
