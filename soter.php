@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.24
- * @createdtime   2015-05-19 12:02:47
+ * @since         v1.0.25
+ * @createdtime   2015-05-19 19:30:18
  */
  
 
@@ -185,7 +185,7 @@ class Soter {
 		$cacheMethodName = preg_replace('/^' . Sr::config()->getMethodPrefix() . '/', '', $method);
 		$methoKey = $cacheClassName . '::' . $cacheMethodName;
 		$cacheMethodConfig = $config->getMethodCacheConfig();
-		if (!empty($cacheMethodConfig) && isset($cacheMethodConfig[$methoKey]) && $cacheMethodConfig[$methoKey]['cache'] && ($cacheMethoKey = $cacheMethodConfig[$methoKey]['key']())) {
+		if (!empty($cacheMethodConfig) && Sr::arrayKeyExists($methoKey, $cacheMethodConfig) && $cacheMethodConfig[$methoKey]['cache'] && ($cacheMethoKey = $cacheMethodConfig[$methoKey]['key']())) {
 			if (!($contents = Sr::cache()->get($cacheMethoKey))) {
 				@ob_start();
 				$response = call_user_func_array(array($controllerObject, $method), $route->getArgs());
@@ -258,7 +258,7 @@ class Soter {
 			//避免重复加载，提高性能
 			static $loadedModules = array();
 			$hmvcModuleDirName = $hmvcModules[$hmvcModuleName];
-			if (!isset($loadedModules[$hmvcModuleName])) {
+			if (!Sr::arrayKeyExists($hmvcModuleName, $loadedModules)) {
 				$loadedModules[$hmvcModuleName] = 1;
 				//找到hmvc模块,去除hmvc模块名称，得到真正的路径
 				$hmvcModulePath = $config->getApplicationDir() . $config->getHmvcDirName() . '/' . $hmvcModuleDirName . '/';
@@ -279,7 +279,7 @@ class Sr {
 	const ENV_DEVELOPMENT = 3; //开发环境
 
 	static function arrayGet($array, $key, $default = null) {
-		return isset($array[$key]) ? $array[$key] : $default;
+		return Sr::arrayKeyExists($key, $array) ? $array[$key] : $default;
 	}
 
 	static function dump() {
@@ -295,7 +295,7 @@ class Sr {
 	static function includeOnce($filePath) {
 		static $includeFiles = array();
 		$key = self::realPath($filePath);
-		if (!isset($includeFiles[$key])) {
+		if (!Sr::arrayKeyExists($key, $includeFiles)) {
 			include $filePath;
 			$includeFiles[$key] = 1;
 		}
@@ -389,7 +389,7 @@ class Sr {
 
 	static function functions($functionFilename) {
 		static $loadedFunctionsFile = array();
-		if (isset($loadedFunctionsFile[$functionFilename])) {
+		if (Sr::arrayKeyExists($functionFilename, $loadedFunctionsFile)) {
 			return;
 		} else {
 			$loadedFunctionsFile[$functionFilename] = 1;
@@ -453,7 +453,7 @@ class Sr {
 		$configFileName = current($_info);
 		static $loadedConfig = array();
 		$cfg = null;
-		if (isset($loadedConfig[$configFileName])) {
+		if (Sr::arrayKeyExists($configFileName, $loadedConfig)) {
 			$cfg = $loadedConfig[$configFileName];
 		} else {
 			$config = Soter::getConfig();
@@ -482,9 +482,9 @@ class Sr {
 			array_shift($_info);
 			$keyStrArray = '';
 			foreach ($_info as $k) {
-				$keyStrArray.= "['" . $k . "']";
+				$keyStrArray.= $k;
 			}
-			$val = eval('return isset($cfg' . $keyStrArray . ')?$cfg' . $keyStrArray . ':null;');
+			$val = eval('return Sr::arrayKeyExists(\'' . implode('.', $_info) . '\',$cfg)?$cfg' . $keyStrArray . ':null;');
 			return $val;
 		} else {
 			return $cfg;
@@ -533,7 +533,7 @@ class Sr {
 				}
 			}
 		}
-		return empty($key) ? $result : (isset($result[$key]) ? $result[$key] : null);
+		return empty($key) ? $result : (Sr::arrayKeyExists($key, $result) ? $result[$key] : null);
 	}
 
 	static function get($key = null, $default = null, $xssClean = false) {
@@ -761,7 +761,7 @@ class Sr {
 		}
 		$ipAddr = implode('.', $ipAddrArr); //修正后的ip地址
 
-		$netbits = intval((isset($arr[1]) ? $arr[1] : 0));   //得到掩码位
+		$netbits = intval((Sr::arrayKeyExists(1, $arr) ? $arr[1] : 0));   //得到掩码位
 
 		$subnetMask = long2ip(ip2long("255.255.255.255") << (32 - $netbits));
 		$ip = ip2long($ipAddr);
@@ -802,7 +802,7 @@ class Sr {
 		if (is_array($group)) {
 			ksort($group);
 			$key = md5(var_export($group, true));
-			if (!isset($instances[$key])) {
+			if (!Sr::arrayKeyExists($key, $instances)) {
 				$instances[$key] = new Soter_Database_ActiveRecord($group);
 			}
 			return $instances[$key];
@@ -811,7 +811,7 @@ class Sr {
 				$config = self::config()->getDatabseConfig();
 				$group = $config['default_group'];
 			}
-			if (!isset($instances[$group])) {
+			if (!Sr::arrayKeyExists($group, $instances)) {
 				$config = self::config()->getDatabseConfig($group);
 				if (empty($config)) {
 					throw new Soter_Exception_Database('unknown database config group [ ' . $group . ' ]');
@@ -855,14 +855,11 @@ class Sr {
 
 	/**
 	 * 获取缓存操作对象
-	 * @param type $cacheHandle
+	 * @param type $cacheType
 	 * @return Soter_Cache
 	 */
-	static function cache($cacheHandle = null) {
-		if ($cacheHandle) {
-			self::config()->setCacheHandle($cacheHandle);
-		}
-		return self::config()->getCacheHandle();
+	static function cache($cacheType = null) {
+		return self::config()->getCacheHandle($cacheType);
 	}
 
 	/**
@@ -956,7 +953,7 @@ class Sr {
 		$data = array();
 		$formdata = is_null($sourceData) ? Sr::post() : $sourceData;
 		foreach ($formdata as $formKey => $val) {
-			if (isset($map[$formKey])) {
+			if (Sr::arrayKeyExists($formKey, $map)) {
 				$data[$map[$formKey]] = $val;
 			}
 		}
@@ -968,15 +965,15 @@ class Sr {
 		if (empty($checkRules)) {
 			$defaultRules = array(
 			    'array' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!isset($data[$key]) || !is_array($value)) {
+				    if (!Sr::arrayKeyExists($key, $data) || !is_array($value)) {
 					    return false;
 				    }
 				    $minOkay = true;
-				    if (isset($args[0])) {
+				    if (Sr::arrayKeyExists(0, $args)) {
 					    $minOkay = count($value) >= intval($args[0]);
 				    }
 				    $maxOkay = true;
-				    if (isset($args[1])) {
+				    if (Sr::arrayKeyExists(1, $args)) {
 					    $minOkay = count($value) >= intval($args[1]);
 				    }
 				    return $minOkay && $maxOkay;
@@ -987,7 +984,7 @@ class Sr {
 					    $i = 0;
 					    foreach ($value as $k => $v) {
 
-						    $returnValue[$k] = empty($v) ? (isset($args[$i]) ? $args[$i] : $args[0]) : $v;
+						    $returnValue[$k] = empty($v) ? (Sr::arrayKeyExists($i, $args) ? $args[$i] : $args[0]) : $v;
 						    $i++;
 					    }
 				    } elseif (empty($value)) {
@@ -998,7 +995,7 @@ class Sr {
 				    $break = !isset($data[$key]);
 				    return true;
 			    }, 'required' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!isset($data[$key]) || empty($value)) {
+				    if (!Sr::arrayKeyExists($key, $data) || empty($value)) {
 					    return false;
 				    }
 				    $value = (array) $value;
@@ -1012,13 +1009,13 @@ class Sr {
 				    $args[] = $key;
 				    $args = array_unique($args);
 				    foreach ($args as $k) {
-					    if (!isset($data[$k])) {
+					    if (!Sr::arrayKeyExists($k, $data)) {
 						    return false;
 					    }
 				    }
 				    return true;
 			    }, 'functions' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!isset($data[$key])) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return true;
 				    }
 				    $returnValue = $value;
@@ -1035,23 +1032,23 @@ class Sr {
 				    }
 				    return true;
 			    }, 'xss' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!isset($data[$key])) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return true;
 				    }
 				    $returnValue = self::xssClean($value);
 				    return true;
 			    }, 'match' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!isset($data[$key]) || !isset($args[0]) || !isset($data[$args[0]]) || $value != $data[$args[0]]) {
+				    if (!Sr::arrayKeyExists($key, $data) || !Sr::arrayKeyExists(0, $args) || !Sr::arrayKeyExists($args[0], $data) || $value != $data[$args[0]]) {
 					    return false;
 				    }
 				    return true;
 			    }, 'equal' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!isset($data[$key]) || !isset($args[0]) || $value != $args[0]) {
+				    if (!Sr::arrayKeyExists($key, $data) || !Sr::arrayKeyExists(0, $args) || $value != $args[0]) {
 					    return false;
 				    }
 				    return true;
 			    }, 'enum' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!isset($data[$key])) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $value = (array) $value;
@@ -1063,7 +1060,7 @@ class Sr {
 				    return true;
 			    }, 'unique' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #比如unique[user.name] , unique[user.name,id:1]
-				    if (!isset($data[$key]) || !$value || !count($args)) {
+				    if (!Sr::arrayKeyExists($key, $data) || !$value || !count($args)) {
 					    return false;
 				    }
 				    $_info = explode('.', $args[0]);
@@ -1072,7 +1069,7 @@ class Sr {
 				    }
 				    $table = $_info[0];
 				    $col = $_info[1];
-				    if (isset($args[1])) {
+				    if (Sr::arrayKeyExists(1, $args)) {
 					    $_id_info = explode(':', $args[1]);
 					    if (count($_id_info) != 2) {
 						    return false;
@@ -1087,7 +1084,7 @@ class Sr {
 				    return !$db->where($where)->from($table)->execute()->total();
 			    }, 'exists' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #比如exists[user.name] , exists[user.name,type:1], exists[user.name,type:1,sex:#sex]
-				    if (!isset($data[$key]) || !$value || !count($args)) {
+				    if (!Sr::arrayKeyExists($key, $data) || !$value || !count($args)) {
 					    return false;
 				    }
 				    $_info = explode('.', $args[0]);
@@ -1111,31 +1108,31 @@ class Sr {
 				    }
 				    return $db->where($where)->from($table)->execute()->total();
 			    }, 'min_len' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!isset($data[$key])) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
 				    foreach ($v as $value) {
-					    $okay = isset($args[0]) ? (mb_strlen($value, 'UTF-8') >= intval($args[0])) : false;
+					    $okay = Sr::arrayKeyExists(0, $args) ? (mb_strlen($value, 'UTF-8') >= intval($args[0])) : false;
 					    if (!$okay) {
 						    return false;
 					    }
 				    }
 				    return true;
 			    }, 'max_len' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!isset($data[$key])) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
 				    foreach ($v as $value) {
-					    $okay = isset($args[0]) ? (mb_strlen($value, 'UTF-8') <= intval($args[0])) : false;
+					    $okay = Sr::arrayKeyExists(0, $args) ? (mb_strlen($value, 'UTF-8') <= intval($args[0])) : false;
 					    if (!$okay) {
 						    return false;
 					    }
 				    }
 				    return true;
 			    }, 'range_len' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!isset($data[$key])) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
@@ -1147,43 +1144,43 @@ class Sr {
 				    }
 				    return true;
 			    }, 'len' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!isset($data[$key])) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
 				    foreach ($v as $value) {
-					    $okay = isset($args[0]) ? (mb_strlen($value, 'UTF-8') == intval($args[0])) : false;
+					    $okay = Sr::arrayKeyExists(0, $args) ? (mb_strlen($value, 'UTF-8') == intval($args[0])) : false;
 					    if (!$okay) {
 						    return false;
 					    }
 				    }
 				    return true;
 			    }, 'min' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!isset($data[$key])) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
 				    foreach ($v as $value) {
-					    $okay = isset($args[0]) && is_numeric($value) ? $value >= $args[0] : false;
+					    $okay = Sr::arrayKeyExists(0, $args) && is_numeric($value) ? $value >= $args[0] : false;
 					    if (!$okay) {
 						    return false;
 					    }
 				    }
 				    return true;
 			    }, 'max' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!isset($data[$key])) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
 				    foreach ($v as $value) {
-					    $okay = isset($args[0]) && is_numeric($value) ? $value <= $args[0] : false;
+					    $okay = Sr::arrayKeyExists(0, $args) && is_numeric($value) ? $value <= $args[0] : false;
 					    if (!$okay) {
 						    return false;
 					    }
 				    }
 				    return true;
 			    }, 'range' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!isset($data[$key])) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
@@ -1195,7 +1192,7 @@ class Sr {
 				    }
 				    return true;
 			    }, 'alpha' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!isset($data[$key])) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    #纯字母
@@ -1209,7 +1206,7 @@ class Sr {
 				    return true;
 			    }, 'alpha_num' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #纯字母和数字
-				    if (!isset($data[$key])) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
@@ -1222,7 +1219,7 @@ class Sr {
 				    return true;
 			    }, 'alpha_dash' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #纯字母和数字和下划线和-
-				    if (!isset($data[$key])) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
@@ -1235,7 +1232,7 @@ class Sr {
 				    return true;
 			    }, 'alpha_start' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #以字母开头
-				    if (!isset($data[$key])) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
@@ -1248,7 +1245,7 @@ class Sr {
 				    return true;
 			    }, 'num' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #纯数字
-				    if (!isset($data[$key])) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
@@ -1261,7 +1258,7 @@ class Sr {
 				    return true;
 			    }, 'int' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #整数
-				    if (!isset($data[$key])) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
@@ -1274,7 +1271,7 @@ class Sr {
 				    return true;
 			    }, 'float' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #小数
-				    if (!isset($data[$key])) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
@@ -1287,7 +1284,7 @@ class Sr {
 				    return true;
 			    }, 'numeric' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #数字-1，1.2，+3，4e5
-				    if (!isset($data[$key])) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
@@ -1300,7 +1297,7 @@ class Sr {
 				    return true;
 			    }, 'natural' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #自然数0，1，2，3，12，333
-				    if (!isset($data[$key])) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
@@ -1313,7 +1310,7 @@ class Sr {
 				    return true;
 			    }, 'natural_no_zero' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #自然数不包含0
-				    if (!isset($data[$key])) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
@@ -1325,10 +1322,10 @@ class Sr {
 				    }
 				    return true;
 			    }, 'email' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!isset($data[$key])) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
-				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
+				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($value) ? preg_match('/^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/', $value) : $args[0];
@@ -1338,10 +1335,10 @@ class Sr {
 				    }
 				    return true;
 			    }, 'url' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!isset($data[$key])) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
-				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
+				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($value) ? preg_match('/^http[s]?:\/\/[A-Za-z0-9]+\.[A-Za-z0-9]+[\/=\?%\-&_~`@[\]\':+!]*([^<>\"])*$/', $value) : $args[0];
@@ -1351,10 +1348,10 @@ class Sr {
 				    }
 				    return true;
 			    }, 'qq' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!isset($data[$key])) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
-				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
+				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($value) ? preg_match('/^[1-9][0-9]{4,}$/', $value) : $args[0];
@@ -1364,10 +1361,10 @@ class Sr {
 				    }
 				    return true;
 			    }, 'phone' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!isset($data[$key])) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
-				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
+				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($value) ? preg_match('/^(?:\d{3}-?\d{8}|\d{4}-?\d{7})$/', $value) : $args[0];
@@ -1377,10 +1374,10 @@ class Sr {
 				    }
 				    return true;
 			    }, 'mobile' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!isset($data[$key])) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
-				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
+				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($value) ? preg_match('/^(((13[0-9]{1})|(15[0-9]{1})|(18[0-9]{1})|(14[0-9]{1}))+\d{8})$/', $value) : $args[0];
@@ -1390,10 +1387,10 @@ class Sr {
 				    }
 				    return true;
 			    }, 'zipcode' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!isset($data[$key])) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
-				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
+				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($value) ? preg_match('/^[1-9]\d{5}(?!\d)$/', $value) : $args[0];
@@ -1403,10 +1400,10 @@ class Sr {
 				    }
 				    return true;
 			    }, 'idcard' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!isset($data[$key])) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
-				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
+				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($value) ? preg_match('/^\d{14}(\d{4}|(\d{3}[xX])|\d{1})$/', $value) : $args[0];
@@ -1416,10 +1413,10 @@ class Sr {
 				    }
 				    return true;
 			    }, 'ip' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!isset($data[$key])) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
-				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
+				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($value) ? preg_match('/^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$/', $value) : $args[0];
@@ -1429,12 +1426,12 @@ class Sr {
 				    }
 				    return true;
 			    }, 'chs' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!isset($data[$key])) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $count = implode(',', array_slice($args, 1, 2));
 				    $count = empty($count) ? '1,' : $count;
-				    $can_empty = isset($args[0]) && $args[0] == 'true';
+				    $can_empty = Sr::arrayKeyExists(0, $args) && $args[0] == 'true';
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($value) ? preg_match('/^[\x{4e00}-\x{9fa5}]{' . $count . '}$/u', $value) : $can_empty;
@@ -1444,10 +1441,10 @@ class Sr {
 				    }
 				    return true;
 			    }, 'date' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!isset($data[$key])) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
-				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
+				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($value) ? preg_match('/^[0-9]{4}-(((0[13578]|(10|12))-(0[1-9]|[1-2][0-9]|3[0-1]))|(02-(0[1-9]|[1-2][0-9]))|((0[469]|11)-(0[1-9]|[1-2][0-9]|30)))$/', $value) : $args[0];
@@ -1457,10 +1454,10 @@ class Sr {
 				    }
 				    return true;
 			    }, 'time' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!isset($data[$key])) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
-				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
+				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($value) ? preg_match('/^(([0-1][0-9])|([2][0-3])):([0-5][0-9])(:([0-5][0-9]))$/', $value) : $args[0];
@@ -1470,10 +1467,10 @@ class Sr {
 				    }
 				    return true;
 			    }, 'datetime' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!isset($data[$key])) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
-				    $args[0] = isset($args[0]) && $args[0] == 'true' ? TRUE : false;
+				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($value) ? preg_match('/^[0-9]{4}-(((0[13578]|(10|12))-(0[1-9]|[1-2][0-9]|3[0-1]))|(02-(0[1-9]|[1-2][0-9]))|((0[469]|11)-(0[1-9]|[1-2][0-9]|30))) (([0-1][0-9])|([2][0-3])):([0-5][0-9])(:([0-5][0-9]))$/', $value) : $args[0];
@@ -1483,7 +1480,7 @@ class Sr {
 				    }
 				    return true;
 			    }, 'reg' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!isset($data[$key])) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
@@ -1502,9 +1499,9 @@ class Sr {
 			$getCheckRuleInfo = function($_rule) {
 				$matches = array();
 				preg_match('|([^\[]+)(?:\[(.*)\](.?))?|', $_rule, $matches);
-				$matches[1] = isset($matches[1]) ? $matches[1] : '';
+				$matches[1] = Sr::arrayKeyExists(1, $matches) ? $matches[1] : '';
 				$matches[3] = !empty($matches[3]) ? $matches[3] : ',';
-				$matches[2] = isset($matches[2]) ? explode($matches[3], $matches[2]) : array();
+				$matches[2] = Sr::arrayKeyExists(2, $matches) ? explode($matches[3], $matches[2]) : array();
 				return $matches;
 			};
 			$returnData = $data;
@@ -1514,7 +1511,7 @@ class Sr {
 					$_v = self::arrayGet($returnData, $key);
 					$_r = $matches[1];
 					$args = $matches[2];
-					if (!isset($checkRules[$_r]) || !is_callable($checkRules[$_r])) {
+					if (!Sr::arrayKeyExists($_r, $checkRules) || !is_callable($checkRules[$_r])) {
 						throw new Soter_Exception_500('error rule [ ' . $_r . ' ]');
 					}
 					$ruleFunction = $checkRules[$_r];
@@ -1606,7 +1603,7 @@ class Sr {
 				$order = array(1, 2, 3, 4, 5, 6);
 			}
 			foreach ($order as $key) {
-				if (isset($pagination[$key - 1])) {
+				if (Sr::arrayKeyExists($key - 1, $pagination)) {
 					$output[] = $pagination[$key - 1];
 				}
 			}
@@ -1666,6 +1663,24 @@ class Sr {
 			} else {
 				throw new soter_exception_500($name . ' unknown type of method [ ' . $name . ' ]');
 			}
+		}
+
+		static function arrayKeyExists($key, $array) {
+			if (empty($array) || !is_array($array)) {
+				return false;
+			}
+			$keys = explode('.', $key);
+			while (count($keys) != 0) {
+				if (empty($array) || !is_array($array)) {
+					return false;
+				}
+				$key = array_shift($keys);
+				if (!array_key_exists($key, $array)) {
+					return false;
+				}
+				$array = $array[$key];
+			}
+			return true;
 		}
 
 	}
@@ -2031,7 +2046,7 @@ abstract class Soter_Database {
 				$configGroup = $this->{$group[0]}();
 				$connections = &$this->{$group[1]};
 				foreach ($configGroup as $key => $config) {
-					if (!isset($connections[$key])) {
+					if (!Sr::arrayKeyExists($key, $connections)) {
 						$options[PDO::ATTR_ERRMODE] = PDO::ERRMODE_EXCEPTION;
 						$options[PDO::ATTR_PERSISTENT] = $this->getPconnect();
 						if ($this->_isMysql()) {
@@ -2205,7 +2220,7 @@ abstract class Soter_Database {
 					    'index_subquery' => 9, 'range' => 10, 'index' => 11, 'all' => 12,
 					);
 					foreach ($explainRows as $row) {
-						if (isset($order[strtolower($row['type'])]) && isset($order[strtolower($this->getMinIndexType())])) {
+						if (Sr::arrayKeyExists(strtolower($row['type']), $order) && Sr::arrayKeyExists(strtolower($this->getMinIndexType()), $order)) {
 							$key = $order[strtolower($row['type'])];
 							$minKey = $order[strtolower($this->getMinIndexType())];
 							if ($key > $minKey) {
@@ -2268,7 +2283,7 @@ abstract class Soter_Database {
 		}
 		if ($this->getDebug() || $this->_isInTransaction) {
 			if ($message instanceof Exception) {
-				throw new Soter_Exception_Database($this->_errorMsg, 500,'Soter_Exception_Database',$message->getFile(),$message->getLine());
+				throw new Soter_Exception_Database($this->_errorMsg, 500, 'Soter_Exception_Database', $message->getFile(), $message->getLine());
 			} else {
 
 				throw new Soter_Exception_Database($message . $sql, $code);
@@ -2497,7 +2512,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 
 	private function _compileUpdateBatch() {
 		list($values, $index) = $this->arUpdateBatch;
-		if (count($values) && isset($values[0][$index])) {
+		if (count($values) && Sr::arrayKeyExists("0.$index", $values)) {
 			$ids = array();
 			$final = array();
 			foreach ($values as $key => $val) {
@@ -2816,7 +2831,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 	private function _checkPrefix($str) {
 		$prefix = $this->getTablePrefix();
 		if ($prefix && strpos($str, $prefix) === FALSE) {
-			if (!isset($this->_asTable[$str])) {
+			if (!Sr::arrayKeyExists($str,$this->_asTable)) {
 				return $prefix . $str;
 			}
 		}
@@ -2929,7 +2944,7 @@ class Soter_Database_Resultset {
 	}
 
 	public function row($index = null, $isAssoc = true) {
-		if (!is_null($index) && isset($this->_resultSet[$index])) {
+		if (!is_null($index) && Sr::arrayKeyExists($index,$this->_resultSet)) {
 			return $isAssoc ? $this->_resultSet[$index] : array_values($this->_resultSet[$index]);
 		} else {
 			$row = current($this->_resultSet);
@@ -2980,7 +2995,7 @@ class Soter_Database_Resultset {
 	public function values($columnName) {
 		$columns = array();
 		foreach ($this->_resultSet as $row) {
-			if (isset($row[$columnName])) {
+			if (Sr::arrayKeyExists($columnName,$row)) {
 				$columns[] = $row[$columnName];
 			} else {
 				return array();
@@ -2991,7 +3006,7 @@ class Soter_Database_Resultset {
 
 	public function value($columnName, $default = null, $index = null) {
 		$row = $this->row($index);
-		return ($columnName && isset($row[$columnName])) ? $row[$columnName] : $default;
+		return ($columnName && Sr::arrayKeyExists($columnName,$row)) ? $row[$columnName] : $default;
 	}
 
 	public function key($columnName) {
@@ -3544,12 +3559,12 @@ class Soter_View {
 	public function add($key, $value = array()) {
 		if (is_array($key)) {
 			foreach ($key as $k => $v) {
-				if (!isset(self::$vars[$k])) {
+				if (!Sr::arrayKeyExists($k, self::$vars)) {
 					self::$vars[$k] = $v;
 				}
 			}
 		} else {
-			if (!isset(self::$vars[$key])) {
+			if (!Sr::arrayKeyExists($key, self::$vars)) {
 				self::$vars[$key] = $value;
 			}
 		}
@@ -3855,7 +3870,8 @@ class Soter_Config {
 		$maintainIpWhitelist = array(),
 		$maintainModeHandle,
 		$databseConfig,
-		$cacheHandle,
+		$cacheHandles = array(),
+		$cacheConfig,
 		$sessionConfig,
 		$sessionHandle,
 		$methodCacheConfig,
@@ -3924,15 +3940,53 @@ class Soter_Config {
 	 * 
 	 * @return Soter_Cache
 	 */
-	public function getCacheHandle() {
-		return $this->cacheHandle;
+	public function getCacheHandle($key = '') {
+		if (empty($this->cacheConfig)) {
+			$this->cacheConfig = array(
+			    'default_type' => 'file',
+			    'drivers' => array(
+				'file' => $this->getPrimaryApplicationDir() . 'storage/cache/',
+			    )
+			);
+		}
+		$classMap = array('file' => 'Soter_Cache_File', 'memcache' => 'Soter_Cache_Memcache', 'memcached' => 'Soter_Cache_Memcached', 'apc' => 'Soter_Cache_Apc', 'redis' => 'Soter_Cache_Redis');
+
+		if (is_array($key)) {
+			reset($key);
+			if (!empty($key['class'])) {
+				$className = $key['class'];
+				$config = $key['config'];
+			} else {
+				$config = current($key);
+				$key = key($key);
+				$className = $classMap[$key];
+			}
+			return is_null($config) ? new $className() : new $className($config);
+		} else {
+			$key = $key ? $key : $this->cacheConfig['default_type'];
+			if (!Sr::arrayKeyExists("drivers.$key", $this->cacheConfig) || (empty($this->cacheConfig['drivers'][$key]['class']) && !Sr::arrayKeyExists($key, $classMap))) {
+				throw new Soter_Exception_500('unknown cache type [ ' . $key . ' ]');
+			}
+			$config = $this->cacheConfig['drivers'][$key];
+			$className = empty($this->cacheConfig['drivers'][$key]['class']) ? $classMap[$key] : $this->cacheConfig['drivers'][$key]['class'];
+			if (!Sr::arrayKeyExists($key, $this->cacheHandles)) {
+				$this->cacheHandles[$key] = is_null($config) ? new $className() : new $className($config);
+			}
+			return $this->cacheHandles[$key];
+		}
 	}
 
-	public function setCacheHandle($cacheHandle) {
-		if ($cacheHandle instanceof Soter_Cache) {
-			$this->cacheHandle = $cacheHandle;
+	public function getCacheConfig() {
+		return $this->cacheConfig;
+	}
+
+	public function setCacheConfig($cacheConfig) {
+		if (is_string($cacheConfig)) {
+			$this->cacheConfig = Sr::config($cacheConfig);
+		} elseif (is_array($cacheConfig)) {
+			$this->cacheConfig = $cacheConfig;
 		} else {
-			$this->cacheHandle = Sr::config($cacheHandle);
+			throw new Soter_Exception_500('unknown type of cache configure , it should be a string or an array .');
 		}
 		return $this;
 	}
@@ -3981,7 +4035,7 @@ class Soter_Config {
 		if (empty($group)) {
 			return $this->databseConfig;
 		} else {
-			return isset($this->databseConfig[$group]) ? $this->databseConfig[$group] : array();
+			return Sr::arrayKeyExists($group, $this->databseConfig) ? $this->databseConfig[$group] : array();
 		}
 	}
 
@@ -4582,7 +4636,7 @@ class Soter_Logger_Writer_Dispatcher {
 		}
 		$lastError = error_get_last();
 		$fatalError = array(1, 256, 64, 16, 4, 4096);
-		if (!isset($lastError["type"]) || !in_array($lastError["type"], $fatalError)) {
+		if (!Sr::arrayKeyExists("type", $lastError) || !in_array($lastError["type"], $fatalError)) {
 			return;
 		}
 		$this->dispatch(new Soter_Exception_500($lastError['message'], $lastError['type'], 'Fatal Error', $lastError['file'], $lastError['line']));
@@ -4707,8 +4761,8 @@ class Soter_Cache_File implements Soter_Cache {
 
 	private $_cacheDirPath;
 
-	public function __construct($cacheFileName = '') {
-		$cacheDirPath = empty($cacheFileName) ? Sr::config()->getPrimaryApplicationDir() . 'storage/cache/' : Sr::config($cacheFileName);
+	public function __construct($cacheDirPath = '') {
+		$cacheDirPath = empty($cacheDirPath) ? Sr::config()->getPrimaryApplicationDir() . 'storage/cache/' : $cacheDirPath;
 		$this->_cacheDirPath = Sr::realPath($cacheDirPath) . '/';
 		if (!is_dir($this->_cacheDirPath)) {
 			mkdir($this->_cacheDirPath, 0700, true);
@@ -4738,7 +4792,7 @@ class Soter_Cache_File implements Soter_Cache {
 
 	private function unpack($cacheData) {
 		$cacheData = @unserialize($cacheData);
-		if (is_array($cacheData) && isset($cacheData['userData']) && isset($cacheData['expireTime'])) {
+		if (is_array($cacheData) && Sr::arrayKeyExists('userData', $cacheData) && Sr::arrayKeyExists('expireTime', $cacheData)) {
 			if ($cacheData['expireTime'] == 0) {
 				return $cacheData['userData'];
 			}
@@ -4801,12 +4855,8 @@ class Soter_Cache_Memcached implements Soter_Cache {
 
 	private $config, $handle;
 
-	public function __construct($configFileName) {
-		if (is_array($configFileName)) {
-			$this->config = $configFileName;
-		} else {
-			$this->config = Sr::config($configFileName);
-		}
+	public function __construct($config) {
+		$this->config = $config;
 	}
 
 	private function _init() {
@@ -4848,12 +4898,8 @@ class Soter_Cache_Memcache implements Soter_Cache {
 
 	private $config, $handle;
 
-	public function __construct($configFileName) {
-		if (is_array($configFileName)) {
-			$this->config = $configFileName;
-		} else {
-			$this->config = Sr::config($configFileName);
-		}
+	public function __construct($config) {
+		$this->config = $config;
 	}
 
 	private function _init() {
@@ -4946,12 +4992,8 @@ class Soter_Cache_Redis implements Soter_Cache {
 		}
 	}
 
-	public function __construct($configFileName) {
-		if (is_array($configFileName)) {
-			$this->config = $configFileName;
-		} else {
-			$this->config = Sr::config($configFileName);
-		}
+	public function __construct($config) {
+		$this->config = $config;
 	}
 
 	public function clean() {
@@ -5037,7 +5079,7 @@ class Soter_Generator extends Soter_Task {
 			'nameTip' => 'Task'
 		    )
 		);
-		if (!isset($info[$type])) {
+		if (!Sr::arrayKeyExists($type, $info)) {
 			exit('[ Error ]' . "\n" . 'Type : [ ' . $type . ' ]');
 		}
 		$classname = $info[$type]['dir'] . '_' . $name;
@@ -5103,7 +5145,7 @@ class Soter_Generator_Mysql extends Soter_Task {
 			'nameTip' => 'Dao'
 		    ),
 		);
-		if (!isset($info[$type])) {
+		if (!Sr::arrayKeyExists($type, $info)) {
 			exit('[ Error ]' . "\n" . 'Type : [ ' . $type . ' ]');
 		}
 		$classname = $info[$type]['dir'] . '_' . $name;

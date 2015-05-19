@@ -26,8 +26,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.24
- * @createdtime   2015-05-19 12:02:47
+ * @since         v1.0.25
+ * @createdtime   2015-05-19 19:30:18
  */
  
 define("IN_SOTER", true);
@@ -118,11 +118,14 @@ Soter::initialize()
 		// 'Demo' => 'demo'
 	))
 	/**
-	 * 设置缓存类型
-	 * 1.setCacheHandle可以直接传入Soter_Cache缓存类对象
-	 * 2.setCacheHandle也可以传入配置文件名称，配置文件里面要返回一个Soter_Cache缓存类对象。
+	 * 配置缓存
+	 * 1.setCacheHandle可以直接传入缓存配置数组。
+	 * 2.setCacheHandle也可以传入配置文件名称，配置文件里面要返回一个缓存配置数组。
+	 * 缓存配置数组可以参考缓存配置文件：application/config/default/cache.php里面return的数组。
+	 * 3.如果这里不设置(保留注释)，Sr::cache()默认使用的是文件缓存，
+	 * 缓存数据默认存储在application/storage/cache
 	 */
-	->setCacheHandle(new Soter_Cache_File())
+	//->setCacheConfig('cache')
 	/* 设置session信息 */
 	->setSessionConfig(array(
 	    'autostart' => false,

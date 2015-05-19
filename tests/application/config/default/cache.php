@@ -1,12 +1,15 @@
 <?php
 
 /**
- * 缓存配置，如果要使用哪一种缓存，取消相应的return部分的注释即可。
- * 提示：不要存在两个或者以上的return
+ * 缓存配置
  */
 return array(
     'default_type' => 'file', //默认的缓存类型，值是下面drivers关联数组的键名称。
     'drivers' => array(
+	'my_cache' => array(
+	    'class' => 'Cache_MyCache',
+	    'config' => null
+	),
 	'file' => Sr::config()->getPrimaryApplicationDir() . 'storage/cache/', //缓存文件保存路径
 	'memcache' => array(//memcache服务器信息，支持多个
 	    array("127.0.0.1", 11211),
@@ -16,7 +19,7 @@ return array(
 	    array("127.0.0.1", 11211),
 	//array("new.host.ip",11211),
 	),
-	'apc' => '', //apc缓存不需要配置信息，保持null即可
+	'apc' => null, //apc缓存不需要配置信息，保持null即可
 	'redis' => array(//redis服务器信息，支持多主多从。原理是：写的时候每个主都写，读的时候随机一个从读取数据
 	    'masters' => array(
 		'master01' => array(

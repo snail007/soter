@@ -36,12 +36,12 @@ class Soter_View {
 	public function add($key, $value = array()) {
 		if (is_array($key)) {
 			foreach ($key as $k => $v) {
-				if (!Sr::arrayKeyExists($k,self::$vars)) {
+				if (!Sr::arrayKeyExists($k, self::$vars)) {
 					self::$vars[$k] = $v;
 				}
 			}
 		} else {
-			if (!Sr::arrayKeyExists($key,self::$vars)) {
+			if (!Sr::arrayKeyExists($key, self::$vars)) {
 				self::$vars[$key] = $value;
 			}
 		}
@@ -427,20 +427,26 @@ class Soter_Config {
 			);
 		}
 		$classMap = array('file' => 'Soter_Cache_File', 'memcache' => 'Soter_Cache_Memcache', 'memcached' => 'Soter_Cache_Memcached', 'apc' => 'Soter_Cache_Apc', 'redis' => 'Soter_Cache_Redis');
-		$className = $classMap[$key];
+
 		if (is_array($key)) {
 			reset($key);
-			$key = key($key);
-			$config = current($key);
+			if (!empty($key['class'])) {
+				$className = $key['class'];
+				$config = $key['config'];
+			} else {
+				$config = current($key);
+				$key = key($key);
+				$className = $classMap[$key];
+			}
 			return is_null($config) ? new $className() : new $className($config);
 		} else {
 			$key = $key ? $key : $this->cacheConfig['default_type'];
-
-			if (!Sr::arrayKeyExists($key,$classMap)||!Sr::arrayKeyExists("drivers.$key",$this->cacheConfig)) {
+			if (!Sr::arrayKeyExists("drivers.$key", $this->cacheConfig) || (empty($this->cacheConfig['drivers'][$key]['class']) && !Sr::arrayKeyExists($key, $classMap))) {
 				throw new Soter_Exception_500('unknown cache type [ ' . $key . ' ]');
 			}
-			if (!Sr::arrayKeyExists($key,$this->cacheHandles)) {
-				$config = $this->cacheConfig['drivers'][$key];
+			$config = $this->cacheConfig['drivers'][$key];
+			$className = empty($this->cacheConfig['drivers'][$key]['class']) ? $classMap[$key] : $this->cacheConfig['drivers'][$key]['class'];
+			if (!Sr::arrayKeyExists($key, $this->cacheHandles)) {
 				$this->cacheHandles[$key] = is_null($config) ? new $className() : new $className($config);
 			}
 			return $this->cacheHandles[$key];
@@ -506,7 +512,7 @@ class Soter_Config {
 		if (empty($group)) {
 			return $this->databseConfig;
 		} else {
-			return Sr::arrayKeyExists($group,$this->databseConfig) ? $this->databseConfig[$group] : array();
+			return Sr::arrayKeyExists($group, $this->databseConfig) ? $this->databseConfig[$group] : array();
 		}
 	}
 
@@ -1107,7 +1113,7 @@ class Soter_Logger_Writer_Dispatcher {
 		}
 		$lastError = error_get_last();
 		$fatalError = array(1, 256, 64, 16, 4, 4096);
-		if (!Sr::arrayKeyExists("type",$lastError) || !in_array($lastError["type"], $fatalError)) {
+		if (!Sr::arrayKeyExists("type", $lastError) || !in_array($lastError["type"], $fatalError)) {
 			return;
 		}
 		$this->dispatch(new Soter_Exception_500($lastError['message'], $lastError['type'], 'Fatal Error', $lastError['file'], $lastError['line']));
@@ -1263,7 +1269,7 @@ class Soter_Cache_File implements Soter_Cache {
 
 	private function unpack($cacheData) {
 		$cacheData = @unserialize($cacheData);
-		if (is_array($cacheData) && Sr::arrayKeyExists('userData',$cacheData) && Sr::arrayKeyExists('expireTime',$cacheData)) {
+		if (is_array($cacheData) && Sr::arrayKeyExists('userData', $cacheData) && Sr::arrayKeyExists('expireTime', $cacheData)) {
 			if ($cacheData['expireTime'] == 0) {
 				return $cacheData['userData'];
 			}
@@ -1550,7 +1556,7 @@ class Soter_Generator extends Soter_Task {
 			'nameTip' => 'Task'
 		    )
 		);
-		if (!Sr::arrayKeyExists($type,$info)) {
+		if (!Sr::arrayKeyExists($type, $info)) {
 			exit('[ Error ]' . "\n" . 'Type : [ ' . $type . ' ]');
 		}
 		$classname = $info[$type]['dir'] . '_' . $name;
@@ -1616,7 +1622,7 @@ class Soter_Generator_Mysql extends Soter_Task {
 			'nameTip' => 'Dao'
 		    ),
 		);
-		if (!Sr::arrayKeyExists($type,$info)) {
+		if (!Sr::arrayKeyExists($type, $info)) {
 			exit('[ Error ]' . "\n" . 'Type : [ ' . $type . ' ]');
 		}
 		$classname = $info[$type]['dir'] . '_' . $name;

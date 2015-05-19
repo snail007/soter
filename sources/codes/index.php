@@ -92,9 +92,9 @@ Soter::initialize()
 	 * 配置缓存
 	 * 1.setCacheHandle可以直接传入缓存配置数组。
 	 * 2.setCacheHandle也可以传入配置文件名称，配置文件里面要返回一个缓存配置数组。
-	 * 缓存配置数组可以参考缓存配置文件：application/config/default/cache.php
-	 * 里面return的数组。
-	 * 3.如果这里不设置，Sr::cache()默认使用的是文件缓存
+	 * 缓存配置数组可以参考缓存配置文件：application/config/default/cache.php里面return的数组。
+	 * 3.如果这里不设置(保留注释)，Sr::cache()默认使用的是文件缓存，
+	 * 缓存数据默认存储在application/storage/cache
 	 */
 	//->setCacheConfig('cache')
 	/* 设置session信息 */

@@ -1640,6 +1640,9 @@ class Sr {
 			}
 			$keys = explode('.', $key);
 			while (count($keys) != 0) {
+				if (empty($array) || !is_array($array)) {
+					return false;
+				}
 				$key = array_shift($keys);
 				if (!array_key_exists($key, $array)) {
 					return false;
