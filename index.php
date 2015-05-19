@@ -26,8 +26,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         1.0.22
- * @createdtime   2015-05-18 15:25:04
+ * @since         v1.0.23
+ * @createdtime   2015-05-18 23:36:35
  */
  
 define("IN_SOTER", true);
@@ -131,6 +131,11 @@ Soter::initialize()
 	    'session_name' => 'SOTER',
 	    'lifetime' => 3600,
 	))
+	/*
+	 * 拓展Sr类的方法，参数是关联数组，键是拓展的方法名称，值是前缀字符串或者回调匿名函数
+	 * 详细使用请看手册：拓展Sr核心
+	 */
+	->setSrMethods(array())
 	/**
 	 * 设置session托管类型
 	 * 1.setSessionHandle可以直接传入Soter_Session类对象

@@ -32,14 +32,14 @@ require dirname(__FILE__) . '/../codes/index.php';
 define('SRC_DIR', dirname(__FILE__) . '/../codes/');
 define('DIST_DIR', dirname(__FILE__) . '/../../');
 date_default_timezone_set('PRC');
-$ver = "1.0.22";
+$ver = "v1.0.23";
 
 if (Sr::getOpt('version')) {
 	$ver = Sr::getOpt('version');
 }
 if (Sr::getOpt('docs')) {
-	$contents =  file_get_contents($docIndex=DIST_DIR.'../soter-docs/index.html');
-	$contents=  preg_replace('/v\d+.\d+.\d+/', 'v'.$ver, $contents);
+	$contents = file_get_contents($docIndex = DIST_DIR . '../soter-docs/index.html');
+	$contents = preg_replace('/v\d+.\d+.\d+/', $ver, $contents);
 	file_put_contents($docIndex, $contents);
 }
 
