@@ -588,7 +588,6 @@ class Sr {
 			$autoDomain = $domian;
 		} else {
 			$host = self::server('HTTP_HOST');
-			// $_host = current(explode(":", $host));
 			$is_ip = preg_match('/^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$/', $host);
 			$notRegularDomain = preg_match('/^[^\\.]+$/', $host);
 			if ($is_ip) {
