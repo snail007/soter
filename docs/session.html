@@ -16,7 +16,25 @@
 					<br>比如：memcache，mysql，mongodb等。Soter里把这种采用非默认文件存储的方式称为SESSION托管。
 					<br>Soter支持多种SESSION托管方式，分布是：memcache、memcached、redis、mongodb、mysql。
 				</li>
-
+				<li><h2 class="title_h2">session相关设置</h2>
+					我们在入口文件里面可以看到下面的配置：
+					<pre class="brush:php">
+						/* 设置session信息 */
+						->setSessionConfig(array(
+						    'autostart' => false,
+						    'cookie_path' => '/',
+						    'cookie_domain' => Sr::server('HTTP_HOST'),
+						    'session_name' => 'SOTER',
+						    'lifetime' => 3600,
+						))
+					</pre>
+					可以看到我们可以设置session的一些基本信息，下面对每个部分说明一下：
+					<br>1.<b>autostart</b> 是否自动启动session，true自动，false不自动。
+					<br>2.<b>cookie_path</b>  cookie中session_id的路径，一般保持 / 即可。
+					<br>3.<b>cookie_domain</b>  cookie中session_id的作用域域名，一般保持当前域名即可。
+					<br>4.<b>session_name</b>  cookie中session_id的cookie名称。
+					<br>5.<b>lifetime</b>  cookie中session_id的过期时间。
+				</li>
 				<li><h2 class="title_h2">设置托管方式</h2>
 					在入口文件里面我可以看到下面的配置：
 					<pre class="brush:php">

@@ -78,6 +78,7 @@
                                         <br>2.抓取数据，支持get，post。
                                         <br>可以通过<code>Sr::extension('Http')</code>实例化一个HTTP操作类。
                                         <br><b>1.使用GET方式请求一个页面</b>
+                                        <br>参数说明：
                                         <br>$url 必填：页面地址
                                         <br>$data 选填：要发送的数据数组或者原始数据，比如：array('user'=>'test','pass'=>'354534'),键是表单字段名称，值是表单字段的值，默认 null
                                         <br>$header 选填：附加的HTTP头，比如：array('Connection:keep-alive','Cache-Control:max-age=0')，注意冒号前后不能有空格，默认 null
@@ -100,6 +101,7 @@
                                                 $http->get('https://baidu.com/', null, null, 1);
                                         </pre>
                                         <b>2.使用POST方式请求一个页面</b>
+                                        <br>参数说明：
                                         <br>$url 必填：页面地址
                                         <br>$data 选填：要发送的数据数组，比如：array('user'=>'test','pass'=>'354534'),键是表单字段名称，值是表单字段的值，默认 null
                                         <br>$header 选填：附加的HTTP头，比如：array('Connection:keep-alive','Cache-Control:max-age=0')，注意冒号前后不能有空格，默认 null
@@ -123,6 +125,7 @@
                                         </pre>
                                         <b>3.设置referer</b>
                                         <br>设置当次请求使用的referer，当get或者post请求完毕后，referer会被重置为null
+                                        <br>参数说明：
                                         <br>$referer 必填：页面地址
                                         <br>示例如下：
                                         <pre class="brush:php">
@@ -164,6 +167,7 @@
                                                 $http->location();
                                         </pre>
                                         <b>9.设置UserAgent</b>
+                                        <br>参数说明：
                                         <br>$user_agent 必填：用户代理
                                         <br>示例如下：
                                         <pre class="brush:php">
@@ -177,6 +181,7 @@
                                                 $http->header();
                                         </pre>
                                         <b>11.获取请求返回的页面内容</b>
+                                        <br>参数说明：
                                         <br>$is_json 选填：是否使用json_decode()解码一下,当返回数据是json的时候这个比较有用。默认false
                                         <br>示例如下：
                                         <pre class="brush:php">
@@ -191,6 +196,7 @@
                                                 $http->lastUrl();
                                         </pre>
                                         <b>14.设置curl句柄参数</b>
+                                        <br>参数说明：
                                         <br>$opt 必填：curl_setopt()的第二个参数
                                         <br>$val 必填：curl_setopt()的第三个参数
                                         <br>示例如下：
@@ -206,7 +212,8 @@
                                         比如：<br>
                                         自动管理cookie里面有：name=snail，请求之前用setCookie设置了name=123<br>
                                         那么请求的时候发送的cookie是name=123,请求完成后恢复name=snail，如果再次请求那么发送的cookie中name=snail<br>
-                                        $key 必填：cookie的key，也可以是一个键值对数组一次设置多个cookie，此时不需要第二个参数。
+                                        参数说明：
+                                        <br>$key 必填：cookie的key，也可以是一个键值对数组一次设置多个cookie，此时不需要第二个参数。                                        
                                         <br>$val 选填：cookie的value
                                         <br>示例如下：
                                         <pre class="brush:php">

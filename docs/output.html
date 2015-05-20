@@ -13,6 +13,7 @@
                                 <li>
                                         <h2 class="title_h2">重定向</h2>
                                         通过<code>Sr::redirect($url, $msg = null, $time = 3, $view = null)</code>方法，进行重定向。
+                                        <br>参数说明：
                                         <br>$url 必填：是跳转到的地址
                                         <br>$msg 选填：是跳转的时候的提示信息
                                         <br>$time 选填：是提示信息显示多久后跳转，单位秒
@@ -49,6 +50,7 @@
                                 <li>
                                         <h2 class="title_h2">输出提示信息</h2>
                                         通过<code>Sr::message($msg, $url = null, $time = 3, $view = null)</code>方法，输出操作后的提示信息。
+                                        <br>参数说明：
                                         <br>$msg 必填：是提示信息
                                         <br>$url 选填：是跳转到的地址
                                         <br>$time 选填：是提示信息显示多久后跳转，单位秒
@@ -81,13 +83,15 @@
                                 <li>
                                         <h2 class="title_h2">json输出</h2>
                                         通过<code>Sr::json()</code>方法,来输出json格式。
-                                        <br>$code 选填：状态码
-                                        <br>$message 选填：信息
-                                        <br>$data 选填：数据
+                                        <br>默认有三个参数：
+                                        <br>$code：状态码
+                                        <br>$message：信息
+                                        <br>$data：数据
                                         <br>示例如下：
                                         <pre class="brush:php">
-                                                //输出code为"200"，message为"success"和data为"array('添加成功')"的json格式
+                                                //输出json
                                                 echo Sr::json(200, 'success', array('添加成功'));
+                                                //上面将输出：{"code":200,"message":"success","data":["\u6dfb\u52a0\u6210\u529f"]}
                                         </pre>
                                         当然，我们也可以自定义json输出格式内容。
                                         <br>我们可以从入口文件里面看到<code>->setOutputJsonRender</code>方法，<code>->setOutputJsonRender</code>方法就是来自定义json输出格式内容。

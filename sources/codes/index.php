@@ -88,6 +88,9 @@ Soter::initialize()
 	->setHmvcModules(array(
 		// 'Demo' => 'demo'
 	))
+	/* 设置cookie key前缀，当我们使用Sr::setCookie()的时候，
+	 * 参数里面的key自动加上这里设置的前缀 */
+	->setCookiePrefix('')
 	/**
 	 * 配置缓存
 	 * 1.setCacheHandle可以直接传入缓存配置数组。
