@@ -21,7 +21,7 @@
                                         <h2 class="title_h2">数据验证</h2>
 					在我们的代码里可以通过下面的方法进行数据验证。
 					<pre class="brush:php">
-						Sr::checkData($data, $rules, &$returnData, &$errorMessage, &$db = null) 
+						Sr::checkData($data, $rules, &$returnData, &$errorMessage, &$errorKey = null, &$db = null) 
 					</pre>
 					参数说明：
 					<br><b>$data</b>   需要检验的数据，一般是表单Sr::post()数据,或者其它数组数据都可以。
@@ -49,6 +49,7 @@
 					<b>$returnData</b> 验证通过后，处理过的数据，
 					<br>这个应该是我们下一步要使用的合法数据，比如读取其中的数据插入数据库等。
 					<br><b>$errorMessage</b> 当验证失败的时候这个变量存储的就是错误提示信息。
+					<br><b>$errorKey</b> 当验证失败的时候这个变量存储的就是验证失败的那个key字段名称。
 					<br><b>$db</b> 当unique和exists规则验证的数据不是当前默认的数据库连接时，可以指定使用的数据库连接对象。
 					<br><b>示例：</b>
 					<br>继续上面2中的数据，为了安全，我们需要检验<code>$data=array('title'=>'值','content'=>'值')</code>
@@ -158,7 +159,7 @@
 					<br><b>$args</b>  规则后面的参数数组，比如：range_len[6,16]，那么$args就是array(6,16)
 					<br><b>$returnValue</b> 如果要改变传入$value的值，把改变后的值赋值给$returnValue变量即可。
 					<br>比如上面我们自定义规则encodePassword，把值md5加密了一次，
-					<br>那么Sr::checkData($data, $rules, &$returnData, &$errorMessage, &$db = null)验证数据通过之后，
+					<br>那么Sr::checkData($data, $rules, &$returnData, &$errorMessage, &$errorKey, &$db = null)验证数据通过之后，
 					<br><b>$returnData</b>的数据中的使用了encodePassword规则的字段都会被md5加密。
 					<br><b>$break</b> 对于一个字段多条验证规则存在的时候，如果设置$break为true那么该字段的该条规则之后的验证规则不在起作用
 					<br><b class="text_strong">返回值说明：</b>

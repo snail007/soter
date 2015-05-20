@@ -55,8 +55,10 @@ class TestDataCheck extends UnitTestCase {
 
 	public function testArray() {
 		$data['test'] = 123;
-		$this->assertFalse(Sr::checkData($data, array('test' => array('array' => '2')), $returnData, $errorMessage));
+		$this->assertFalse(Sr::checkData($data, array('test' => array('array' => '2')), $returnData, $errorMessage, $errorKey));
 		$this->assertEqual($errorMessage, 2);
+		$this->assertEqual($errorKey, 'test');
+
 		$data['test'] = array();
 		$this->assertTrue(Sr::checkData($data, array('test' => array('array' => '2')), $returnData, $errorMessage));
 		$data['test'] = array(2, 1);
@@ -174,11 +176,11 @@ class TestDataCheck extends UnitTestCase {
 		    array('name' => '002', 'gid' => 2),
 		))->execute();
 		$data['test'] = '001';
-		$this->assertFalse(Sr::checkData($data, array('test' => array('unique[a.name]' => '')), $returnData, $errorMessage, $this->db));
+		$this->assertFalse(Sr::checkData($data, array('test' => array('unique[a.name]' => '')), $returnData, $errorMessage, $errorKey, $this->db));
 		$data['test'] = '003';
-		$this->assertTrue(Sr::checkData($data, array('test' => array('unique[a.name]' => '')), $returnData, $errorMessage, $this->db));
+		$this->assertTrue(Sr::checkData($data, array('test' => array('unique[a.name]' => '')), $returnData, $errorMessage, $errorKey, $this->db));
 		$data['test'] = '001';
-		$this->assertTrue(Sr::checkData($data, array('test' => array('unique[a.name,gid:1]' => '')), $returnData, $errorMessage, $this->db));
+		$this->assertTrue(Sr::checkData($data, array('test' => array('unique[a.name,gid:1]' => '')), $returnData, $errorMessage, $errorKey, $this->db));
 		$this->clean();
 	}
 
@@ -189,11 +191,11 @@ class TestDataCheck extends UnitTestCase {
 		    array('name' => '002', 'gid' => 2),
 		))->execute();
 		$data['test'] = '004';
-		$this->assertFalse(Sr::checkData($data, array('test' => array('exists[a.name]' => '')), $returnData, $errorMessage, $this->db));
+		$this->assertFalse(Sr::checkData($data, array('test' => array('exists[a.name]' => '')), $returnData, $errorMessage, $errorKey, $this->db));
 		$data['test'] = '001';
-		$this->assertTrue(Sr::checkData($data, array('test' => array('exists[a.name]' => '')), $returnData, $errorMessage, $this->db));
+		$this->assertTrue(Sr::checkData($data, array('test' => array('exists[a.name]' => '')), $returnData, $errorMessage, $errorKey, $this->db));
 		$data['test'] = '001';
-		$this->assertTrue(Sr::checkData($data, array('test' => array('exists[a.name,gid:1]' => '')), $returnData, $errorMessage, $this->db));
+		$this->assertTrue(Sr::checkData($data, array('test' => array('exists[a.name,gid:1]' => '')), $returnData, $errorMessage, $errorKey, $this->db));
 		$this->clean();
 	}
 

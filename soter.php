@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.25
- * @createdtime   2015-05-19 19:30:18
+ * @since         v1.0.26
+ * @createdtime   2015-05-20 13:24:11
  */
  
 
@@ -960,7 +960,7 @@ class Sr {
 		return $data;
 	}
 
-	static function checkData($data, $rules, &$returnData, &$errorMessage, &$db = null) {
+	static function checkData($data, $rules, &$returnData, &$errorMessage, &$errorKey = null, &$db = null) {
 		static $checkRules;
 		if (empty($checkRules)) {
 			$defaultRules = array(
@@ -1521,6 +1521,7 @@ class Sr {
 					$isOkay = $ruleFunction($key, $_v, $data, $args, $returnValue, $break, $db);
 					if (!$isOkay) {
 						$errorMessage = $message;
+						$errorKey = $key;
 						return false;
 					}
 					if (!is_null($returnValue)) {
@@ -3949,26 +3950,17 @@ class Soter_Config {
 			    )
 			);
 		}
-		$classMap = array('file' => 'Soter_Cache_File', 'memcache' => 'Soter_Cache_Memcache', 'memcached' => 'Soter_Cache_Memcached', 'apc' => 'Soter_Cache_Apc', 'redis' => 'Soter_Cache_Redis');
-
 		if (is_array($key)) {
-			reset($key);
-			if (!empty($key['class'])) {
-				$className = $key['class'];
-				$config = $key['config'];
-			} else {
-				$config = current($key);
-				$key = key($key);
-				$className = $classMap[$key];
-			}
+			$className = $key['class'];
+			$config = $key['config'];
 			return is_null($config) ? new $className() : new $className($config);
 		} else {
 			$key = $key ? $key : $this->cacheConfig['default_type'];
-			if (!Sr::arrayKeyExists("drivers.$key", $this->cacheConfig) || (empty($this->cacheConfig['drivers'][$key]['class']) && !Sr::arrayKeyExists($key, $classMap))) {
+			if (!Sr::arrayKeyExists("drivers.$key", $this->cacheConfig)) {
 				throw new Soter_Exception_500('unknown cache type [ ' . $key . ' ]');
 			}
-			$config = $this->cacheConfig['drivers'][$key];
-			$className = empty($this->cacheConfig['drivers'][$key]['class']) ? $classMap[$key] : $this->cacheConfig['drivers'][$key]['class'];
+			$config = $this->cacheConfig['drivers'][$key]['config'];
+			$className = $this->cacheConfig['drivers'][$key]['class'];
 			if (!Sr::arrayKeyExists($key, $this->cacheHandles)) {
 				$this->cacheHandles[$key] = is_null($config) ? new $className() : new $className($config);
 			}

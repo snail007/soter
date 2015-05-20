@@ -929,7 +929,7 @@ class Sr {
 		return $data;
 	}
 
-	static function checkData($data, $rules, &$returnData, &$errorMessage, &$db = null) {
+	static function checkData($data, $rules, &$returnData, &$errorMessage, &$errorKey = null, &$db = null) {
 		static $checkRules;
 		if (empty($checkRules)) {
 			$defaultRules = array(
@@ -1490,6 +1490,7 @@ class Sr {
 					$isOkay = $ruleFunction($key, $_v, $data, $args, $returnValue, $break, $db);
 					if (!$isOkay) {
 						$errorMessage = $message;
+						$errorKey = $key;
 						return false;
 					}
 					if (!is_null($returnValue)) {

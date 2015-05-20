@@ -426,26 +426,17 @@ class Soter_Config {
 			    )
 			);
 		}
-		$classMap = array('file' => 'Soter_Cache_File', 'memcache' => 'Soter_Cache_Memcache', 'memcached' => 'Soter_Cache_Memcached', 'apc' => 'Soter_Cache_Apc', 'redis' => 'Soter_Cache_Redis');
-
 		if (is_array($key)) {
-			reset($key);
-			if (!empty($key['class'])) {
-				$className = $key['class'];
-				$config = $key['config'];
-			} else {
-				$config = current($key);
-				$key = key($key);
-				$className = $classMap[$key];
-			}
+			$className = $key['class'];
+			$config = $key['config'];
 			return is_null($config) ? new $className() : new $className($config);
 		} else {
 			$key = $key ? $key : $this->cacheConfig['default_type'];
-			if (!Sr::arrayKeyExists("drivers.$key", $this->cacheConfig) || (empty($this->cacheConfig['drivers'][$key]['class']) && !Sr::arrayKeyExists($key, $classMap))) {
+			if (!Sr::arrayKeyExists("drivers.$key", $this->cacheConfig)) {
 				throw new Soter_Exception_500('unknown cache type [ ' . $key . ' ]');
 			}
-			$config = $this->cacheConfig['drivers'][$key];
-			$className = empty($this->cacheConfig['drivers'][$key]['class']) ? $classMap[$key] : $this->cacheConfig['drivers'][$key]['class'];
+			$config = $this->cacheConfig['drivers'][$key]['config'];
+			$className = $this->cacheConfig['drivers'][$key]['class'];
 			if (!Sr::arrayKeyExists($key, $this->cacheHandles)) {
 				$this->cacheHandles[$key] = is_null($config) ? new $className() : new $className($config);
 			}

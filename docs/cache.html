@@ -29,131 +29,180 @@
 						 */
 						//->setCacheConfig('cache')
 					</pre>
-					提示：
-					<br>1.->setCacheHandle($config)传入缓存配置数组$config,$config数组结构如下：
+					<h3 class="title_h3">1.传入缓存配置数组</h3>
+					比如传入缓存配置数组$config，即->setCacheConfig($config),$config数组结构如下：
 					<pre class="brush:php">
 						/**
 						 * 缓存配置
 						 */
 						array(
-						    'default_type' => 'file', //默认的缓存类型，值是下面drivers关联数组的键名称。
-						    'drivers' => array(
-							'file' => Sr::config()->getPrimaryApplicationDir() . 'storage/cache/', //缓存文件保存路径
-							'memcache' => array(//memcache服务器信息，支持多个
-							    array("127.0.0.1", 11211),
-							//array("new.host.ip",11211),
-							),
-							'memcached' => array(//memcached服务器信息，支持多个
-							    array("127.0.0.1", 11211),
-							//array("new.host.ip",11211),
-							),
-							'apc' => '', //apc缓存不需要配置信息，保持null即可
-							'redis' => array(//redis服务器信息，支持多主多从。原理是：写的时候每个主都写，读的时候随机一个从读取数据
-							    'masters' => array(
-								'master01' => array(
-								    //sock,tcp;连接类型，tcp：使用host port连接，sock：本地sock文件连接
-								    'type' => 'tcp',
-								    //key的前缀，便于管理查看，在set和get的时候会自动加上和去除前缀，无前缀请保持null
-								    'prefix' => Sr::server('HTTP_HOST'),
-								    //type是sock的时候，需要在这里指定sock文件的完整路径
-								    'sock' => '',
-								    //type是tcp的时候，需要在这里指定host，port，password，timeout，retry
-								    //主机地址
-								    'host' => '127.0.0.1',
-								    //端口
-								    'port' => 6379,
-								    //密码，如果没有,保持null
-								    'password' => NULL,
-								    //0意味着没有超时限制，单位秒
-								    'timeout' => 0,
-								    //连接失败后的重试时间间隔，单位毫秒
-								    'retry' => 100,
-								    // 数据库序号，默认0, 参考 http://redis.io/commands/select
-								    'db' => 0,
-								),
+							'default_type' => 'file', //默认的缓存类型，值是下面drivers关联数组的键名称。
+							'drivers' => array(
+							    //自定义缓存示例
+							    'my_cache' => array(
+									'class' => 'Cache_MyCache', //缓存类名称
+									'config' => null//需要传递给缓存类构造方法的第一个参数，一般是配置信息数组，不需要就保持null
 							    ),
-							    'slaves' => array(
-							    //	'slave01' => array(
-							    //	),
+							    'file' => array(
+									'class' => 'Soter_Cache_File',
+									//缓存文件保存路径
+									'config' => Sr::config()->getPrimaryApplicationDir() . 'storage/cache/'
 							    ),
-							)
-						    )
+							    'memcache' => array(
+									'class' => 'Soter_Cache_Memcache',
+									'config' => array(//memcache服务器信息，支持多个
+									    array("127.0.0.1", 11211),
+									//array("new.host.ip",11211),
+									)
+							    ),
+							    'memcached' => array(
+									'class' => 'Soter_Cache_Memcached',
+									'config' => array(//memcached服务器信息，支持多个
+									    array("127.0.0.1", 11211),
+									//array("new.host.ip",11211),
+									)
+							    ),
+							    'apc' => array(
+									'class' => 'Soter_Cache_Apc',
+									'config' => NULL//apc缓存不需要配置信息，保持null即可
+							    ),
+							    'redis' => array(
+									'class' => 'Soter_Cache_Redis',
+									'config' => array(
+									    //redis服务器信息，支持多主多从。原理是：写的时候每个主都写，读的时候随机一个从读取数据
+									    'masters' => array(
+										'master01' => array(
+										    //sock,tcp;连接类型，tcp：使用host port连接，sock：本地sock文件连接
+										    'type' => 'tcp',
+										    //key的前缀，便于管理查看，在set和get的时候会自动加上和去除前缀，无前缀请保持null
+										    'prefix' => Sr::server('HTTP_HOST'),
+										    //type是sock的时候，需要在这里指定sock文件的完整路径
+										    'sock' => '',
+										    //type是tcp的时候，需要在这里指定host，port，password，timeout，retry
+										    //主机地址
+										    'host' => '127.0.0.1',
+										    //端口
+										    'port' => 6379,
+										    //密码，如果没有,保持null
+										    'password' => NULL,
+										    //0意味着没有超时限制，单位秒
+										    'timeout' => 0,
+										    //连接失败后的重试时间间隔，单位毫秒
+										    'retry' => 100,
+										    // 数据库序号，默认0, 参考 http://redis.io/commands/select
+										    'db' => 0,
+										),
+									    ),
+									    'slaves' => array(
+									    //	'slave01' => array(
+									    //	),
+									    ),
+									)
+							    ),
 						);
 					</pre>
-					<br>2.传入配置文件名称时，我们就可以做到不同环境下面自动使用不同的缓存类型，
-					<br>比如本地开发环境使用文件缓存，产品环境使用redis缓存。
-					<br>例如：->setCacheConfig('cache')传入配置文件名称cache
-					<br/>a.development开发环境下使用的就是文件:config/development/cache.php
-					<br/>内容如下（为了方便展示，省略具体细节）：
+					<b>
+						观察上面配置数组，很容易发现drivers数组的键就是缓存类型名称，也就是我们要传递给Sr::cache()的类型名称,
+						<br>我们也可以直接把drivers数组的键对应的值传递给Sr::cache()。
+						<br>drivers数组的键对应的值是一个缓存类型的具体配置信息，用class指定缓存类名称，config指定配置信息，
+						<br>Soter实例化缓存类的时候把config作为参数传递给构造方法。
+						<br>看上面的配置我们可以发现Soter默认提供了五个缓存类：
+						<br>1.Soter_Cache_File
+						<br>2.Soter_Cache_Memcache
+						<br>3.Soter_Cache_Memcached
+						<br>4.Soter_Cache_Apc
+						<br>5.Soter_Cache_Redis
+					</b>
+					<h3 class="title_h3">2.传入配置文件名称</h3>
+					传入配置文件名称时我们就可以做到不同环境下面自动使用不同的缓存类型。
+					<br>比如：
+					<br>本地开发环境使用文件缓存，产品环境使用redis缓存。
+					<br>假设我们传入配置文件名称cache，即->setCacheConfig('cache')
+					<br><b>a.development开发环境下使用的就是文件:config/development/cache.php</b>
+					<br>内容如下（为了方便展示，省略具体细节）：
 					<pre class="brush:php">
 						/**
 						 * 缓存配置
 						 */
 						return array(
-						    'default_type' => 'file', //默认的缓存类型，值是下面drivers关联数组的键名称。
-						    'drivers' => array(
-							'file' => ..., //缓存文件保存路径
-							'memcache' => array(//memcache服务器信息，支持多个
-							  ...
-							),
-							'memcached' => array(//memcached服务器信息，支持多个
-							   ...
-							),
-							'apc' => '', //apc缓存不需要配置信息，保持null即可
-							'redis' => array(//redis服务器信息，支持多主多从。原理是：写的时候每个主都写，读的时候随机一个从读取数据
-							    ...
-							)
-						    )
-						);
+								'default_type' => 'file', //默认的缓存类型，值是下面drivers关联数组的键名称。
+								'drivers' => array(
+								    'file' => array(
+									    ...
+								    ),
+								    'memcache' => array(
+									    ...
+								    ),
+								    'memcached' => array(
+									    ...
+								    ),
+								    'apc' => array(
+									    ...
+								    ),
+								    'redis' => array(
+									    ...	
+									)
+								    ),
+								)
+						    );
 					</pre>
 					可以看到development开发环境的配置里面我们default_type是file文件类型缓存。
-					<br/>那么我们使用Sr::cache()操作缓存数据，用的就是file文件类型缓存。
-					<br/>b.production产品环境下使用的就是文件:config/production/cache.php
-					<br/>文件:config/production/cache.php内容如下：
+					<br>那么我们使用Sr::cache()操作缓存数据，用的就是file文件类型缓存。
+					<br><b>b.production产品环境下使用的就是文件:config/production/cache.php</b>
+					<br>文件:config/production/cache.php内容如下：
 					<pre class="brush:php">
 						/**
 						 * 缓存配置
 						 */
 						return array(
-						    'default_type' => 'redis', //默认的缓存类型，值是下面drivers关联数组的键名称。
-						    'drivers' => array(
-							'file' => ..., //缓存文件保存路径
-							'memcache' => array(//memcache服务器信息，支持多个
-							  ...
-							),
-							'memcached' => array(//memcached服务器信息，支持多个
-							   ...
-							),
-							'apc' => '', //apc缓存不需要配置信息，保持null即可
-							'redis' => array(//redis服务器信息，支持多主多从。原理是：写的时候每个主都写，读的时候随机一个从读取数据
-							    ...
-							)
-						    )
-						);
+								'default_type' => 'redis', //默认的缓存类型，值是下面drivers关联数组的键名称。
+								'drivers' => array(
+								    'file' => array(
+									    ...
+								    ),
+								    'memcache' => array(
+									    ...
+								    ),
+								    'memcached' => array(
+									    ...
+								    ),
+								    'apc' => array(
+									    ...
+								    ),
+								    'redis' => array(
+									    ...	
+									)
+								    ),
+								)
+						    );
 					</pre>
 					可以看到production产品环境的配置里面我们default_type是redis文件类型缓存。
 					<br>那么我们使用Sr::cache()操作缓存数据，用的就是redis类型缓存。
 				</li>
-				<li><h3 class="title_h2">加载缓存</h3>
+				<li><h2 class="title_h2">加载缓存</h2>
 					加载缓存是通过Sr::cache()，Sr::cache()加载缓存有下面三种方式：
-					<br>1.默认方式，直接使用Sr::cache()，那么使用的就是缓存配置里面default_type指定的缓存类型。
-					<br>2.使用缓存配置drivers里面指定类型，比如：Sr::cache('memcache')使用的就是memcache缓存类型。
-					<br>类型可以是系统内置的也可以是用户自定义的。
-					<br>3.直接传入某个类型配置数组，
-					<br>a.比如使用系统内置的，系统内置的类型就是上面配置里面的drivers里面的file、memcache、memcached、apc、redis
-					<br>用法如下：
+					<br><h3 class="title_h3">1.默认方式</h3>
+					默认方式，直接使用Sr::cache()，那么使用的就是缓存配置里面default_type指定的缓存类型。
+					<br><h3 class="title_h3">2.使用缓存类型名称</h3>
+					缓存配置中drivers数组的<b>键名称</b>就是<b>缓存类型名称</b>
+					<br>比如：Sr::cache('memcache')使用的就是缓存配置里面drivers数组的memcache键名称对应的缓存类型。
+
+					<br><h3 class="title_h3">3.使用配置数组</h3>
+					直接传入某个类型配置数组，也就是drivers数组里面键对应的值。
+					<br>比如我们传递memcache键对应的值配置数组：
 					<pre class="brush:php">
-						$config=array('memcache'=>array(
-								//memcache服务器信息，支持多个
-								array("127.0.0.1", 11211),
+						$memcache=array(
+								'class' => 'Soter_Cache_Memcache',
+								'config' => array(//memcache服务器信息，支持多个
+								    array("127.0.0.1", 11211),
 								//array("new.host.ip",11211),
-							)
-						);
-						Sr::cache($config)
+								)
+							    );
+						Sr::cache($memcache)
 					</pre>
-					可以看到传入Sr::cache()的$config数组里面有一个键是内置缓存类型名称，
-					<br>值是对应的缓存类型配置信息结构和上面全部配置里面的对应部分一样。
-					b.比如使用用户自定义的：
+					可以看到传入Sr::cache($memcache)的$memcache数组里面有一个class键是内置缓存类型名称，
+					<br>config键是对应的缓存类型配置信息,结构和上面全部配置里面的对应部分一样。
+					<br>比如用户自定义一个缓存类，如下：
 					<pre class="brush:php">
 						$config=array(
 								'class'=>'Cache_MyCacheHandle',
@@ -161,14 +210,15 @@
 							);
 						Sr::cache($config)
 					</pre>
-					可以看到传入Sr::cache()的$config数组，
-					<br>结构说明如下：
+					可以看到传入Sr::cache($config)的$config数组，
+					<br>$config结构说明如下：
 					<br>a. class指定我们的缓存类名称Cache_MyCacheHandle，
 					<br>b. config是传递给Cache_MyCacheHandle类的构造方法的第一个参数，没有就保留null。
 				</li>
 				<li><h3 class="title_h2">使用缓存</h3>
 					当我们安着上面的操作配置了缓存处理类之后并加载了缓存之后，我们就可以用下面的方法操作缓存数据了。
-					<br>上面有多种加载方式，它们返回的都是一个Soter_Cache对象。我们通过Soter_Cache对象方法操作缓存，
+					<br>上面有三种加载方式，它们返回的都是一个Soter_Cache对象。我们通过Soter_Cache对象方法操作缓存，
+					<br>我们用Sr::cache()举例
 					<br>Soter_Cache对象方法说明如下：
 					<h3 class="title_h3">1.设置缓存</h3>
 					<pre class="brush:php">
@@ -260,18 +310,26 @@
 						->setCacheHandle(array(
 						    'default_type' => 'MyCache', //默认的缓存类型，值是下面drivers关联数组的键名称。
 						    'drivers' => array(
-							'MyCache'=>array('class'=>'Cache_MyCacheHandle','config'=>null),
-							'file' => ..., //缓存文件保存路径
-							'memcache' => array(//memcache服务器信息，支持多个
+							//自定义缓存
+							'MyCache' => array(
+							    'class' => 'Cache_MyCache', //缓存类名称
+							    'config' => null//需要传递给缓存类构造方法的第一个参数，一般是配置信息数组，不需要就保持null
+							)),
+							'file' =>array(
 							  ...
 							),
-							'memcached' => array(//memcached服务器信息，支持多个
-							   ...
+							'memcache' => array(
+							  ...
 							),
-							'apc' => null, //apc缓存不需要配置信息，保持null即可
-							'redis' => array(//redis服务器信息，支持多主多从。原理是：写的时候每个主都写，读的时候随机一个从读取数据
-							    ...
-							)
+							'memcached' =>array(
+							  ...
+							),
+							'apc' =>array(
+							  ...
+							),
+							'redis' => array(
+							  ...
+							),
 						    )
 						))
 					</pre>
