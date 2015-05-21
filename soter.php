@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.28
- * @createdtime   2015-05-20 14:35:33
+ * @since         v1.0.29
+ * @createdtime   2015-05-21 18:08:21
  */
  
 
@@ -619,7 +619,6 @@ class Sr {
 			$autoDomain = $domian;
 		} else {
 			$host = self::server('HTTP_HOST');
-			// $_host = current(explode(":", $host));
 			$is_ip = preg_match('/^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$/', $host);
 			$notRegularDomain = preg_match('/^[^\\.]+$/', $host);
 			if ($is_ip) {

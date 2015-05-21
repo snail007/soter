@@ -202,39 +202,40 @@
 
                                 </li>
                                 <li>
-                                        <h2 class="title_h2">生成控制器方法的url</h2>
-                                        通过Sr::url()方法，生成控制器方法的url。
+                                        <h2 class="title_h2">检查数组键值是否存在</h2>
+                                        通过Sr::arrayKeyExists($key, $array)方法，检查数组键值是否存在。
+                                        <br>$key 必填： 键值 
+                                        <br>$array 必填： 数组(支持多维数组)
                                         <br>示例如下
                                         <pre class="brush:php">
-                                                echo Sr::url('Welcome/index.do');
-                                                //参数是：控制器方法
-                                                //上面将会输出:/index.php/Welcome/index.do
-                                                
-                                                $data = array('a' => '1', 'd' => '2');
-                                                echo Sr::url('Welcome/index.do', $data);
-                                                //我们可以看到多了个第二参数，作用是get传递的参数数组，键值对，键是参数名，值是参数值。
-                                                //上面将会输出:/index.php/Welcome/index.do?a=1&d=2
+                                                //1.一维数组
+                                                $key = 'a';
+                                                $arr = array('a'=>1, 'b'=>2, 'c'=>3);
+                                                Sr::arrayKeyExists($key, $arr);
+                                                //上面将输出:true
 
-                                                //我们还可以去掉入口文件名称
-                                                Sr::config()->setIsRewrite(true);
-                                                echo Sr::url('Welcome/index.do');
-                                                //上面将会输出:/Welcome/index.do
-                                                //我们默认是不去除的，需要到入口文件去配置。
+                                                //2.多维数组
+                                                Sr::arrayKeyExists('a.b.c', array('a' => array('b' => array( 'c'=> 1))));
+                                                //上面将输出:true
                                         </pre>
                                 </li>
                                 <li>
-                                        <h2 class="title_h2">获取入口文件所在目录url路径</h2>
-                                        通过Sr::urlPath()方法，获取入口文件所在目录url路径，只能在web访问时使用，在命令行下面会抛出异常。
+                                        <h2 class="title_h2">获取数组的值</h2>
+                                        通过Sr::arrayGet($array, $key, $default = null)方法，获取数组的值。
+                                        <br>$array 必填： 数组
+                                        <br>$key 必填： 键值 
+                                        <br>$default 选填： 默认值 
                                         <br>示例如下
                                         <pre class="brush:php">
-                                                echo Sr::urlPath('public');
-                                                //上面将会输出:/public/
-                                                
-                                                echo Sr::urlPath('public/css/style.css', false);
-                                                //上面将会输出:/public/css/style.css
-                                                //我们可以看到多了个第二参数，作用是如果为true的话，最后多加/符号，默认是true。
-                                        </pre>
+                                                //1.获取数组里面键值为a的值
+                                                Sr::arrayGet(array('a'=>1, 'b'=>2), 'a');
+                                                //上面将输出:1
 
+                                                //2.获取数组里面键值为c的值,如果没有就输出3
+                                                Sr::arrayGet(array('a'=>1, 'b'=>2), 'c', '3');
+                                                //上面将输出:3
+                                                //如果第三个参数没填就会输出"null"
+                                        </pre>
                                 </li>
                         </ol>
                 </fieldset>

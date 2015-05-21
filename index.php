@@ -26,8 +26,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.28
- * @createdtime   2015-05-20 14:35:33
+ * @since         v1.0.29
+ * @createdtime   2015-05-21 18:08:21
  */
  
 define("IN_SOTER", true);
@@ -117,6 +117,9 @@ Soter::initialize()
 	->setHmvcModules(array(
 		// 'Demo' => 'demo'
 	))
+	/* 设置cookie key前缀，当我们使用Sr::setCookie()的时候，
+	 * 参数里面的key自动加上这里设置的前缀 */
+	->setCookiePrefix('')
 	/**
 	 * 配置缓存
 	 * 1.setCacheHandle可以直接传入缓存配置数组。
