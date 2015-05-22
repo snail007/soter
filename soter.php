@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.31
- * @createdtime   2015-05-22 16:26:36
+ * @since         v1.0.32
+ * @createdtime   2015-05-22 16:49:21
  */
  
 
@@ -4697,13 +4697,17 @@ class Soter_Logger_Writer_Dispatcher {
 
 class Soter_Logger_FileWriter implements Soter_Logger_Writer {
 
-	private $logsDirPath;
+	private $logsDirPath, $log404;
 
-	public function __construct($logsDirPath) {
+	public function __construct($logsDirPath, $log404 = true) {
+		$this->log404 = $log404;
 		$this->logsDirPath = Sr::realPath($logsDirPath) . '/' . date(Sr::config()->getLogsSubDirNameFormat()) . '/';
 	}
 
 	public function write(Soter_Exception $exception) {
+		if (!$this->log404 && ($exception instanceof Soter_Exception_404)) {
+			return;
+		}
 		$content = 'Domain : ' . Sr::server('http_host') . "\n"
 			. 'ClientIP : ' . Sr::server('SERVER_ADDR') . "\n"
 			. 'ServerIP : ' . Sr::serverIp() . "\n"

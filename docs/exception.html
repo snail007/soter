@@ -82,9 +82,10 @@
 					<h3 class="title_h3">1.默认情况</h3>
 					在入口文件里面我们可以看到下面错误日志类相关配置：
 					<pre class="brush:php">
-						//错误日志记录，注释掉这行会关闭日志记录，去掉注释则开启日志文件记录
-						->addLoggerWriter(new Soter_Logger_FileWriter(SOTER_APP_PATH . 'storage/logs/'))
-						//设置日志记录子目录格式，参数就是date()函数的第一个参数,默认是 Y-m-d/H
+						/* 错误日志记录，注释掉这行会关闭日志记录，去掉注释则开启日志文件记录,
+						 * 第一个参数是日志文件路径，第二个参数为是否记录404类型异常 */
+						//->addLoggerWriter(new Soter_Logger_FileWriter(SOTER_APP_PATH . 'storage/logs/',false))
+						/* 设置日志记录子目录格式，参数就是date()函数的第一个参数,默认是 Y-m-d/H */
 						->setLogsSubDirNameFormat('Y-m-d/H')
 					</pre>
 					我们可以多次调用addLoggerWriter方法注册多个不同的日志记录类。
@@ -94,13 +95,17 @@
 					<pre class="brush:php">
 						class Soter_Logger_FileWriter implements Soter_Logger_Writer {
 
-							private $logsDirPath;
+							private $logsDirPath, $log404;
 
-							public function __construct($logsDirPath) {
+							public function __construct($logsDirPath, $log404 = true) {
+								$this->log404 = $log404;
 								$this->logsDirPath = Sr::realPath($logsDirPath) . '/' . date(Sr::config()->getLogsSubDirNameFormat()) . '/';
 							}
 
 							public function write(Soter_Exception $exception) {
+								if (!$this->log404 && ($exception instanceof Soter_Exception_404)) {
+									return;
+								}
 								$content = 'Domain : ' . Sr::server('http_host') . "\n"
 									. 'ClientIP : ' . Sr::server('SERVER_ADDR') . "\n"
 									. 'ServerIP : ' . Sr::serverIp() . "\n"

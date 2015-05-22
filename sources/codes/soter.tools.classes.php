@@ -1143,13 +1143,17 @@ class Soter_Logger_Writer_Dispatcher {
 
 class Soter_Logger_FileWriter implements Soter_Logger_Writer {
 
-	private $logsDirPath;
+	private $logsDirPath, $log404;
 
-	public function __construct($logsDirPath) {
+	public function __construct($logsDirPath, $log404 = true) {
+		$this->log404 = $log404;
 		$this->logsDirPath = Sr::realPath($logsDirPath) . '/' . date(Sr::config()->getLogsSubDirNameFormat()) . '/';
 	}
 
 	public function write(Soter_Exception $exception) {
+		if (!$this->log404 && ($exception instanceof Soter_Exception_404)) {
+			return;
+		}
 		$content = 'Domain : ' . Sr::server('http_host') . "\n"
 			. 'ClientIP : ' . Sr::server('SERVER_ADDR') . "\n"
 			. 'ServerIP : ' . Sr::serverIp() . "\n"
