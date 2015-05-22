@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.30
- * @createdtime   2015-05-22 14:05:52
+ * @since         v1.0.31
+ * @createdtime   2015-05-22 16:26:36
  */
  
 
@@ -175,7 +175,7 @@ class Soter {
 		$config->setRoute($_route);
 		$controllerObject = new $class();
 		if (!($controllerObject instanceof Soter_Controller)) {
-			throw new Soter_Exception_500('[ ' . $class . ' ] not a valid Soter_Controller');
+			throw new Soter_Exception_404('[ ' . $class . ' ] not a valid Soter_Controller');
 		}
 		if (!method_exists($controllerObject, $method)) {
 			throw new Soter_Exception_404('Method [ ' . $class . '->' . $method . '() ] not found');
@@ -219,7 +219,7 @@ class Soter {
 			$taskName = Soter::getConfig()->getTaskDirName() . '_' . $task;
 		}
 		if (!class_exists($taskName)) {
-			throw new Soter_Exception_404('class [ ' . $taskName . ' ] not found');
+			throw new Soter_Exception_500('class [ ' . $taskName . ' ] not found');
 		}
 		$taskObject = new $taskName();
 		if (!($taskObject instanceof Soter_Task)) {
@@ -405,7 +405,7 @@ class Sr {
 			}
 		}
 		if (!$found) {
-			throw new Soter_Exception_404('functions file [ ' . $functionFilename . '.php ] not found');
+			throw new Soter_Exception_500('functions file [ ' . $functionFilename . '.php ] not found');
 		}
 	}
 
@@ -425,7 +425,7 @@ class Sr {
 		}
 		$className = str_replace('/', '_', $className);
 		if (!class_exists($className)) {
-			throw new Soter_Exception_404("class [ $className ] not found");
+			throw new Soter_Exception_500("class [ $className ] not found");
 		}
 		return new $className();
 	}
@@ -475,7 +475,7 @@ class Sr {
 				}
 			}
 			if (!$found) {
-				throw new Soter_Exception_404('config file [ ' . $configFileName . '.php ] not found');
+				throw new Soter_Exception_500('config file [ ' . $configFileName . '.php ] not found');
 			}
 		}
 		if ($cfg && count($_info) > 1) {
