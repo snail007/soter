@@ -387,7 +387,9 @@ class Sr {
 	static function factory($className, $hmvcModuleName = null) {
 		if (Sr::isPluginMode()) {
 			//hmvc检测
-			Soter::checkHmvc($hmvcModuleName);
+			if (!Soter::checkHmvc($hmvcModuleName, false)) {
+				throw new Soter_Exception_500('Hmvc Module [ ' . $hmvcModuleName . ' ] not found, please check your config.');
+			}
 		}
 		if (Sr::strEndsWith(strtolower($className), '.php')) {
 			$className = substr($className, 0, strlen($className) - 4);
