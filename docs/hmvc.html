@@ -18,9 +18,8 @@
 
 
 				</li>
-				<li><h2 class="title_h2">HMVC结构</h2>
-					Soter的hvmc子模块默认都在application/hmvc目录里面，一个模块一个目录。如果我们要启用一个
-					<br>hmvc模块，我们需要在入口文件index.php里面修改下面的配置：
+				<li><h2 class="title_h2">注册HMVC模块</h2>
+					如果我们要启用一个hmvc模块，我们需要在入口文件index.php里面修改下面的配置：
 					<pre class="brush:php">
 						//注册hmvc模块，数组键是uri里面的hmvc模块名称，值是hmvc模块文件夹名称
 						->setHmvcModules(array(
@@ -29,6 +28,9 @@
 					</pre>
 					可以看到数组里面<b>键</b>是我们访问hmvc模块的时候<b class="text_strong">URL里面</b>的hmvc模块名称，
 					<br><b>值</b>是hmvc模块的<b class="text_strong">文件夹名称</b>。
+				</li>
+				<li><h2 class="title_h2">HMVC结构</h2>
+					Soter的hvmc子模块默认都在application/hmvc目录里面，一个模块一个目录。
 					<h3 class="title_h3">1.Soter的HMVC目录结构</h3>
 					<pre>
 application
@@ -81,6 +83,53 @@ application
 					get模式很简单，我们只需要通过m参数指定hmvc模块配置名称即可。
 					<br>比如：http://127.0.0.1/index.php?m=Demo&c=Welcome&a=index
 					<br>上面的url访问的是demo hmvc模块的Welcome控制器的do_index方法。
+				</li>
+				<li><h2 class="title_h2">HMVC模块绑定子域名</h2>
+					在入口文件里面我们可以看到下面的配置：
+					<pre class="brush:php">
+						/* hvmc模块子域名绑定，domains的键是二级开始的域，不包含顶级域名.
+						 * 比如顶级域名是test.com,这里的domains的键是demo代表demo.test.com
+						 * 再比如domains的键是i.user代表i.user.test.com
+						 * domains的键的值是要绑定的hmvc的URL模块名称，也就是对应着上面的setHmvcModules()
+						 * 注册的关联数组中的键名称，比如这里键demo的值是Demo，对应的hvmc模块就是上面注册的Demo模块。
+						 */
+						->setHmvcDomains(array(
+						    'enable' => false,
+						    'domains' => array(
+								'demo' => 'Demo'
+						    )
+						))
+					</pre>
+					上面的配置就是定义子域名和hmvc模块的绑定关系，首先看到setHmvcDomains()参数是一个数组，
+					<br>它的键的意思如下：
+					<br><b>enable</b> ： 是否启用域名绑定功能
+					<br><b>domains</b> ： 子域名绑定配置数组
+					<br>我们注意到键<b>domains</b>的值也就是子域名绑定配置数组是一个关联数组，它的结构说明如下：
+					<br><b>键</b>：绑定的二级开始的域，不包含顶级域名
+					<br>比如当前访问的网站顶级域名是test.com,这里的domains的键是demo代表demo.test.com
+					<br>再比如domains的键是i.user代表i.user.test.com
+					<br><b>值</b>：要绑定的URL中hmvc的模块名称，也就是对应着配置setHmvcModules()里面注册的关联数组中的键名称，
+					<br>比如这里键demo的值是Demo，对应的就是上面注册的Demo模块，也就是URL里面的hvmc模块Demo。
+					<br><b class="text_strong">提示：</b>
+					<br>假设当前访问的网站顶级域名是test.com。
+					<br>绑定设置如下：
+					<pre class="brush:php">
+						->setHmvcDomains(array(
+						    'enable' => true,
+						    'domains' => array(
+								'demo' => 'Demo',
+								'i.u' => 'User'
+						    )
+						))
+					</pre>
+					当我们的hvmc模块绑定了子域名之后，绑定前后的访问方式如下：
+					<br>1.访问 Demo hmvc模块的控制器Welcome的index方法
+					<br>绑定前：http://test.com/index.php/Demo/Welcome/index.do
+					<br>绑定后：http://demo.test.com/index.php/Welcome/index.do
+					<br>2.访问 User hmvc模块的控制器Welcome的index方法
+					<br>绑定前：http://test.com/index.php/User/Welcome/index.do
+					<br>绑定后：http://i.u.test.com/index.php/Welcome/index.do
+
 				</li>
 			</ol>
 		</fieldset>

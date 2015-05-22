@@ -202,7 +202,10 @@
 								parse_str($query, $get);
 								$controllerName = Sr::arrayGet($get, $config->getRouterUrlControllerKey(), '');
 								$methodName = Sr::arrayGet($get, $config->getRouterUrlMethodKey(), '');
-								$hmvcModuleName = Sr::arrayGet($get, $config->getRouterUrlModuleKey(), '');
+								//检测域名是否绑定了hmvc模块
+								if (!($hmvcModuleName = Sr::config()->getHmvcDomain())) {
+									$hmvcModuleName = Sr::arrayGet($get, $config->getRouterUrlModuleKey(), '');
+								}
 								//hmvc检测
 								$hmvcModuleDirName = Soter::checkHmvc($hmvcModuleName, false);
 								if ($controllerName) {
@@ -228,12 +231,14 @@
 					</pre>
 					<br>第6行： 使用系统函数parse_str解析$query为键值的$get数组。 
 					<br>比如把：c=Welcome&a=index解析为：array('a'=>'index','c'=>'Welcome')
-					<br>第7-9行：使用Soter的获取数组键值的方法Sr::arrayGet分别尝试从$get数组中获取,
-					<br>控制器名称$controllerName，方法名称$methodName，hmvc模块名称$hmvcModuleName。
-					<br>第11行：使用Soter的checkHmvc方法检查模块名称$hmvcModuleName是否有效，
+					<br>第07-08行：使用Soter的获取数组键值的方法Sr::arrayGet分别尝试从$get数组中获取：
+					<br>控制器名称$controllerName，方法名称$methodName。
+					<br>第10-12行：首先通过Sr::config()->getHmvcDomain()获取当前域名绑定的hvmc模块名称并赋值给$hmvcModuleName。
+					<br>如果Sr::config()->getHmvcDomain()没有找到hvmc模块名称，就继续尝试从$get数组中获取hvmc模块名称$hmvcModuleName。
+					<br>第14行：使用Soter的checkHmvc方法检查模块名称$hmvcModuleName是否有效，
 					<br>如果有效就会返回模块对应的<b>文件夹名称</b>,无效会返回false。
-					<br>第12-17行：如果控制器名称存在，方法名存在，就分别加上类名前缀，和方法名前缀。
-					<br>第18-21行：通过路由器的成员变量$this->route设置相关的路由信息，$this->route是路由信息Soter_Route类的一个对象。
+					<br>第15-20行：如果控制器名称存在，方法名存在，就分别加上类名前缀，和方法名前缀。
+					<br>第21-24行：通过路由器的成员变量$this->route设置相关的路由信息，$this->route是路由信息Soter_Route类的一个对象。
 					<br>设置hmvc模块名称：->setHmvcModuleName($hmvcModuleDirName ? $hmvcModule : '')，
 					<br>$hmvcModuleDirName=Soter::checkHmvc($hmvcModuleName, false),
 					<br>$hmvcModuleDirName是hmvc的文件夹名称，我们可以通过判断hmvc的文件夹名称是否是是空知道Url里面的hmvc模块是否存在。

@@ -212,7 +212,10 @@ class Soter_Router_Get_Default extends Soter_Router {
 		parse_str($query, $get);
 		$controllerName = Sr::arrayGet($get, $config->getRouterUrlControllerKey(), '');
 		$methodName = Sr::arrayGet($get, $config->getRouterUrlMethodKey(), '');
-		$hmvcModuleName = Sr::arrayGet($get, $config->getRouterUrlModuleKey(), '');
+		//检测域名是否绑定了hmvc模块
+		if (!($hmvcModuleName = Sr::config()->getHmvcDomain())) {
+			$hmvcModuleName = Sr::arrayGet($get, $config->getRouterUrlModuleKey(), '');
+		}
 		//hmvc检测
 		$hmvcModuleDirName = Soter::checkHmvc($hmvcModuleName, false);
 		if ($controllerName) {
@@ -234,7 +237,9 @@ class Soter_Router_PathInfo_Default extends Soter_Router {
 	public function find() {
 		$config = Soter::getConfig();
 		$uri = $config->getRequest()->getPathInfo();
-		if (empty($uri)) {
+		//检测域名是否绑定了hmvc模块
+		$_hmvcModule = Sr::config()->getHmvcDomain();
+		if (empty($uri) && empty($_hmvcModule)) {
 			//没有找到hmvc模块名称，或者控制器名称
 			return $this->route->setFound(FALSE);
 		} else {
@@ -245,11 +250,14 @@ class Soter_Router_PathInfo_Default extends Soter_Router {
 		$uri = trim($uri, '/');
 		//到此$uri形如：Welcome/index.do , Welcome/User , Welcome
 		$_info = explode('/', $uri);
-		$hmvcModule = current($_info);
+		$hmvcModule = empty($_hmvcModule) ? current($_info) : $_hmvcModule;
 		//hmvc检测 ，Soter::checkHmvc()执行后，主配置会被hmvc子项目配置覆盖
 		if ($hmvcModuleDirName = Soter::checkHmvc($hmvcModule, FALSE)) {
-			//找到hmvc模块,去除hmvc模块名称，得到真正的路径
-			$uri = ltrim(substr($uri, strlen($hmvcModule)), '/');
+			//没有域名绑定hmvc，uri中需要去除hmvc模块名称
+			if (empty($_hmvcModule)) {
+				//找到hmvc模块,去除hmvc模块名称，得到真正的路径
+				$uri = ltrim(substr($uri, strlen($hmvcModule)), '/');
+			}
 		}
 		//首先控制器名和方法名初始化为默认
 		$controller = $config->getDefaultController();
@@ -356,9 +364,34 @@ class Soter_Config {
 		$outputJsonRender,
 		$exceptionJsonRender,
 		$srMethods = array(),
-		$encryptKey
+		$encryptKey,
+		$hmvcDomains = array()
 
 	;
+
+	public function getHmvcDomain() {
+		if (!$this->hmvcDomains['enable']) {
+			return;
+		}
+		$_domain = Sr::server('http_host');
+		$domain = explode('.', $_domain);
+		$length = count($domain);
+		if ($length <= 2) {
+			return;
+		}
+		$topDomain = $domain[$length - 2] . '.' . $domain[$length - 1];
+		foreach ($this->hmvcDomains['domains'] as $prefix => $hvmc) {
+			if ($prefix . '.' . $topDomain == $_domain) {
+				return $hvmc;
+			}
+		}
+		return '';
+	}
+
+	public function setHmvcDomains(Array $hmvcDomains) {
+		$this->hmvcDomains = $hmvcDomains;
+		return $this;
+	}
 
 	public function getEncryptKey() {
 		$key = $this->getEnvironment();

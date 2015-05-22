@@ -89,6 +89,18 @@ Soter::initialize()
 	->setHmvcModules(array(
 		// 'Demo' => 'demo'
 	))
+	/* hvmc模块子域名绑定，domains的键是二级开始的域，不包含顶级域名.
+	 * 比如顶级域名是test.com,这里的domains的键是demo代表demo.test.com
+	 * 再比如domains的键是i.user代表i.user.test.com
+	 * domains的键的值是要绑定的hmvc的URL模块名称，也就是对应着上面的setHmvcModules()
+	 * 注册的关联数组中的键名称，比如这里键demo的值是Demo，对应的hvmc模块就是上面注册的Demo模块。
+	 */
+	->setHmvcDomains(array(
+	    'enable' => false,
+	    'domains' => array(
+		'demo' => 'Demo'
+	    )
+	))
 	/* 设置cookie key前缀，当我们使用Sr::setCookie()的时候，
 	 * 参数里面的key自动加上这里设置的前缀 */
 	->setCookiePrefix('')

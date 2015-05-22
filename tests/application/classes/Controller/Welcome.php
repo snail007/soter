@@ -3,9 +3,7 @@
 class Controller_Welcome extends Soter_Controller {
 
 	public function do_index() {
-		echo Sr::encrypt(123) . '<br>';
-		echo Sr::encrypt(123, 'abcd') . '<br>';
-		echo Sr::encrypt(123, 'abcd', true) . '<br>';
+		echo 'aaa';
 	}
 
 	public function do_get() {

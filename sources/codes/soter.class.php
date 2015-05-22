@@ -132,6 +132,9 @@ class Soter {
 				break;
 			}
 		}
+		if(empty($route)){
+			throw new Soter_Exception_500('none router was found in configuration');
+		}
 		$_route = Sr::config()->getRoute();
 		if (empty($class)) {
 			$class = $config->getControllerDirName() . '_' . $config->getDefaultController();
