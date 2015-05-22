@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.34
- * @createdtime   2015-05-22 17:46:41
+ * @since         v1.0.35
+ * @createdtime   2015-05-22 17:55:04
  */
  
 
@@ -211,7 +211,7 @@ class Soter {
 			exit('require a task name,please use --task=<taskname>' . "\n");
 		}
 		if (!empty($hmvcModuleName)) {
-			self::checkHmvc($hmvcModuleName, true, 'Soter_Exception_500');
+			self::checkHmvc($hmvcModuleName);
 		}
 		if (strpos($task, 'Soter_') === 0) {
 			$taskName = $task;
@@ -243,14 +243,14 @@ class Soter {
 	 * @param type $hmvcModuleName  hmvc模块在URI中的名称，即注册配置hmvc模块数组的键名称
 	 * @throws Soter_Exception_404
 	 */
-	public static function checkHmvc($hmvcModuleName, $throwException = true, $exceptionType = 'Soter_Exception_404') {
+	public static function checkHmvc($hmvcModuleName, $throwException = true) {
 		//hmvc检测
 		if (!empty($hmvcModuleName)) {
 			$config = Soter::getConfig();
 			$hmvcModules = $config->getHmvcModules();
 			if (empty($hmvcModules[$hmvcModuleName])) {
 				if ($throwException) {
-					throw new $exceptionType('Hmvc Module [ ' . $hmvcModuleName . ' ] not found, please check your config.');
+					throw new Soter_Exception_500('Hmvc Module [ ' . $hmvcModuleName . ' ] not found, please check your config.');
 				} else {
 					return FALSE;
 				}
@@ -418,7 +418,7 @@ class Sr {
 	static function factory($className, $hmvcModuleName = null) {
 		if (Sr::isPluginMode()) {
 			//hmvc检测
-			Soter::checkHmvc($hmvcModuleName, true, 'Soter_Exception_500');
+			Soter::checkHmvc($hmvcModuleName);
 		}
 		if (Sr::strEndsWith(strtolower($className), '.php')) {
 			$className = substr($className, 0, strlen($className) - 4);
