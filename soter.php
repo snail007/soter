@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.29
- * @createdtime   2015-05-21 18:08:21
+ * @since         v1.0.30
+ * @createdtime   2015-05-22 14:05:52
  */
  
 
@@ -1681,6 +1681,37 @@ class Sr {
 				$array = $array[$key];
 			}
 			return true;
+		}
+
+		private static function getEncryptKey($key, $attachKey) {
+			$_key = self::config()->getEncryptKey();
+			if (!$key && !$_key) {
+				throw new Soter_Exception_500('encrypt key can not empty or you can set it in index.php : ->setEncryptKey()');
+			}
+			return substr(md5($attachKey ? $_key . $key : $key), 0, 8);
+		}
+
+		static function encrypt($str, $key = '', $attachKey = false) {
+			if (!$str) {
+				return '';
+			}
+			$str = $str . '';
+			$key = self::getEncryptKey($key, $attachKey);
+			$block = mcrypt_get_block_size('des', 'ecb');
+			$pad = $block - (strlen($str) % $block);
+			$str .= str_repeat(chr($pad), $pad);
+			return bin2hex(mcrypt_encrypt(MCRYPT_DES, $key, $str, MCRYPT_MODE_ECB));
+		}
+
+		static function decrypt($str, $key = '', $attachKey = false) {
+			if (!$str) {
+				return '';
+			}
+			$str = $str . '';
+			$key = self::getEncryptKey($key, $attachKey);
+			$str = mcrypt_decrypt(MCRYPT_DES, $key, pack("H*", $str), MCRYPT_MODE_ECB);
+			$pad = ord($str[($len = strlen($str)) - 1]);
+			return substr($str, 0, strlen($str) - $pad);
 		}
 
 	}
@@ -3878,9 +3909,20 @@ class Soter_Config {
 		$dataCheckRules,
 		$outputJsonRender,
 		$exceptionJsonRender,
-		$srMethods = array()
+		$srMethods = array(),
+		$encryptKey
 
 	;
+
+	public function getEncryptKey() {
+		$key = $this->getEnvironment();
+		return isset($this->encryptKey[$key]) ? $this->encryptKey[$key] : '';
+	}
+
+	public function setEncryptKey(Array $encryptKey) {
+		$this->encryptKey = $encryptKey;
+		return $this;
+	}
 
 	public function getSrMethods() {
 		return $this->srMethods;

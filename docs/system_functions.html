@@ -237,6 +237,86 @@
                                                 //如果第三个参数没填就会输出"null"
                                         </pre>
                                 </li>
+				<li>
+                                        <h2 class="title_h2">加密数据</h2>
+                                        通过Sr::encrypt($str, $key = '', $attachKey = false)方法，可以方便安全的加密数据。
+                                        <br>$str 要加密的字符串
+                                        <br>$key 密钥key
+                                        <br>$attachKey 　true : 假如配置文件里面设置了加密密钥$key1，那么最终加密使用的密钥是$key1+$key。
+					<br>　　　　　　　false: 最终加密使用的是$key
+					<br>提示：
+					<br>加密使用的是DES加密算法，密钥使用的是md5($userKey)加密后32个字符结果的前8个字符。
+					<br>$userKey就是用户设置的密钥。
+					<br>当没有传递第二个密钥参数的时候，必须在入口文件里面设置用户密钥。
+					<br>在入口文件里面可以看到下面的配置：
+					<pre class="brush:php">
+						/* 设置加密方法Sr::encrypt()和解密方法Sr::decrypt()使用的密钥,
+						 * 只有这里设置了密钥，当不传递key的时候，这两个方法才能正常使用 */
+						->setEncryptKey(array(
+						    Sr::ENV_DEVELOPMENT => '', //开发环境密钥
+						    Sr::ENV_TESTING => '', //测试环境密钥
+						    Sr::ENV_PRODUCTION => ''//产品环境密钥
+						))
+                                        </pre>
+					假设我们在入口文件里面配置了密钥如下：
+					<pre class="brush:php">
+						->setEncryptKey(array(
+						    Sr::ENV_DEVELOPMENT => 'lqreqc4245mrqce', //开发环境密钥
+						    Sr::ENV_TESTING => 'lqreqc4245mrqce', //测试环境密钥
+						    Sr::ENV_PRODUCTION => 'vqreqceqmrqce'//产品环境密钥
+						))
+                                        </pre>
+                                        假设当前是开发环境，使用示例如下：
+                                        <pre class="brush:php">
+						//1.使用入口文件设置的密钥lqreqc4245mrqce加密数据123
+						Sr::encrypt('123');
+						//2.使用密钥abcd加密数据123
+						Sr::encrypt('123','abcd');
+						//3.使用入口文件设置的密钥lqreqc4245mrqce+用户密钥99999加密数据123
+						//最终加密使用的就是密钥：lqreqc4245mrqce99999
+						Sr::encrypt('123','99999',true);
+                                        </pre>
+                                </li>
+				<li>
+                                        <h2 class="title_h2">解密数据</h2>
+                                        通过Sr::decrypt($str, $key = '', $attachKey = false)方法，可以方便安全的解密数据。
+                                        <br>$str 要解密的字符串
+                                        <br>$key 密钥key
+                                        <br>$attachKey 　true : 假如配置文件里面设置了解密密钥$key1，那么最终解密使用的是$key1+$key。
+					<br>　　　　　　　false: 最终解密使用的是$key
+					<br>提示：
+					<br>解密使用的是DES解密算法，密钥使用的是md5($userKey)解密后32个字符结果的前8个字符。
+					<br>$userKey就是用户设置的密钥。
+					<br>当没有传递第二个密钥参数的时候，必须在入口文件里面设置用户密钥。
+					<br>在入口文件里面可以看到下面的配置：
+					<pre class="brush:php">
+						/* 设置加密方法Sr::encrypt()和解密方法Sr::decrypt()使用的密钥,
+						 * 只有这里设置了密钥，当不传递key的时候，这两个方法才能正常使用 */
+						->setEncryptKey(array(
+						    Sr::ENV_DEVELOPMENT => '', //开发环境密钥
+						    Sr::ENV_TESTING => '', //测试环境密钥
+						    Sr::ENV_PRODUCTION => ''//产品环境密钥
+						))
+                                        </pre>
+					假设我们在入口文件里面配置了密钥如下：
+					<pre class="brush:php">
+						->setEncryptKey(array(
+						    Sr::ENV_DEVELOPMENT => 'lqreqc4245mrqce', //开发环境密钥
+						    Sr::ENV_TESTING => 'fad4245mrqadfad', //测试环境密钥
+						    Sr::ENV_PRODUCTION => 'vqreqceqmrqce'//产品环境密钥
+						))
+                                        </pre>
+                                        假设当前是开发环境，使用示例如下：
+                                        <pre class="brush:php">
+						//1.使用入口文件设置的密钥lqreqc4245mrqce解密数据dcd68ede7e16fc62
+						Sr::decrypt('dcd68ede7e16fc62');
+						//2.使用密钥abcd解密数据1b5a0f72ba677d69
+						Sr::decrypt('1b5a0f72ba677d69','abcd');
+						//3.使用入口文件设置的密钥lqreqc4245mrqce+用户密钥99999解密数据33b01a9262e4ccec
+						//最终解密使用的就是密钥：lqreqc4245mrqce99999
+						Sr::decrypt('33b01a9262e4ccec','99999',true);
+                                        </pre>
+                                </li>
                         </ol>
                 </fieldset>
                 <script src="js/inc.foot.js"></script>

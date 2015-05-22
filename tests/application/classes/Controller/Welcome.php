@@ -3,10 +3,9 @@
 class Controller_Welcome extends Soter_Controller {
 
 	public function do_index() {
-		
-		$image=Sr::extension('Captcha');
-		$image->setCodeMode('number')->create();
-		
+		echo Sr::encrypt(123) . '<br>';
+		echo Sr::encrypt(123, 'abcd') . '<br>';
+		echo Sr::encrypt(123, 'abcd', true) . '<br>';
 	}
 
 	public function do_get() {

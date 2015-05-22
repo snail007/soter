@@ -355,9 +355,20 @@ class Soter_Config {
 		$dataCheckRules,
 		$outputJsonRender,
 		$exceptionJsonRender,
-		$srMethods = array()
+		$srMethods = array(),
+		$encryptKey
 
 	;
+
+	public function getEncryptKey() {
+		$key = $this->getEnvironment();
+		return isset($this->encryptKey[$key]) ? $this->encryptKey[$key] : '';
+	}
+
+	public function setEncryptKey(Array $encryptKey) {
+		$this->encryptKey = $encryptKey;
+		return $this;
+	}
 
 	public function getSrMethods() {
 		return $this->srMethods;

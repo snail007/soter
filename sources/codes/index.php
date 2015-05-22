@@ -91,6 +91,13 @@ Soter::initialize()
 	/* 设置cookie key前缀，当我们使用Sr::setCookie()的时候，
 	 * 参数里面的key自动加上这里设置的前缀 */
 	->setCookiePrefix('')
+	/* 设置加密方法Sr::encrypt()和解密方法Sr::decrypt()使用的密钥,
+	 * 只有这里设置了密钥，当不传递key的时候，这两个方法才能正常使用 */
+	->setEncryptKey(array(
+	    Sr::ENV_DEVELOPMENT => '', //开发环境密钥
+	    Sr::ENV_TESTING => '', //测试环境密钥
+	    Sr::ENV_PRODUCTION => ''//产品环境密钥
+	))
 	/**
 	 * 配置缓存
 	 * 1.setCacheHandle可以直接传入缓存配置数组。
