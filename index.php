@@ -27,7 +27,7 @@
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         v1.0.38
- * @createdtime   2015-05-25 00:07:52
+ * @createdtime   2015-05-25 00:11:22
  */
  
 define("IN_SOTER", true);
@@ -44,7 +44,7 @@ Soter::initialize()
 	/* 项目目录路径 */
 	->setApplicationDir(SOTER_APP_PATH)
 	/* 项目存储数据目录路径，必须可写 */
-	->setStorageDirPath(SOTER_APP_PATH . 'stroage/')
+	->setStorageDirPath(SOTER_APP_PATH . 'storage/')
 	/* 注册项目包 */
 	->addPackage(SOTER_APP_PATH)
 	/* 注册拓展包 */

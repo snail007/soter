@@ -15,7 +15,7 @@ Soter::initialize()
 	/* 项目目录路径 */
 	->setApplicationDir(SOTER_APP_PATH)
 	/* 项目存储数据目录路径，必须可写 */
-	->setStorageDirPath(SOTER_APP_PATH . 'stroage/')
+	->setStorageDirPath(SOTER_APP_PATH . 'storage/')
 	/* 注册项目包 */
 	->addPackage(SOTER_APP_PATH)
 	/* 注册拓展包 */
