@@ -14,6 +14,8 @@ Soter::initialize()
 	->setTimeZone('PRC')
 	/* 项目目录路径 */
 	->setApplicationDir(SOTER_APP_PATH)
+	/* 项目存储数据目录路径，必须可写 */
+	->setStorageDirPath(SOTER_APP_PATH . 'stroage/')
 	/* 注册项目包 */
 	->addPackage(SOTER_APP_PATH)
 	/* 注册拓展包 */
@@ -38,7 +40,6 @@ Soter::initialize()
 	->setIndexDir(dirname(__FILE__) . '/')
 	/* 入口文件名称 */
 	->setIndexName(pathinfo(__FILE__, PATHINFO_BASENAME))
-
 	/* 宕机维护模式 */
 	->setIsMaintainMode(false)
 	/* 宕机维护模式IP白名单 */
@@ -127,7 +128,7 @@ Soter::initialize()
 	->setExceptionHandle(new Soter_Exception_Handle_Default())
 	/* 错误日志记录，注释掉这行会关闭日志记录，去掉注释则开启日志文件记录,
 	 * 第一个参数是日志文件路径，第二个参数为是否记录404类型异常 */
-	//->addLoggerWriter(new Soter_Logger_FileWriter(SOTER_APP_PATH . 'storage/logs/',false))
+	//->addLoggerWriter(new Soter_Logger_FileWriter(Sr::config()->getStorageDirPath() . 'logs/', false))
 	/* 设置日志记录子目录格式，参数就是date()函数的第一个参数,默认是 Y-m-d/H */
 	->setLogsSubDirNameFormat('Y-m-d/H')
 	/*

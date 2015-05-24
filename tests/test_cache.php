@@ -135,7 +135,7 @@ class TestCache extends UnitTestCase {
 		$this->assertIsA(Sr::cache(array(
 			    'class' => 'Soter_Cache_File',
 			    //缓存文件保存路径
-			    'config' => Sr::config()->getPrimaryApplicationDir() . 'storage/cache/'
+			    'config' => Sr::config()->getStorageDirPath() . 'cache/'
 			)), 'Soter_Cache_File');
 		$this->assertIsA(Sr::cache(array(
 			    'class' => 'Soter_Cache_Memcache',

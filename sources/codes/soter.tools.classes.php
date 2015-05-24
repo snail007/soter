@@ -317,6 +317,7 @@ class Soter_Config {
 		$hmvcDirName = 'hmvc',
 		$libraryDirName = 'library',
 		$functionsDirName = 'functions',
+		$storageDirPath = '',
 		$viewsDirName = 'views',
 		$configDirName = 'config',
 		$configTestingDirName = 'testing',
@@ -368,6 +369,15 @@ class Soter_Config {
 		$hmvcDomains = array()
 
 	;
+
+	public function getStorageDirPath() {
+		return empty($this->storageDirPath) ? $this->getPrimaryApplicationDir() . $this->storageDirPath . '/' : $this->storageDirPath;
+	}
+
+	public function setStorageDirPath($storageDirPath) {
+		$this->storageDirPath = $storageDirPath;
+		return $this;
+	}
 
 	public function getHmvcDomain() {
 		if (!$this->hmvcDomains['enable']) {
@@ -466,7 +476,7 @@ class Soter_Config {
 			$this->cacheConfig = array(
 			    'default_type' => 'file',
 			    'drivers' => array(
-				'file' => $this->getPrimaryApplicationDir() . 'storage/cache/',
+				'file' => $this->getStorageDirPath() . 'cache/',
 			    )
 			);
 		}
@@ -1236,7 +1246,7 @@ class Soter_Exception_Handle_Default implements Soter_Exception_Handle {
 class Soter_Database_SlowQuery_Handle_Default implements Soter_Database_SlowQuery_Handle {
 
 	public function handle($sql, $explainString, $time) {
-		$dir = Sr::config()->getPrimaryApplicationDir() . 'storage/slow-query-debug/';
+		$dir = Sr::config()->getStorageDirPath() . 'slow-query-debug/';
 		$file = $dir . 'slow-query-debug.php';
 		if (!is_dir($dir)) {
 			mkdir($dir, 0700, true);
@@ -1256,7 +1266,7 @@ class Soter_Database_SlowQuery_Handle_Default implements Soter_Database_SlowQuer
 class Soter_Database_Index_Handle_Default implements Soter_Database_Index_Handle {
 
 	public function handle($sql, $explainString, $time) {
-		$dir = Sr::config()->getPrimaryApplicationDir() . 'storage/index-debug/';
+		$dir = Sr::config()->getStorageDirPath() . 'index-debug/';
 		$file = $dir . 'index-debug.php';
 		if (!is_dir($dir)) {
 			mkdir($dir, 0700, true);
@@ -1278,7 +1288,7 @@ class Soter_Cache_File implements Soter_Cache {
 	private $_cacheDirPath;
 
 	public function __construct($cacheDirPath = '') {
-		$cacheDirPath = empty($cacheDirPath) ? Sr::config()->getPrimaryApplicationDir() . 'storage/cache/' : $cacheDirPath;
+		$cacheDirPath = empty($cacheDirPath) ? Sr::config()->getStorageDirPath() . 'cache/' : $cacheDirPath;
 		$this->_cacheDirPath = Sr::realPath($cacheDirPath) . '/';
 		if (!is_dir($this->_cacheDirPath)) {
 			mkdir($this->_cacheDirPath, 0700, true);

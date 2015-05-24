@@ -31,7 +31,7 @@ Soter::getConfig()
 	//设置自定义的错误显示控制处理类
 	//->setExceptionHandle(new Exception_Handle())
 	//日志记录，注释掉这行会关闭日志记录，去掉注释则开启日志文件记录
-	//->addLoggerWriter(new Soter_Logger_FileWriter(SOTER_APP_PATH . 'storage/logs/'))
+	->addLoggerWriter(new Soter_Logger_FileWriter(Sr::config()->getStorageDirPath() . 'logs/'))
 	//->addLoggerWriter(new Soter_LoggerWriter_Database())
 	//设置日志子目录格式，参数就是date()函数的第一个参数,默认是 Y-m-d/H
 	->setLogsSubDirNameFormat('Y-m-d/H')
@@ -50,6 +50,6 @@ Soter::getConfig()
 	    'Demo' => 'demo'
 	))
 	->setDataCheckRules('rules')
-	
+
 
 ;

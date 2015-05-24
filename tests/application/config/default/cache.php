@@ -14,7 +14,7 @@ return array(
 	'file' => array(
 	    'class' => 'Soter_Cache_File',
 	    //缓存文件保存路径
-	    'config' => Sr::config()->getPrimaryApplicationDir() . 'storage/cache/'
+	    'config' => Sr::config()->getStorageDirPath() . 'cache/'
 	),
 	'memcache' => array(
 	    'class' => 'Soter_Cache_Memcache',

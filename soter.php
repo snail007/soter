@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.37
- * @createdtime   2015-05-24 14:43:27
+ * @since         v1.0.38
+ * @createdtime   2015-05-25 00:04:27
  */
  
 
@@ -3077,15 +3077,13 @@ abstract class Soter_Task_Single extends Soter_Task {
 			Sr::config()->getClassesDirName() . '/'
 			. Sr::config()->getTaskDirName() . '/'
 			. str_replace('_', '/', get_class($this)) . '.php');
-		$lockFilePath = Sr::realPath($tempDirPath) . '/' . $key . '.lock';
+		$lockFilePath = Sr::realPath($tempDirPath) . '/' . $key . '.soter-task-lock';
 		if (file_exists($lockFilePath)) {
 			return;
 		}
 		if (file_put_contents($lockFilePath, "\n") === false) {
 			throw new Soter_Exception_500('directory [ ' . $tempDirPath . ' ] not writeable');
 		}
-		$this->execute($args);
-		@unlink($lockFilePath);
 		$functionName = 'Soter_Task_Single' . $key;
 		eval('function ' . $functionName . '() {
 			$path= "' . $lockFilePath . '";
@@ -3094,26 +3092,11 @@ abstract class Soter_Task_Single extends Soter_Task {
 			}
 		    }');
 		register_shutdown_function($functionName);
+		$this->execute($args);
+		@unlink($lockFilePath);
 	}
 	private function getTempDir() {
-		if (!function_exists('sys_get_temp_dir')) {
-			if (!empty($_ENV['TMP'])) {
-				return realpath($_ENV['TMP']);
-			}
-			if (!empty($_ENV['TMPDIR'])) {
-				return realpath($_ENV['TMPDIR']);
-			}
-			if (!empty($_ENV['TEMP'])) {
-				return realpath($_ENV['TEMP']);
-			}
-			$tempfile = tempnam(uniqid(rand(), TRUE), '');
-			if (file_exists($tempfile)) {
-				unlink($tempfile);
-				return realpath(dirname($tempfile));
-			}
-		} else {
-			return sys_get_temp_dir();
-		}
+		return Sr::config()->getStorageDirPath();
 	}
 }
 /**
@@ -3570,6 +3553,7 @@ class Soter_Config {
 		$hmvcDirName = 'hmvc',
 		$libraryDirName = 'library',
 		$functionsDirName = 'functions',
+		$storageDirPath = '',
 		$viewsDirName = 'views',
 		$configDirName = 'config',
 		$configTestingDirName = 'testing',
@@ -3620,6 +3604,13 @@ class Soter_Config {
 		$encryptKey,
 		$hmvcDomains = array()
 	;
+	public function getStorageDirPath() {
+		return empty($this->storageDirPath) ? $this->getPrimaryApplicationDir() . $this->storageDirPath . '/' : $this->storageDirPath;
+	}
+	public function setStorageDirPath($storageDirPath) {
+		$this->storageDirPath = $storageDirPath;
+		return $this;
+	}
 	public function getHmvcDomain() {
 		if (!$this->hmvcDomains['enable']) {
 			return;
@@ -3701,7 +3692,7 @@ class Soter_Config {
 			$this->cacheConfig = array(
 			    'default_type' => 'file',
 			    'drivers' => array(
-				'file' => $this->getPrimaryApplicationDir() . 'storage/cache/',
+				'file' => $this->getStorageDirPath() . 'cache/',
 			    )
 			);
 		}
@@ -4333,7 +4324,7 @@ class Soter_Exception_Handle_Default implements Soter_Exception_Handle {
 }
 class Soter_Database_SlowQuery_Handle_Default implements Soter_Database_SlowQuery_Handle {
 	public function handle($sql, $explainString, $time) {
-		$dir = Sr::config()->getPrimaryApplicationDir() . 'storage/slow-query-debug/';
+		$dir = Sr::config()->getStorageDirPath() . 'slow-query-debug/';
 		$file = $dir . 'slow-query-debug.php';
 		if (!is_dir($dir)) {
 			mkdir($dir, 0700, true);
@@ -4350,7 +4341,7 @@ class Soter_Database_SlowQuery_Handle_Default implements Soter_Database_SlowQuer
 }
 class Soter_Database_Index_Handle_Default implements Soter_Database_Index_Handle {
 	public function handle($sql, $explainString, $time) {
-		$dir = Sr::config()->getPrimaryApplicationDir() . 'storage/index-debug/';
+		$dir = Sr::config()->getStorageDirPath() . 'index-debug/';
 		$file = $dir . 'index-debug.php';
 		if (!is_dir($dir)) {
 			mkdir($dir, 0700, true);
@@ -4368,7 +4359,7 @@ class Soter_Database_Index_Handle_Default implements Soter_Database_Index_Handle
 class Soter_Cache_File implements Soter_Cache {
 	private $_cacheDirPath;
 	public function __construct($cacheDirPath = '') {
-		$cacheDirPath = empty($cacheDirPath) ? Sr::config()->getPrimaryApplicationDir() . 'storage/cache/' : $cacheDirPath;
+		$cacheDirPath = empty($cacheDirPath) ? Sr::config()->getStorageDirPath() . 'cache/' : $cacheDirPath;
 		$this->_cacheDirPath = Sr::realPath($cacheDirPath) . '/';
 		if (!is_dir($this->_cacheDirPath)) {
 			mkdir($this->_cacheDirPath, 0700, true);

@@ -246,21 +246,17 @@ abstract class Soter_Task_Single extends Soter_Task {
 
 	public function _execute(Soter_CliArgs $args) {
 		$tempDirPath = $this->getTempDir();
-
 		$key = md5(Sr::config()->getApplicationDir() .
 			Sr::config()->getClassesDirName() . '/'
 			. Sr::config()->getTaskDirName() . '/'
 			. str_replace('_', '/', get_class($this)) . '.php');
-
-		$lockFilePath = Sr::realPath($tempDirPath) . '/' . $key . '.lock';
+		$lockFilePath = Sr::realPath($tempDirPath) . '/' . $key . '.soter-task-lock';
 		if (file_exists($lockFilePath)) {
 			return;
 		}
 		if (file_put_contents($lockFilePath, "\n") === false) {
 			throw new Soter_Exception_500('directory [ ' . $tempDirPath . ' ] not writeable');
 		}
-		$this->execute($args);
-		@unlink($lockFilePath);
 		$functionName = 'Soter_Task_Single' . $key;
 		eval('function ' . $functionName . '() {
 			$path= "' . $lockFilePath . '";
@@ -269,27 +265,12 @@ abstract class Soter_Task_Single extends Soter_Task {
 			}
 		    }');
 		register_shutdown_function($functionName);
+		$this->execute($args);
+		@unlink($lockFilePath);
 	}
 
 	private function getTempDir() {
-		if (!function_exists('sys_get_temp_dir')) {
-			if (!empty($_ENV['TMP'])) {
-				return realpath($_ENV['TMP']);
-			}
-			if (!empty($_ENV['TMPDIR'])) {
-				return realpath($_ENV['TMPDIR']);
-			}
-			if (!empty($_ENV['TEMP'])) {
-				return realpath($_ENV['TEMP']);
-			}
-			$tempfile = tempnam(uniqid(rand(), TRUE), '');
-			if (file_exists($tempfile)) {
-				unlink($tempfile);
-				return realpath(dirname($tempfile));
-			}
-		} else {
-			return sys_get_temp_dir();
-		}
+		return Sr::config()->getStorageDirPath();
 	}
 
 }
