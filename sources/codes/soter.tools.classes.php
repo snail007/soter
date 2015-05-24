@@ -371,7 +371,7 @@ class Soter_Config {
 	;
 
 	public function getStorageDirPath() {
-		return empty($this->storageDirPath) ? $this->getPrimaryApplicationDir() . $this->storageDirPath . '/' : $this->storageDirPath;
+		return empty($this->storageDirPath) ? $this->getPrimaryApplicationDir() . 'storage/' : $this->storageDirPath;
 	}
 
 	public function setStorageDirPath($storageDirPath) {

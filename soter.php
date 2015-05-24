@@ -26,7 +26,7 @@
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         v1.0.38
- * @createdtime   2015-05-25 00:04:27
+ * @createdtime   2015-05-25 00:07:52
  */
  
 
@@ -3605,7 +3605,7 @@ class Soter_Config {
 		$hmvcDomains = array()
 	;
 	public function getStorageDirPath() {
-		return empty($this->storageDirPath) ? $this->getPrimaryApplicationDir() . $this->storageDirPath . '/' : $this->storageDirPath;
+		return empty($this->storageDirPath) ? $this->getPrimaryApplicationDir() . 'storage/' : $this->storageDirPath;
 	}
 	public function setStorageDirPath($storageDirPath) {
 		$this->storageDirPath = $storageDirPath;
