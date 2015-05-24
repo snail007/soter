@@ -20,6 +20,7 @@ Soter::getConfig()
 	->setEnvironment(($env = (($cliEnv = Sr::getOpt('env')) ? $cliEnv : Sr::arrayGet($_SERVER, 'ENVIRONMENT'))) ? Sr::config()->getServerEnvironment($env) : Sr::ENV_DEVELOPMENT)
 	//系统错误显示设置，非产品环境才显示
 	->setShowError(Sr::config()->getEnvironment() != Sr::ENV_PRODUCTION)
+	->setDatabseConfig('database')
 	/**
 	 * 下面配置中可以使用：
 	 * 1.主项目的claseses目录，主项目类库目录，主项目拓展包里面的类
@@ -31,6 +32,7 @@ Soter::getConfig()
 	//->setExceptionHandle(new Exception_Handle())
 	//日志记录，注释掉这行会关闭日志记录，去掉注释则开启日志文件记录
 	//->addLoggerWriter(new Soter_Logger_FileWriter(SOTER_APP_PATH . 'storage/logs/'))
+	//->addLoggerWriter(new Soter_LoggerWriter_Database())
 	//设置日志子目录格式，参数就是date()函数的第一个参数,默认是 Y-m-d/H
 	->setLogsSubDirNameFormat('Y-m-d/H')
 	//设置自定义的uri重写类
@@ -48,6 +50,6 @@ Soter::getConfig()
 	    'Demo' => 'demo'
 	))
 	->setDataCheckRules('rules')
-	->setDatabseConfig('database')
+	
 
 ;

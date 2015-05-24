@@ -132,7 +132,7 @@ class Soter {
 				break;
 			}
 		}
-		if(empty($route)){
+		if (empty($route)) {
 			throw new Soter_Exception_500('none router was found in configuration');
 		}
 		$_route = Sr::config()->getRoute();
@@ -199,7 +199,7 @@ class Soter {
 		}
 		$args = Sr::getOpt();
 		$args = empty($args) ? array() : $args;
-		$taskObject->execute(new Soter_CliArgs($args));
+		$taskObject->_execute(new Soter_CliArgs($args));
 	}
 
 	/**

@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.36
- * @createdtime   2015-05-22 23:06:44
+ * @since         v1.0.37
+ * @createdtime   2015-05-24 14:43:27
  */
  
 
@@ -155,7 +155,7 @@ class Soter {
 				break;
 			}
 		}
-		if(empty($route)){
+		if (empty($route)) {
 			throw new Soter_Exception_500('none router was found in configuration');
 		}
 		$_route = Sr::config()->getRoute();
@@ -221,7 +221,7 @@ class Soter {
 		}
 		$args = Sr::getOpt();
 		$args = empty($args) ? array() : $args;
-		$taskObject->execute(new Soter_CliArgs($args));
+		$taskObject->_execute(new Soter_CliArgs($args));
 	}
 	/**
 	 * 插件模式运行
@@ -3065,7 +3065,56 @@ abstract class Soter_Bean {
 	
 }
 abstract class Soter_Task {
+	public function _execute(Soter_CliArgs $args) {
+		$this->execute($args);
+	}
 	abstract function execute(Soter_CliArgs $args);
+}
+abstract class Soter_Task_Single extends Soter_Task {
+	public function _execute(Soter_CliArgs $args) {
+		$tempDirPath = $this->getTempDir();
+		$key = md5(Sr::config()->getApplicationDir() .
+			Sr::config()->getClassesDirName() . '/'
+			. Sr::config()->getTaskDirName() . '/'
+			. str_replace('_', '/', get_class($this)) . '.php');
+		$lockFilePath = Sr::realPath($tempDirPath) . '/' . $key . '.lock';
+		if (file_exists($lockFilePath)) {
+			return;
+		}
+		if (file_put_contents($lockFilePath, "\n") === false) {
+			throw new Soter_Exception_500('directory [ ' . $tempDirPath . ' ] not writeable');
+		}
+		$this->execute($args);
+		@unlink($lockFilePath);
+		$functionName = 'Soter_Task_Single' . $key;
+		eval('function ' . $functionName . '() {
+			$path= "' . $lockFilePath . '";
+			if (file_exists($path)) {
+			    @unlink($path);
+			}
+		    }');
+		register_shutdown_function($functionName);
+	}
+	private function getTempDir() {
+		if (!function_exists('sys_get_temp_dir')) {
+			if (!empty($_ENV['TMP'])) {
+				return realpath($_ENV['TMP']);
+			}
+			if (!empty($_ENV['TMPDIR'])) {
+				return realpath($_ENV['TMPDIR']);
+			}
+			if (!empty($_ENV['TEMP'])) {
+				return realpath($_ENV['TEMP']);
+			}
+			$tempfile = tempnam(uniqid(rand(), TRUE), '');
+			if (file_exists($tempfile)) {
+				unlink($tempfile);
+				return realpath(dirname($tempfile));
+			}
+		} else {
+			return sys_get_temp_dir();
+		}
+	}
 }
 /**
  * @property Soter_Route $route

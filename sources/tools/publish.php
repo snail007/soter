@@ -32,7 +32,7 @@ require dirname(__FILE__) . '/../codes/index.php';
 define('SRC_DIR', dirname(__FILE__) . '/../codes/');
 define('DIST_DIR', dirname(__FILE__) . '/../../');
 date_default_timezone_set('PRC');
-$ver = "v1.0.36";
+$ver = "v1.0.37";
 
 if (Sr::getOpt('version')) {
 	$ver = Sr::getOpt('version');
@@ -103,7 +103,7 @@ exec('rm -rf ' . DIST_DIR . 'docs/*');
 exec('cp -r ' . DIST_DIR . '../soter-docs/* ' . DIST_DIR . 'docs/');
 
 //内测版生成
-exec('cd ' . DIST_DIR . '&&tar zcvf "' . '../soter-alpha-' . $ver . '.tar.gz' . '" application docs composer.json index.php LICENSE README.md soter.min.php soter.php');
+exec('cd ' . DIST_DIR . '&&tar zcvf "' . '../soter-alpha-' . $ver . '.tar.gz' . '" application docs composer.json index.php LICENSE README.md CHANGELOG soter.min.php soter.php');
 
 function common_replace(&$str) {
 	$str = preg_replace('|^ *// *[\w].*$\n|m', '', $str); //去掉英文单行注释
