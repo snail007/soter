@@ -76,12 +76,12 @@ class TestMisc extends UnitTestCase {
 
 	function testSetSrMethods() {
 		Sr::config()->setSrMethods(array(
-		    'task' => 'Task',
+		    'task' => 'Model',
 		    'testMethod' => function($test=null) {
 			    return $test;
 		    }
 		));
-		$this->assertIsA(Sr::task('TestTask'), 'Task_TestTask');
+		$this->assertIsA(Sr::task('TestModel'), 'Model_TestModel');
 		$this->assertEqual(Sr::testMethod('test'), 'test');
 	}
 

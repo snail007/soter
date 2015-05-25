@@ -235,8 +235,27 @@ abstract class Soter_Bean {
 
 abstract class Soter_Task {
 
+	public function __construct() {
+		if (!Sr::isCli()) {
+			throw new Soter_Exception_500('Task only in cli mode');
+		}
+		if (!function_exists('shell_exec')) {
+			throw new Soter_Exception_500('Function [ shell_exec ] was disabled , run task must be enabled it .');
+		}
+	}
+
 	public function _execute(Soter_CliArgs $args) {
 		$this->execute($args);
+	}
+
+	public final function pidIsExists($pid) {
+		if (PATH_SEPARATOR == ':') {
+			//linux
+			return trim(shell_exec("ps -ax | awk '{ print $1 }' | grep -e \"^{$pid}$\""), "\n") == $pid;
+		} else {
+			//windows
+			return strpos(shell_exec('tasklist /NH /FI "PID eq ' . $pid . '"'), $pid) !== false;
+		}
 	}
 
 	abstract function execute(Soter_CliArgs $args);
@@ -245,32 +264,24 @@ abstract class Soter_Task {
 abstract class Soter_Task_Single extends Soter_Task {
 
 	public function _execute(Soter_CliArgs $args) {
-		$tempDirPath = $this->getTempDir();
+		$tempDirPath = Sr::config()->getStorageDirPath();
 		$key = md5(Sr::config()->getApplicationDir() .
 			Sr::config()->getClassesDirName() . '/'
 			. Sr::config()->getTaskDirName() . '/'
 			. str_replace('_', '/', get_class($this)) . '.php');
 		$lockFilePath = Sr::realPath($tempDirPath) . '/' . $key . '.soter-task-lock';
 		if (file_exists($lockFilePath)) {
-			return;
+			$pid = file_get_contents($lockFilePath);
+			//lockfile进程pid存在，直接返回
+			if ($this->pidIsExists($pid)) {
+				return;
+			}
 		}
-		if (file_put_contents($lockFilePath, "\n") === false) {
+		//写入进程pid到lockfile
+		if (file_put_contents($lockFilePath, getmypid()) === false) {
 			throw new Soter_Exception_500('directory [ ' . $tempDirPath . ' ] not writeable');
 		}
-		$functionName = 'Soter_Task_Single' . $key;
-		eval('function ' . $functionName . '() {
-			$path= "' . $lockFilePath . '";
-			if (file_exists($path)) {
-			    @unlink($path);
-			}
-		    }');
-		register_shutdown_function($functionName);
 		$this->execute($args);
-		@unlink($lockFilePath);
-	}
-
-	private function getTempDir() {
-		return Sr::config()->getStorageDirPath();
 	}
 
 }
