@@ -235,6 +235,8 @@ abstract class Soter_Bean {
 
 abstract class Soter_Task {
 
+	protected $debug = false;
+
 	public function __construct() {
 		if (!Sr::isCli()) {
 			throw new Soter_Exception_500('Task only in cli mode');
@@ -245,7 +247,17 @@ abstract class Soter_Task {
 	}
 
 	public function _execute(Soter_CliArgs $args) {
+		$this->debug = $args->get('debug');
+		$startTime = Sr::microtime();
+		$this->_log('Task [ ' . __CLASS__ . ' ] start');
 		$this->execute($args);
+		$this->_log('Task [ ' . __CLASS__ . ' ] end , use time ' . (Sr::microtime() - $startTime) . ' ms');
+	}
+
+	public function _log($msg) {
+		if ($this->debug) {
+			echo date('[Y-m-d H:i:s] ') . $msg . "\n";
+		}
 	}
 
 	public final function pidIsExists($pid) {
@@ -264,12 +276,14 @@ abstract class Soter_Task {
 abstract class Soter_Task_Single extends Soter_Task {
 
 	public function _execute(Soter_CliArgs $args) {
+		$this->debug = $args->get('debug');
+		$this->_log('Single Task [ ' . __CLASS__ . ' ] start');
 		$tempDirPath = Sr::config()->getStorageDirPath();
 		$key = md5(Sr::config()->getApplicationDir() .
 			Sr::config()->getClassesDirName() . '/'
 			. Sr::config()->getTaskDirName() . '/'
 			. str_replace('_', '/', get_class($this)) . '.php');
-		$lockFilePath = Sr::realPath($tempDirPath) . '/' . $key . '.soter-task-lock';
+		$lockFilePath = Sr::realPath($tempDirPath) . '/' . $key . '.pid';
 		if (file_exists($lockFilePath)) {
 			$pid = file_get_contents($lockFilePath);
 			//lockfile进程pid存在，直接返回
@@ -281,7 +295,12 @@ abstract class Soter_Task_Single extends Soter_Task {
 		if (file_put_contents($lockFilePath, getmypid()) === false) {
 			throw new Soter_Exception_500('directory [ ' . $tempDirPath . ' ] not writeable');
 		}
+		$this->_log('update pid file [ ' . $lockFilePath . ' ]');
+		$startTime = Sr::microtime();
 		$this->execute($args);
+		@unlink($lockFilePath);
+		$this->_log('clean pid file [ ' . $lockFilePath . ' ]');
+		$this->_log('Single Task [ ' . __CLASS__ . ' ] end , use time ' . (Sr::microtime() - $startTime) . ' ms');
 	}
 
 }

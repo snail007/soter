@@ -42,6 +42,8 @@
 					我们看到我们的Task_My_FirstTask类，继承了抽象类Soter_Task，实现了execute方法，接受了一个Soter_CliArgs参数对象，
 					<br>通过这个对象我们可以获取命令行传递过来的参数，比如上面传递的--test=hello，
 					<br>我们就可以通过$args->get('test')获取hello。
+					<b class="text_strong"><br>提示：
+						<br>因为Soter在执行完execute方法之后还有一些工作要做，所以不要在execute方法里面执行退出脚本的操作比如exit、die。</b>
 					<br><b>2.命令行执行这个Task任务</b>
 					<br>比如执行下面的命令：
 					<pre class="brush:php">
@@ -86,6 +88,20 @@
 						<br>用来告诉Soter使用config目录下面的哪个目录作为配置文件夹目录。
 						<br>2.如果我们同时多次执行这个任务，会发现第一次执行没有结束的时候，后面启动执行的任务会自动退出，同一时间只会存在一个任务在执行。
 					</b>
+				</li>
+				<li><h2 class="title_h2">调试Task</h2>
+					当我们命令行运行任务的时候，如果想知道任务的一些执行流程，
+					<br>可以开启task的调试功能，那么执行任务的时候就会看到有一些任务的信息输出。
+					<br>开启这个调试功能我们只需要传递--debug参数即可。
+					<br>比如下面的命令：
+					<br>1.普通Task
+					<pre class="brush:php">
+						php /home/www/soter/index.php --env=development --debug --task=My_FirstTask--test=hello	
+					</pre>
+					2.单例Task
+					<pre class="brush:php">
+						php /home/www/soter/index.php --env=development --debug --task=My_SingleTask--test=hello	
+					</pre>
 				</li>
 			</ol>
 		</fieldset>
