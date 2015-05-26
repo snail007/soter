@@ -13,7 +13,7 @@
  */
 class Cache_MyCache implements Soter_Cache {
 	
-	public function set($key, $value, $cacheTime) {
+	public function set($key, $value, $cacheTime = 0) {
 		echo 'set cache [ ' . $key . ':' . $value . ' ](' . $cacheTime . ' ms)';
 		return true;
 	}
