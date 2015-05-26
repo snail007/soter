@@ -145,6 +145,9 @@ class Soter {
 			$_route->setMethod($method);
 		}
 		$config->setRoute($_route);
+		if (!Sr::classIsExists($class)) {
+			throw new Soter_Exception_404('Controller [ ' . $class . ' ] not found');
+		}
 		$controllerObject = new $class();
 		if (!($controllerObject instanceof Soter_Controller)) {
 			throw new Soter_Exception_404('[ ' . $class . ' ] not a valid Soter_Controller');
@@ -1684,6 +1687,16 @@ class Sr {
 			$str = mcrypt_decrypt(MCRYPT_DES, $key, pack("H*", $str), MCRYPT_MODE_ECB);
 			$pad = ord($str[($len = strlen($str)) - 1]);
 			return substr($str, 0, strlen($str) - $pad);
+		}
+
+		static function classIsExists($class) {
+			$classNamePath = str_replace('_', '/', $class);
+			foreach (self::$soterConfig->getPackages() as $path) {
+				if (file_exists($filePath = $path . self::config()->getClassesDirName() . '/' . $classNamePath . '.php')) {
+					return true;
+				}
+			}
+			return false;
 		}
 
 	}

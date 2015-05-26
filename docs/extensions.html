@@ -235,7 +235,7 @@
 					<br>有三个可选参数，参数含义如下：
 					<br>第一个参数：$table,也就是错误信息表名称，留空默认是system_error_logger
 					<br>第二个参数：$log404,是否记录Soter_Exception_404错误，比如控制器不存在，方法不存在，hvmc模块不存在都会触发Soter_Exception_404错误。
-					<br>第三个参数：$dbGroup,也就是使用<code>->setDatabseConfig('database')</code>配置的数据库连接信息里面的数据库配置组名称
+					<br>第三个参数：$dbGroup,也就是使用<code>->setDatabseConfig('database')</code>配置的数据库连接信息里面的数据库配置组名称，留空是:默认组
 					<b class="text_strong">
 						<br>提示：
 						<br>因为要把错误错误信息记录到数据库，所以注册Soter_LoggerWriter_Database之前必须，
