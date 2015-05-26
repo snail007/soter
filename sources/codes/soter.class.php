@@ -1694,6 +1694,9 @@ class Sr {
 		}
 
 		static function classIsExists($class) {
+			if(class_exists($class, false)){
+				return true;
+			}
 			$classNamePath = str_replace('_', '/', $class);
 			foreach (self::config()->getPackages() as $path) {
 				if (file_exists($filePath = $path . self::config()->getClassesDirName() . '/' . $classNamePath . '.php')) {
