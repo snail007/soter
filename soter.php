@@ -26,7 +26,7 @@
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         v1.0.41
- * @createdtime   2015-05-26 11:26:14
+ * @createdtime   2015-05-26 17:47:56
  */
  
 
@@ -488,7 +488,7 @@ class Sr {
 			array_shift($_info);
 			$keyStrArray = '';
 			foreach ($_info as $k) {
-				$keyStrArray.= $k;
+				$keyStrArray.= "['{$k}']";
 			}
 			$val = eval('return Sr::arrayKeyExists(\'' . implode('.', $_info) . '\',$cfg)?$cfg' . $keyStrArray . ':null;');
 			return $val;
@@ -833,7 +833,7 @@ class Sr {
 
 	/**
 	 * 获取当前UNIX毫秒时间戳
-	 * @return type
+	 * @return float
 	 */
 	static function microtime() {
 		// 获取当前毫秒时间戳
@@ -1715,7 +1715,11 @@ class Sr {
 			}
 			$str = $str . '';
 			$key = self::getEncryptKey($key, $attachKey);
-			$str = mcrypt_decrypt(MCRYPT_DES, $key, pack("H*", $str), MCRYPT_MODE_ECB);
+			$str = @pack("H*", $str);
+			if (!$str) {
+				return '';
+			}
+			$str = mcrypt_decrypt(MCRYPT_DES, $key, $str, MCRYPT_MODE_ECB);
 			$pad = ord($str[($len = strlen($str)) - 1]);
 			return substr($str, 0, strlen($str) - $pad);
 		}
@@ -3103,7 +3107,7 @@ interface Soter_Database_Index_Handle {
 
 interface Soter_Cache {
 
-	public function set($key, $value, $cacheTime);
+	public function set($key, $value, $cacheTime=0);
 
 	public function get($key);
 
@@ -4113,7 +4117,11 @@ class Soter_Config {
 			$this->cacheConfig = array(
 			    'default_type' => 'file',
 			    'drivers' => array(
-				'file' => $this->getStorageDirPath() . 'cache/',
+				'file' => array(
+				    'class' => 'Soter_Cache_File',
+				    //缓存文件保存路径
+				    'config' => Sr::config()->getStorageDirPath() . 'cache/'
+				),
 			    )
 			);
 		}
@@ -4995,7 +5003,7 @@ class Soter_Cache_File implements Soter_Cache {
 		return NULL;
 	}
 
-	public function set($key, $value, $cacheTime) {
+	public function set($key, $value, $cacheTime = 0) {
 		if (empty($key)) {
 			return false;
 		}
@@ -5050,7 +5058,7 @@ class Soter_Cache_Memcached implements Soter_Cache {
 		return ($data = $this->handle->get($key)) ? $data : null;
 	}
 
-	public function set($key, $value, $cacheTime) {
+	public function set($key, $value, $cacheTime = 0) {
 		$this->_init();
 		return $this->handle->set($key, $value, $cacheTime > 0 ? (time() + $cacheTime) : 0);
 	}
@@ -5089,7 +5097,7 @@ class Soter_Cache_Memcache implements Soter_Cache {
 		return ($data = $this->handle->get($key)) ? $data : null;
 	}
 
-	public function set($key, $value, $cacheTime) {
+	public function set($key, $value, $cacheTime = 0) {
 		$this->_init();
 		return $this->handle->set($key, $value, false, $cacheTime);
 	}
@@ -5116,7 +5124,7 @@ class Soter_Cache_Apc implements Soter_Cache {
 		return $data;
 	}
 
-	public function set($key, $value, $cacheTime) {
+	public function set($key, $value, $cacheTime = 0) {
 		return apc_store($key, $value, $cacheTime);
 	}
 
@@ -5188,7 +5196,7 @@ class Soter_Cache_Redis implements Soter_Cache {
 		}
 	}
 
-	public function set($key, $value, $cacheTime) {
+	public function set($key, $value, $cacheTime = 0) {
 		$this->_init();
 		$value = serialize($value);
 		foreach ($this->handle['masters'] as &$handle) {

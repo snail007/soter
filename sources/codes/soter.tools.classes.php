@@ -476,7 +476,11 @@ class Soter_Config {
 			$this->cacheConfig = array(
 			    'default_type' => 'file',
 			    'drivers' => array(
-				'file' => $this->getStorageDirPath() . 'cache/',
+				'file' => array(
+				    'class' => 'Soter_Cache_File',
+				    //缓存文件保存路径
+				    'config' => Sr::config()->getStorageDirPath() . 'cache/'
+				),
 			    )
 			);
 		}
@@ -1358,7 +1362,7 @@ class Soter_Cache_File implements Soter_Cache {
 		return NULL;
 	}
 
-	public function set($key, $value, $cacheTime) {
+	public function set($key, $value, $cacheTime = 0) {
 		if (empty($key)) {
 			return false;
 		}
@@ -1413,7 +1417,7 @@ class Soter_Cache_Memcached implements Soter_Cache {
 		return ($data = $this->handle->get($key)) ? $data : null;
 	}
 
-	public function set($key, $value, $cacheTime) {
+	public function set($key, $value, $cacheTime = 0) {
 		$this->_init();
 		return $this->handle->set($key, $value, $cacheTime > 0 ? (time() + $cacheTime) : 0);
 	}
@@ -1452,7 +1456,7 @@ class Soter_Cache_Memcache implements Soter_Cache {
 		return ($data = $this->handle->get($key)) ? $data : null;
 	}
 
-	public function set($key, $value, $cacheTime) {
+	public function set($key, $value, $cacheTime = 0) {
 		$this->_init();
 		return $this->handle->set($key, $value, false, $cacheTime);
 	}
@@ -1479,7 +1483,7 @@ class Soter_Cache_Apc implements Soter_Cache {
 		return $data;
 	}
 
-	public function set($key, $value, $cacheTime) {
+	public function set($key, $value, $cacheTime = 0) {
 		return apc_store($key, $value, $cacheTime);
 	}
 
@@ -1551,7 +1555,7 @@ class Soter_Cache_Redis implements Soter_Cache {
 		}
 	}
 
-	public function set($key, $value, $cacheTime) {
+	public function set($key, $value, $cacheTime = 0) {
 		$this->_init();
 		$value = serialize($value);
 		foreach ($this->handle['masters'] as &$handle) {

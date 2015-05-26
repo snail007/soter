@@ -3,7 +3,7 @@
 class Controller_Welcome extends Soter_Controller {
 
 	public function do_index() {
-		
+		Sr::business('TestBusiness');
 	}
 
 	public function do_get() {

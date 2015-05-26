@@ -457,7 +457,7 @@ class Sr {
 			array_shift($_info);
 			$keyStrArray = '';
 			foreach ($_info as $k) {
-				$keyStrArray.= $k;
+				$keyStrArray.= "['{$k}']";
 			}
 			$val = eval('return Sr::arrayKeyExists(\'' . implode('.', $_info) . '\',$cfg)?$cfg' . $keyStrArray . ':null;');
 			return $val;
@@ -802,7 +802,7 @@ class Sr {
 
 	/**
 	 * 获取当前UNIX毫秒时间戳
-	 * @return type
+	 * @return float
 	 */
 	static function microtime() {
 		// 获取当前毫秒时间戳

@@ -39,7 +39,7 @@ interface Soter_Database_Index_Handle {
 
 interface Soter_Cache {
 
-	public function set($key, $value, $cacheTime);
+	public function set($key, $value, $cacheTime=0);
 
 	public function get($key);
 
