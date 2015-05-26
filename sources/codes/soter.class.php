@@ -1684,7 +1684,11 @@ class Sr {
 			}
 			$str = $str . '';
 			$key = self::getEncryptKey($key, $attachKey);
-			$str = mcrypt_decrypt(MCRYPT_DES, $key, pack("H*", $str), MCRYPT_MODE_ECB);
+			$str = @pack("H*", $str);
+			if (!$str) {
+				return '';
+			}
+			$str = mcrypt_decrypt(MCRYPT_DES, $key, $str, MCRYPT_MODE_ECB);
 			$pad = ord($str[($len = strlen($str)) - 1]);
 			return substr($str, 0, strlen($str) - $pad);
 		}
