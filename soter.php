@@ -26,7 +26,7 @@
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         v1.0.41
- * @createdtime   2015-05-26 11:22:59
+ * @createdtime   2015-05-26 11:26:14
  */
  
 
@@ -1722,7 +1722,7 @@ class Sr {
 
 		static function classIsExists($class) {
 			$classNamePath = str_replace('_', '/', $class);
-			foreach (self::$soterConfig->getPackages() as $path) {
+			foreach (self::config()->getPackages() as $path) {
 				if (file_exists($filePath = $path . self::config()->getClassesDirName() . '/' . $classNamePath . '.php')) {
 					return true;
 				}
