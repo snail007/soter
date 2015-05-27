@@ -26,8 +26,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.42
- * @createdtime   2015-05-26 18:33:58
+ * @since         v1.0.43
+ * @createdtime   2015-05-27 12:21:04
  */
  
 define("IN_SOTER", true);
@@ -136,7 +136,9 @@ Soter::initialize()
 	 * 参数里面的key自动加上这里设置的前缀 */
 	->setCookiePrefix('')
 	/* 设置加密方法Sr::encrypt()和解密方法Sr::decrypt()使用的密钥,
-	 * 只有这里设置了密钥，当不传递key的时候，这两个方法才能正常使用 */
+	 * 只有这里设置了密钥，当不传递key的时候，这两个方法才能正常使用。
+	 * 提示：这里可以使用数组指定三个环境下的密钥，还可以传递一个字符串
+	 * 这个字符串就是所有环境使用的密钥。 */
 	->setEncryptKey(array(
 	    Sr::ENV_DEVELOPMENT => '', //开发环境密钥
 	    Sr::ENV_TESTING => '', //测试环境密钥

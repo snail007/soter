@@ -1,5 +1,5 @@
 <?php
-
+$ver = "v1.0.43";
 define('SOTER_RUN_MODE_PLUGIN', TRUE);
 require dirname(__FILE__) . '/../codes/index.php';
 /*
@@ -32,8 +32,6 @@ require dirname(__FILE__) . '/../codes/index.php';
 define('SRC_DIR', dirname(__FILE__) . '/../codes/');
 define('DIST_DIR', dirname(__FILE__) . '/../../');
 date_default_timezone_set('PRC');
-$ver = "v1.0.42";
-
 if (Sr::getOpt('version')) {
 	$ver = Sr::getOpt('version');
 }

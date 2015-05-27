@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.42
- * @createdtime   2015-05-26 18:33:58
+ * @since         v1.0.43
+ * @createdtime   2015-05-27 12:21:04
  */
  
 
@@ -4049,8 +4049,16 @@ class Soter_Config {
 		return isset($this->encryptKey[$key]) ? $this->encryptKey[$key] : '';
 	}
 
-	public function setEncryptKey(Array $encryptKey) {
-		$this->encryptKey = $encryptKey;
+	public function setEncryptKey($encryptKey) {
+		if (is_array($encryptKey)) {
+			$this->encryptKey = $encryptKey;
+		} else {
+			$this->encryptKey = array(
+			    Sr::ENV_DEVELOPMENT => $encryptKey,
+			    Sr::ENV_TESTING => $encryptKey,
+			    Sr::ENV_PRODUCTION => $encryptKey
+			);
+		}
 		return $this;
 	}
 

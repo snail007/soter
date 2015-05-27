@@ -251,14 +251,26 @@
 					<br>在入口文件里面可以看到下面的配置：
 					<pre class="brush:php">
 						/* 设置加密方法Sr::encrypt()和解密方法Sr::decrypt()使用的密钥,
-						 * 只有这里设置了密钥，当不传递key的时候，这两个方法才能正常使用 */
+						 * 只有这里设置了密钥，当不传递key的时候，这两个方法才能正常使用。
+						 * 提示：这里可以使用数组指定三个环境下的密钥，还可以传递一个字符串
+						 * 这个字符串就是所有环境使用的密钥。 */
 						->setEncryptKey(array(
 						    Sr::ENV_DEVELOPMENT => '', //开发环境密钥
 						    Sr::ENV_TESTING => '', //测试环境密钥
 						    Sr::ENV_PRODUCTION => ''//产品环境密钥
 						))
                                         </pre>
-					假设我们在入口文件里面配置了密钥如下：
+					<b>提示：</b>
+					<br><b>1.setEncryptKey()参数也可以是一个密钥字符串</b>
+					<br>当是密钥字符串的时候，三个环境使用的都是传递的密钥字符串。
+					比如下面这样设置，传递一个密钥字符串：
+					<pre class="brush:php">
+						->setEncryptKey('09q0mcru-qw4erc')
+                                        </pre>
+					那么加密方法Sr::encrypt()和解密方法Sr::decrypt()在开发环境、
+					<br>测试环境、产品环境使用的都是密钥：09q0mcru-qw4erc
+					<br><b>2.setEncryptKey()参数是数组的时候</b>
+					<br>假设我们在入口文件里面配置了密钥如下：
 					<pre class="brush:php">
 						->setEncryptKey(array(
 						    Sr::ENV_DEVELOPMENT => 'lqreqc4245mrqce', //开发环境密钥

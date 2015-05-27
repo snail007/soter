@@ -408,8 +408,16 @@ class Soter_Config {
 		return isset($this->encryptKey[$key]) ? $this->encryptKey[$key] : '';
 	}
 
-	public function setEncryptKey(Array $encryptKey) {
-		$this->encryptKey = $encryptKey;
+	public function setEncryptKey($encryptKey) {
+		if (is_array($encryptKey)) {
+			$this->encryptKey = $encryptKey;
+		} else {
+			$this->encryptKey = array(
+			    Sr::ENV_DEVELOPMENT => $encryptKey,
+			    Sr::ENV_TESTING => $encryptKey,
+			    Sr::ENV_PRODUCTION => $encryptKey
+			);
+		}
 		return $this;
 	}
 
