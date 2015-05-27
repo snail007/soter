@@ -77,12 +77,18 @@ class TestMisc extends UnitTestCase {
 	function testSetSrMethods() {
 		Sr::config()->setSrMethods(array(
 		    'task' => 'Model',
-		    'testMethod' => function($test=null) {
+		    'testMethod' => function($test = null) {
 			    return $test;
 		    }
 		));
 		$this->assertIsA(Sr::task('TestModel'), 'Model_TestModel');
 		$this->assertEqual(Sr::testMethod('test'), 'test');
+	}
+
+	function testEncodeDecode() {
+		Sr::config()->setEncryptKey('134134');
+		$this->assertEqual(Sr::encrypt('123'), Sr::encrypt('123', '134134'));
+		$this->assertEqual(Sr::decrypt(Sr::encrypt('123')), Sr::decrypt(Sr::encrypt('123'), '134134'));
 	}
 
 }

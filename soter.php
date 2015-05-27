@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.43
- * @createdtime   2015-05-27 12:26:41
+ * @since         v1.0.44
+ * @createdtime   2015-05-27 13:24:15
  */
  
 
@@ -1690,11 +1690,11 @@ class Sr {
 		}
 
 		private static function getEncryptKey($key, $attachKey) {
-			$_key = self::config()->getEncryptKey();
+			$_key = $key ? $key : self::config()->getEncryptKey();
 			if (!$key && !$_key) {
 				throw new Soter_Exception_500('encrypt key can not empty or you can set it in index.php : ->setEncryptKey()');
 			}
-			return substr(md5($attachKey ? $_key . $key : $key), 0, 8);
+			return substr(md5($attachKey ? $_key . $attachKey : $_key), 0, 8);
 		}
 
 		static function encrypt($str, $key = '', $attachKey = false) {
@@ -1725,7 +1725,7 @@ class Sr {
 		}
 
 		static function classIsExists($class) {
-			if(class_exists($class, false)){
+			if (class_exists($class, false)) {
 				return true;
 			}
 			$classNamePath = str_replace('_', '/', $class);
