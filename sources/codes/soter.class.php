@@ -797,7 +797,9 @@ class Sr {
 	}
 
 	static function createSqlite3Database($path) {
-		return new PDO('sqlite:' . $path);
+		$obj=new PDO('sqlite:' . $path);
+		chmod($path,0600);
+		return $obj;
 	}
 
 	/**

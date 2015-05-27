@@ -1,6 +1,7 @@
 <?php
 
 require_once 'pluginfortest.php';
+
 //require_once('simpletest/web_tester.php');
 require_once('simpletest/autorun.php');
 
@@ -20,7 +21,7 @@ class testDbSqlite extends UnitTestCase {
 
 	public function tearDown() {
 		parent::tearDown();
-		@unlink('test.sqlite3');
+		//@unlink('test.sqlite3');
 	}
 
 	public function init() {
@@ -30,7 +31,7 @@ class testDbSqlite extends UnitTestCase {
 		    'pconnect' => true,
 		    'tablePrefix' => 'test_',
 		    'tablePrefixSqlIdentifier' => '_tablePrefix_',
-		    'database' => 'test.sqlite3', //sqlite3数据库路径
+		    'database' => Sr::realPath('test.sqlite3'), //sqlite3数据库路径
 		    //是否开启慢查询记录
 		    'slowQueryDebug' => false,
 		    'slowQueryTime' => 3000, //单位毫秒，1秒=1000毫秒
@@ -41,8 +42,8 @@ class testDbSqlite extends UnitTestCase {
 		$bSql = 'CREATE TABLE `test_b` (`id` INTEGER  PRIMARY KEY AUTOINCREMENT,`gname` varchar(10) NOT NULL,`cid` int(11) NOT NULL)';
 		$cSql = 'CREATE TABLE `test_c` (`id` INTEGER  PRIMARY KEY AUTOINCREMENT,`cname` varchar(10) NOT NULL)';
 
-		$this->clean(); 
-		
+		$this->clean();
+
 		$this->assertTrue($this->db->execute($aSql));
 		$this->assertTrue($this->db->execute($bSql));
 		$this->assertTrue($this->db->execute($cSql));
