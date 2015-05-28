@@ -717,6 +717,8 @@
 						echo Sr::db()->insert('a', array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000)));
 						//将输出：INSERT INTO `a` (`name`,`gid`) VALUES (?,?)
 					</pre>
+					然后我们执行Sr::db()->exexute()返回的是数据库中受到影响的行数。
+					<br>可以通过<b>Sr::db()->lastId()</b>获取最后插入的ID。
 				</li>
 				<li><h3 class="title_h2">批量插入数据</h3>
 					我们可以通过insertBatch方法方便的将二维数组插入数据库

@@ -57,19 +57,32 @@ class TestDao extends UnitTestCase {
 
 	public function testInsert() {
 		$this->init();
-		$num = $this->dao->insert(array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000)));
-		$this->assertEqual($num, 1);
-		$num = $this->dao->insert(array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000)));
-		$this->assertEqual($num, 1);
+		$id = $this->dao->insert(array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000)));
+		$this->assertEqual($id, 1);
+		$id = $this->dao->insert(array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000)));
+		$this->assertEqual($id, 2);
+		$this->clean();
+	}
+
+	public function testinsertBatch() {
+		$this->init();
+		$id = $this->dao->insert(array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000)));
+		$this->assertEqual($id, 1);
+		$id = $this->dao->insert(array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000)));
+		$this->assertEqual($id, 2);
+		$id = $this->dao->insertBatch(array(array('name' => 'name3', 'gid' => rand(1000, 10000)), array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000))));
+		$this->assertEqual($id, 3);
+		$row = $this->dao->find(3);
+		$this->assertEqual($row['name'], 'name3');
 		$this->clean();
 	}
 
 	public function testUpdate() {
 		$this->init();
-		$num = $this->dao->insert(array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000)));
-		$this->assertEqual($num, 1);
-		$num = $this->dao->insert(array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000)));
-		$this->assertEqual($num, 1);
+		$id = $this->dao->insert(array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000)));
+		$this->assertEqual($id, 1);
+		$id = $this->dao->insert(array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000)));
+		$this->assertEqual($id, 2);
 		$num = $this->dao->update(array('name' => 'name22', 'gid' => rand(1000, 10000)), 2);
 		$this->assertEqual($num, 1);
 		$this->assertEqual('name22', $this->dao->findCol('name', array('id' => 2)));
@@ -79,14 +92,32 @@ class TestDao extends UnitTestCase {
 		$this->clean();
 	}
 
+	public function testupdateBatch() {
+		$this->init();
+		$id = $this->dao->insert(array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000)));
+		$this->assertEqual($id, 1);
+		$id = $this->dao->insert(array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000)));
+		$this->assertEqual($id, 2);
+		$num = $this->dao->updateBatch(array(
+		    array('id' => 1, 'name' => 'name1'), 
+		    array('id' => 2, 'name' => 'name2')
+		    ),'id');
+		$this->assertEqual($num, 2);
+		$row = $this->dao->find(1);
+		$this->assertEqual($row['name'], 'name1');
+		$row = $this->dao->find(2);
+		$this->assertEqual($row['name'], 'name2');
+		$this->clean();
+	}
+
 	public function testDelete() {
 		$this->init();
 		$num = $this->dao->insert(array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000)));
 		$this->assertEqual($num, 1);
 		$num = $this->dao->insert(array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000)));
-		$this->assertEqual($num, 1);
+		$this->assertEqual($num, 2);
 		$num = $this->dao->insert(array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000)));
-		$this->assertEqual($num, 1);
+		$this->assertEqual($num, 3);
 		$num = $this->dao->delete(1);
 		$this->assertEqual($num, 1);
 		$num = $this->dao->delete(array(2, 10));
@@ -101,9 +132,9 @@ class TestDao extends UnitTestCase {
 		$num = $this->dao->insert(array('name' => 'name11', 'gid' => rand(1000, 10000)));
 		$this->assertEqual($num, 1);
 		$num = $this->dao->insert(array('name' => 'name22', 'gid' => rand(1000, 10000)));
-		$this->assertEqual($num, 1);
+		$this->assertEqual($num, 2);
 		$num = $this->dao->insert(array('name' => 'name33', 'gid' => rand(1000, 10000)));
-		$this->assertEqual($num, 1);
+		$this->assertEqual($num, 3);
 		$num = $this->dao->find(2);
 		$this->assertEqual($num['name'], 'name22');
 		$num = $this->dao->find(array(2, 10));
@@ -124,9 +155,9 @@ class TestDao extends UnitTestCase {
 		$num = $this->dao->insert(array('name' => 'name11', 'gid' => rand(1000, 10000)));
 		$this->assertEqual($num, 1);
 		$num = $this->dao->insert(array('name' => 'name22', 'gid' => rand(1000, 10000)));
-		$this->assertEqual($num, 1);
+		$this->assertEqual($num, 2);
 		$num = $this->dao->insert(array('name' => 'name33', 'gid' => rand(1000, 10000)));
-		$this->assertEqual($num, 1);
+		$this->assertEqual($num, 3);
 		$num = $this->dao->findCol('name', 2);
 		$this->assertEqual($num, 'name22');
 		$num = $this->dao->findCol('name', array(2, 10));
@@ -147,9 +178,9 @@ class TestDao extends UnitTestCase {
 		$num = $this->dao->insert(array('name' => 'name11', 'gid' => rand(1000, 10000)));
 		$this->assertEqual($num, 1);
 		$num = $this->dao->insert(array('name' => 'name22', 'gid' => rand(1000, 10000)));
-		$this->assertEqual($num, 1);
+		$this->assertEqual($num, 2);
 		$num = $this->dao->insert(array('name' => 'name33', 'gid' => rand(1000, 10000)));
-		$this->assertEqual($num, 1);
+		$this->assertEqual($num, 3);
 		$num = $this->dao->findAll();
 		$this->assertEqual(count($num), 3);
 		$num = $this->dao->findAll(array('id >=' => 2));
@@ -169,9 +200,9 @@ class TestDao extends UnitTestCase {
 		$num = $this->dao->insert(array('name' => 'name11', 'gid' => rand(1000, 10000)));
 		$this->assertEqual($num, 1);
 		$num = $this->dao->insert(array('name' => 'name22', 'gid' => rand(1000, 10000)));
-		$this->assertEqual($num, 1);
+		$this->assertEqual($num, 2);
 		$num = $this->dao->insert(array('name' => 'name33', 'gid' => rand(1000, 10000)));
-		$this->assertEqual($num, 1);
+		$this->assertEqual($num, 3);
 		$num = $this->dao->getPage(1, 1, '#', '*', array('id' => array(1, 2, 3)), array('id' => 'desc'), array(1, 2, 3, 4, 5, 6), 10);
 		$this->assertEqual(count($num['items']), 1);
 		$this->assertTrue(!empty($num['page']));
@@ -183,10 +214,10 @@ class TestDao extends UnitTestCase {
 		$num = $this->dao->insert(array('name' => 'name11', 'gid' => rand(1000, 10000)));
 		$this->assertEqual($num, 1);
 		$num = $this->dao->insert(array('name' => 'name22', 'gid' => rand(1000, 10000)));
-		$this->assertEqual($num, 1);
+		$this->assertEqual($num, 2);
 		$num = $this->dao->insert(array('name' => 'name33', 'gid' => rand(1000, 10000)));
-		$this->assertEqual($num, 1);
-		$num = $this->dao->search(1, 2, '#', '*','id>?', array(0), array(1, 2, 3, 4, 5, 6), 10);
+		$this->assertEqual($num, 3);
+		$num = $this->dao->search(1, 2, '#', '*', 'id>?', array(0), array(1, 2, 3, 4, 5, 6), 10);
 		$this->assertEqual(count($num['items']), 2);
 		$this->assertTrue(!empty($num['page']));
 		$this->clean();

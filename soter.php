@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.44
- * @createdtime   2015-05-27 13:24:15
+ * @since         v1.0.45
+ * @createdtime   2015-05-28 15:09:38
  */
  
 
@@ -3163,10 +3163,21 @@ abstract class Soter_Dao {
 	/**
 	 * 添加数据
 	 * @param array $data  需要添加的数据
-	 * @return boolean
+	 * @return int 最后插入的id，失败为0
 	 */
 	public function insert($data) {
-		return $this->getDb()->insert($this->getTable(), $data)->execute();
+		$num = $this->getDb()->insert($this->getTable(), $data)->execute();
+		return $num ? $this->getDb()->lastId() : 0;
+	}
+
+	/**
+	 * 批量添加数据
+	 * @param array $rows  需要添加的数据
+	 * @return int 插入的数据中第一条的id，失败为0
+	 */
+	public function insertBatch($rows) {
+		$num = $this->getDb()->insertBatch($this->getTable(), $rows)->execute();
+		return $num ? $this->getDb()->lastId() : 0;
 	}
 
 	/**
@@ -3178,6 +3189,16 @@ abstract class Soter_Dao {
 	public function update($data, $where) {
 		$where = is_array($where) ? $where : array($this->getPrimaryKey() => $where);
 		return $this->getDb()->where($where)->update($this->getTable(), $data)->execute();
+	}
+
+	/**
+	 * 更新数据
+	 * @param type $data  需要批量更新的数据
+	 * @param type $index  需要批量更新的数据中的主键名称
+	 * @return boolean
+	 */
+	public function updateBatch($data, $index) {
+		return $this->getDb()->updateBatch($this->getTable(), $data, $index)->execute();
 	}
 
 	/**

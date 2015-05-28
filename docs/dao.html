@@ -16,7 +16,7 @@
                                         <br>比如：现在有张user表，那么我们对应Dao文件就是UserDao.php，那么我们UserDao.php就可以对user表增删改查。
                                         <br><b class="text_strong">切勿如下操作：</b>
                                         <br><b class="text_strong">我们有user表和user_vip表，然后只有创建一个Dao文件。
-                                        <br>那就没有意义了，那我们还不如建Model文件，我们要遵守一个Dao文件对应一张表才可以灵活使用与扩展。</b>
+						<br>那就没有意义了，那我们还不如建Model文件，我们要遵守一个Dao文件对应一张表才可以灵活使用与扩展。</b>
                                 </li>
                                 <li>
                                         <h2 class="title_h2">Dao层规范</h2>
@@ -65,7 +65,7 @@
                                         我们可以看到上面有一个参数，这个是什么意思呢，是加载dao类的时候，不需要前缀<code>Dao_</code>， 
                                         <br>比如上面的：Dao_TestDao，加载的时候只用Sr::dao('TestDao');
                                         <br>例如:我们要创建Dao类文件名为ListDao.php，类名就是Dao_ListDao，那么参数就要输入ListDao
-                                       
+
                                 </li>
                                 <li>
                                         <h2 class="title_h2">示例一</h2>
@@ -302,7 +302,7 @@
                                                 }
                                         </pre>
                                         <h3 class="title_h3">2.添加数据</h3>
-                                        通过<code>insert($data)</code>方法，来添加数据，返回值是1或者0，1是代表执行成功，0是代表执行失败。
+                                        通过<code>insert($data)</code>方法，来添加数据，返回值是插入数据的ID，失败为0。
                                         <br>$data 必填：需要添加的数据 例如：<code>array('username' => '张三', 'addtime' => time());</code>
                                         <br>假如我们Business要调用,如下：
                                         <pre class="brush:php">
@@ -311,7 +311,17 @@
                                                 $userDao = Sr::dao('Test');
                                                 $userDao->insert($data);
                                         </pre>
-                                        <h3 class="title_h3">3.更新数据</h3>
+					<h3 class="title_h3">3.批量添加数据</h3>
+                                        通过<code>insertBatch($data)</code>方法，来批量添加数据，返回值是插入数据中第一条数据的ID，失败为0。
+                                        <br>$data 必填：需要批量添加的数据 例如：<code>array(array('username' => '李四', 'addtime' => time()),array('username' => '张三', 'addtime' => time()));</code>
+                                        <br>假如我们Business要调用,如下：
+                                        <pre class="brush:php">
+                                                //一次添加两条数据
+                                                $data = array(array('username' => '李四', 'addtime' => time()),array('username' => '张三', 'addtime' => time()));
+                                                $userDao = Sr::dao('Test');
+                                                $userDao->insertBatch($data);
+                                        </pre>
+                                        <h3 class="title_h3">4.更新数据</h3>
                                         通过<code>update($data, $where)</code>方法，来更新数据，返回值是1或者0，1是代表执行成功，0是代表执行失败。
                                         <br>$data 必填：需要更新的数据 例如：<code>array('username' => '李四', 'addtime' => time());</code>
                                         <br>$where 必填：可以是$where条件关联数组，还可以是主键值。
@@ -328,7 +338,18 @@
                                                 $userDao = Sr::dao('Test');
                                                 $userDao->update($data, $where);
                                         </pre>
-                                        <h3 class="title_h3">4.获取一条或者多条数据</h3>
+					<h3 class="title_h3">5.批量更新数据</h3>
+                                        通过<code>updateBatch($data, $index)</code>方法，来更新数据，返回值是数据库中受到影响的行数。
+                                        <br>$data 必填：需要更新的数据 例如：<code>array(array('id'=>2,'username' => '李四', 'addtime' => time()),array('id'=>3,'username' => '张三', 'addtime' => time()));</code>
+                                        <br>$index 必填：数据中主键或者唯一索引列名称，数据中必须包含这一列，比如上面的id。
+                                        <br>假如我们Business要调用,如下：
+                                        <pre class="brush:php">
+                                                //1.同时修改id主键2对应的数据和id主键是3的数据
+                                                $data = array(array('id'=>2,'username' => '李四', 'addtime' => time()),array('id'=>3,'username' => '张三', 'addtime' => time()));
+                                                $userDao = Sr::dao('Test');
+                                                $userDao->update($data, 'id');
+                                        </pre>
+                                        <h3 class="title_h3">6.获取一条或者多条数据</h3>
                                         通过<code>find($values, $isRows = false, Array $orderBy = array())</code>方法，我们可以获取一条或者多条数据。
                                         <br>$values 必填：可以是一个主键的值或者主键的值数组，还可以是where条件
                                         <br>$isRows 选填：返回多行记录还是单行记录，true：多行，false：单行
@@ -357,7 +378,7 @@
                                                 $userDao = Sr::dao('Test');
                                                 $userDao->find($where, true, array('addtime' => 'asc'));
                                         </pre>
-                                        <h3 class="title_h3">5.获取多条数据</h3>
+                                        <h3 class="title_h3">7.获取多条数据</h3>
                                         通过<code>findAll($where = null, Array $orderBy = array(), $limit = null, $fileds = null)</code>方法，我们可以获取一条或者多条数据。
                                         <br>$where 选填：where条件数组
                                         <br>$orderBy 选填：排序，比如：array('time'=>'desc')或者array('time'=>'desc','id'=>'asc')
@@ -385,7 +406,7 @@
                                                 $userDao = Sr::dao('Test');
                                                 $userDao->findAll(array('id' => 1), array('id' => 'desc'), 100, 'id,username');
                                         </pre>
-                                        <h3 class="title_h3">6.根据条件获取一个字段的值或者数组</h3>
+                                        <h3 class="title_h3">8.根据条件获取一个字段的值或者数组</h3>
                                         通过<code>findCol($col, $where, $isRows = false, Array $orderBy = array())</code>方法，我们可以根据条件获取一个字段的值或者数组。
                                         <br>$col 必填：字段名称
                                         <br>$where 必填：可以是一个主键的值或者主键的值数组，还可以是where条件(<b class="text_strong">这个跟find的$values参数一样</b>)
@@ -406,7 +427,7 @@
                                                 $userDao = Sr::dao('Test');
                                                 $userDao->delete(array(1,2,3), array('username' => '刘一'));
                                         </pre>
-                                        <h3 class="title_h3">8.分页方法</h3>
+                                        <h3 class="title_h3">9.分页方法</h3>
                                         通过<code>getPage($page, $pagesize, $url, $fields = '*', Array $where = null, $orderBy = array(), $pageBarOrder = array(1, 2, 3, 4, 5, 6), $pageBarACount = 10)</code>方法，我们可以分页获取数据。
                                         <br>$page 必填：第几页
                                         <br>$pagesize 必填：每页多少条
@@ -422,7 +443,7 @@
                                                 $userDao = Sr::dao('Test');
                                                 $userDao->getPage(1, 10, 'index.do?p={page}', '*', null, array(), array(1, 2, 3, 4, 5, 6), 10);
                                         </pre>
-                                        <h3 class="title_h3">9.SQL搜索</h3>
+                                        <h3 class="title_h3">10.SQL搜索</h3>
                                         通过<code>search($page, $pagesize, $url, $fields, $cond, Array $values = array(), $pageBarOrder = array(1, 2, 3, 4, 5, 6), $pageBarACount = 10)</code>方法，来获取SQL搜索。
                                         <br>$page 必填：第几页
                                         <br>$pagesize 必填：每页多少条
