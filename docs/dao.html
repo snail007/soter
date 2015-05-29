@@ -22,6 +22,7 @@
                                         <h2 class="title_h2">Dao层规范</h2>
                                         1.Dao类文件都放在<code>application/classes/Dao</code>文件夹里面
                                         <br>2.Dao必须要继承<code>Soter_Dao</code>抽象类，实现父类抽象方法。
+					<br>3.Dao类内部访问数据库，必须使用<code>$this->getDb()</code>，而不是Sr::db()。
                                         <br>示例如下：
                                         <br>2.1.新建Dao文件application/classes/Dao/TestDao.php
                                         <br>2.2.输入以下代码：
@@ -43,7 +44,7 @@
                                         <br>第三个<code>getColumns</code>是获取字段名称数组，比如：我们有user表里面有id、uid和username等等……字段
                                         <br>示例如下:
                                         <pre class="brush:php">
-                                                function getColumns(){
+                                               public  function getColumns(){
                                                         return array(
                                                                 'id',
                                                                 'uid',
@@ -157,7 +158,7 @@
                                                         //这里我们做一个简单查询，详细可以查看“数据库手册”的“查询数据”和“查询结果集的使用”
                                                         public function getUserName(){
                                                                 $table = $this->getTable();
-                                                                $username = Sr::db()->select('username')
+                                                                $username = $this->getDb()->select('username')
                                                                                 ->from($table)
                                                                                 ->limit(0,1)
                                                                                 ->execute()
@@ -235,8 +236,10 @@
                                         下面介绍Dao层常用方法：
                                         <h3 class="title_h3">1.设置Dao中使用的数据库操作对象</h3>
                                         通过<code>setDb(Soter_Database_ActiveRecord $db)</code>方法，设置Dao中使用的数据库操作对象。
-                                        <br>默认情况下Dao层使用<code>setDb()</code>连接数据库，如果我们不再使用<code>Sr::db()</code>连接数据库，
+                                        <br>默认情况下Dao层使用<code>Sr::db()</code>连接数据库，如果我们不再使用<code>Sr::db()</code>连接数据库，
                                         <br>那么我们可以通过<code>setDb()</code>来设置另外一个数据库。
+					<b><br>然后我们在Dao类内部就可以通过<code>$this->getDb()</code>访问数据库，
+						<br><code>$this->getDb()</code>返回的就是setDb()设置的数据库对象。</b>
                                         <br>示例如下：
                                         <pre class="brush:php">
                                                 class Dao_Test extends Soter_Dao {

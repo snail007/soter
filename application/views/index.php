@@ -12,7 +12,7 @@
 	<body>
 		<h2>欢迎使用Soter(内测版)</h2>
 		<h5>或者你会对源码感兴趣
-			<br>它的视图文件位于application/views/snake.php
+			<br>它的视图文件位于application/views/index.php
 			<br>控制器文件位于application/classes/Controller/Welcome.php
 			<br>进一步了解Soter：<a href="<?php echo Sr::urlPath('docs/index.html', false) ?>">Soter参考手册</a>
 		</h5>
