@@ -68,7 +68,7 @@
 					<br><b class="text_strong">默认的参数分隔符 - 可以通过入口文件里面修改配置 ->setMethodParametersDelimiter('-')进行修改。</b>
 					<h2 class="title_h3">2.PATH_INFO路由器URI重写</h2>
 					Soter里面用户可以自定义PATH_INFO路由器URI重写类，默认情况下PATH_INFO路由器处理的是$_SERVER['PATH_INFO']，
-					<br>但是用户可以通过注册自己的URI重写类对$_SERVER['PATH_INFO']进行重写，把重写之后的URI返回给PATH_INF路由器使用。
+					<br>但是用户可以通过注册自己的URI重写类对$_SERVER['PATH_INFO']进行重写，把重写之后的URI返回给PATH_INFO路由器使用。
 					<br>满足用户对路由器规则的各种需求。
 					<br>上面的配置里面我们看到下面的配置：
 					<pre class="brush:php">
@@ -222,7 +222,7 @@
 						}
 					</pre>
 					可以看到Soter_Router_Get_Default继承了抽象类Soter_Router，我们来一行行的分析：
-					<br>第4行：通过Sr::config()获取系统配对象，为下面使用配置信息准备。
+					<br>第4行：通过Sr::config()获取系统配置对象，为下面使用配置信息准备。
 					<br>第5行：通过$config->getRequest()->getQueryString()获取URL中的QueryString信息，$query比如是：c=Welcome&a=index
 					<br>$config->getRequest()返回的就是我们之前说过的入口文件里面初始化请求注册的那个Soter_Request_Default类对象。
 					<pre class="brush:php">
