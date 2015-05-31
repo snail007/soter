@@ -29,8 +29,7 @@ server {
       rewrite ^/(.*)([^/])$ http://$host/$1$2/ permanent;
     }
    
-    location /
-    {
+    location / {
          #这里是rewrite规则,里面排除了public、static文件夹、robots.txt、index.php，让它们可以直接访问，其它到都会rewrite到index.php。
          #可以根据自己情况修改public、static为你自己的需要web直接访问到的文件夹
          if ($request_filename !~ (public|static|robots\.txt|index\.php.*) )
