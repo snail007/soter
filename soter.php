@@ -26,7 +26,7 @@
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         v1.0.47
- * @createdtime   2015-05-31 19:58:45
+ * @createdtime   2015-05-31 20:53:03
  */
  
 
@@ -3521,9 +3521,9 @@ class Soter_Router_Get_Default extends Soter_Router {
 		$controllerName = Sr::arrayGet($get, $config->getRouterUrlControllerKey(), '');
 		$methodName = Sr::arrayGet($get, $config->getRouterUrlMethodKey(), '');
 		//检测域名是否绑定了hmvc模块
-		if (!($hmvcModuleName = Sr::config()->getHmvcDomain())) {
-			$hmvcModuleName = Sr::arrayGet($get, $config->getRouterUrlModuleKey(), '');
-		}
+		//if (!($hmvcModuleName = Sr::config()->getHmvcDomain())) {
+		$hmvcModuleName = Sr::arrayGet($get, $config->getRouterUrlModuleKey(), '');
+		//}
 		//hmvc检测
 		$hmvcModuleDirName = Soter::checkHmvc($hmvcModuleName, false);
 		if ($controllerName) {
