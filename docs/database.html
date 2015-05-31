@@ -158,7 +158,7 @@
 					<br>2.<b>debug</b>
 					<br>作用：告诉Soter发生数据库错误的时候，是否报告错误信息。
 					<br>值：ture开启数据库错误报告，false关闭数据库错误报告。
-					<br>提示：如果我们在代码中临时需要“有意的”进行一些错误查询，同过判断错误信息，达到一些目的时候。
+					<br>提示：如果我们在代码中临时需要“有意的”进行一些错误查询，通过判断错误信息，达到一些目的时候。
 					<br>我们可以通过Sr::db()->setDebug(false)关闭数据库错误报告，
 					<br>然后进行“有意的”错误查询，可以通过Sr::db()->error()获取错误信息字符串。
 					<br>最后再Sr::db()->setDebug(true)开启即可。
@@ -776,7 +776,7 @@
 					</pre>
 				</li>
 				<li><h3 class="title_h2">删除数据</h3>
-					同过delete方法我们可以方便的删除数据，第二个参数我们可以传入where条件。
+					通过delete方法我们可以方便的删除数据，第二个参数我们可以传入where条件。
 					<pre class="brush:php">
 						$where=array('id >'=>100);
 						echo Sr::db()->delete('a',$where);
@@ -805,7 +805,7 @@
 					</b>
 				</li>
 				<li><h3 class="title_h2">事务</h3>
-					同过begin、commit、rollback三个方法的配合
+					通过begin、commit、rollback三个方法的配合
 					我们可以方便的处理事务，下面是一个完整的事务例子。
 					<pre class="brush:php">
 						try {
