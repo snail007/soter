@@ -26,7 +26,7 @@
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         v1.0.47
- * @createdtime   2015-05-31 20:53:03
+ * @createdtime   2015-05-31 21:40:16
  */
  
 
@@ -1550,13 +1550,17 @@ class Sr {
 			}
 		}
 		static function redirect($url, $msg = null, $time = 3, $view = null) {
-			$time = intval($time) ? intval($time) : 3;
-			header("refresh:{$time};url={$url}"); //单位秒
-			header("Content-type: text/html; charset=utf-8");
-			if (empty($view)) {
-				echo $msg;
+			if (empty($msg) && empty($view)) {
+				header('Location: ' . $url);
 			} else {
-				self::view()->set(array('msg' => $msg, 'url' => $url, 'time' => $time))->load($view);
+				$time = intval($time) ? intval($time) : 3;
+				header("refresh:{$time};url={$url}"); //单位秒
+				header("Content-type: text/html; charset=utf-8");
+				if (empty($view)) {
+					echo $msg;
+				} else {
+					self::view()->set(array('msg' => $msg, 'url' => $url, 'time' => $time))->load($view);
+				}
 			}
 			exit();
 		}
