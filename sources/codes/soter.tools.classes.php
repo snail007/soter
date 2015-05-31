@@ -213,9 +213,9 @@ class Soter_Router_Get_Default extends Soter_Router {
 		$controllerName = Sr::arrayGet($get, $config->getRouterUrlControllerKey(), '');
 		$methodName = Sr::arrayGet($get, $config->getRouterUrlMethodKey(), '');
 		//检测域名是否绑定了hmvc模块
-		if (!($hmvcModuleName = Sr::config()->getHmvcDomain())) {
-			$hmvcModuleName = Sr::arrayGet($get, $config->getRouterUrlModuleKey(), '');
-		}
+		//if (!($hmvcModuleName = Sr::config()->getHmvcDomain())) {
+		$hmvcModuleName = Sr::arrayGet($get, $config->getRouterUrlModuleKey(), '');
+		//}
 		//hmvc检测
 		$hmvcModuleDirName = Soter::checkHmvc($hmvcModuleName, false);
 		if ($controllerName) {
