@@ -27,7 +27,7 @@
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         v1.0.48
- * @createdtime   2015-06-01 10:26:36
+ * @createdtime   2015-06-01 11:52:44
  */
  
 define("IN_SOTER", true);
@@ -121,7 +121,10 @@ Soter::initialize()
 	->setHmvcDomains(array(
 	    'enable' => false,
 	    'domains' => array(
-		'demo' => 'Demo'
+		'demo' => array(
+		    'hmvcModuleName' => 'Demo',
+		    'domainOnly' => true
+		)
 	    )
 	))
 	/* 设置session信息 */

@@ -26,7 +26,7 @@
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         v1.0.48
- * @createdtime   2015-06-01 10:26:36
+ * @createdtime   2015-06-01 11:52:44
  */
  
 
@@ -169,8 +169,10 @@ class Soter {
 		$_route = Sr::config()->getRoute();
 		//当前域名有绑定hmvc模块,需要处理hmvc模块
 		if ($hmvcModuleName = Sr::config()->getHmvcDomain()) {
-			Soter::checkHmvc($hmvcModuleName, false);
-			$_route->setFound(true);
+			if (Soter::checkHmvc($hmvcModuleName, false)) {
+				$_route->setHmvcModuleName($hmvcModuleName);
+				$_route->setFound(true);
+			}
 		}
 		if (empty($class)) {
 			$class = $config->getControllerDirName() . '_' . $config->getDefaultController();
@@ -3894,8 +3896,12 @@ class Soter_Router_Get_Default extends Soter_Router {
 		//当前域名没有绑定hmvc模块,路由器需要处理hmvc模块
 		if (!(Sr::config()->getHmvcDomain())) {
 			$hmvcModuleName = Sr::arrayGet($get, $config->getRouterUrlModuleKey(), '');
+			//hmvc模块是domainOnly的就重置为空
+			if ($config->hmvcIsDomainOnly($hmvcModuleName)) {
+				$hmvcModuleName = '';
+			}
 		}
-		//hmvc检测
+		//处理hmvc模块
 		$hmvcModuleDirName = Soter::checkHmvc($hmvcModuleName, false);
 		if ($controllerName) {
 			$controllerName = $config->getControllerDirName() . '_' . $controllerName;
@@ -3928,8 +3934,14 @@ class Soter_Router_PathInfo_Default extends Soter_Router {
 		//到此$uri形如：Welcome/index.do , Welcome/User , Welcome
 		$_info = explode('/', $uri);
 		$hmvcModule = current($_info);
+		//hmvc模块是domainOnly的就重置为空
+		if ($config->hmvcIsDomainOnly($hmvcModule)) {
+			$hmvcModule = '';
+		}
+		$hmvcModuleDirName = '';
 		//当前域名没有绑定hmvc模块,路由器需要处理hmvc模块
 		if (!Sr::config()->getHmvcDomain()) {
+			//处理hmvc模块
 			if ($hmvcModuleDirName = Soter::checkHmvc($hmvcModule, FALSE)) {
 				//找到hmvc模块,去除hmvc模块名称，得到真正的路径
 				$uri = ltrim(substr($uri, strlen($hmvcModule)), '/');
@@ -4056,21 +4068,34 @@ class Soter_Config {
 
 	public function getHmvcDomain() {
 		if (!$this->hmvcDomains['enable']) {
-			return;
+			return false;
 		}
 		$_domain = Sr::server('http_host');
 		$domain = explode('.', $_domain);
 		$length = count($domain);
 		if ($length <= 2) {
-			return;
+			return false;
 		}
 		$topDomain = $domain[$length - 2] . '.' . $domain[$length - 1];
 		foreach ($this->hmvcDomains['domains'] as $prefix => $hvmc) {
 			if ($prefix . '.' . $topDomain == $_domain) {
-				return $hvmc;
+				return $hvmc['enable'] ? $hvmc['hmvcModuleName'] : false;
 			}
 		}
 		return '';
+	}
+
+	public function hmvcIsDomainOnly($hmvcModuleName) {
+		if (!$hmvcModuleName || !$this->hmvcDomains['enable']) {
+			return false;
+		}
+		foreach ($this->hmvcDomains['domains'] as $hvmc) {
+			if ($hmvcModuleName == $hvmc['hmvcModuleName']) {
+				return $hvmc['domainOnly'];
+			}
+			return false;
+		}
+		return false;
 	}
 
 	public function setHmvcDomains(Array $hmvcDomains) {

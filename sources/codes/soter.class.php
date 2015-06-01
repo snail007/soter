@@ -138,8 +138,10 @@ class Soter {
 		$_route = Sr::config()->getRoute();
 		//当前域名有绑定hmvc模块,需要处理hmvc模块
 		if ($hmvcModuleName = Sr::config()->getHmvcDomain()) {
-			Soter::checkHmvc($hmvcModuleName, false);
-			$_route->setFound(true);
+			if (Soter::checkHmvc($hmvcModuleName, false)) {
+				$_route->setHmvcModuleName($hmvcModuleName);
+				$_route->setFound(true);
+			}
 		}
 		if (empty($class)) {
 			$class = $config->getControllerDirName() . '_' . $config->getDefaultController();
