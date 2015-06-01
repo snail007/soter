@@ -11,19 +11,19 @@
 
 升级提示：
 1.需要修改入口文件setHmvcDomains的配置
-v1.0.48以前是：
+v1.0.48以前是下面的格式：
 ->setHmvcDomains(array(
 	    'enable' => true,
 	    'domains' => array(
-		'manage' =>'Admin'//hvmc模块名称
+		'demo' =>'Demo'//hvmc模块名称
 	    )
 	))
 v1.0.48要修改为下面的格式：
 ->setHmvcDomains(array(
 	    'enable' => true,//总开关，是否启用
 	    'domains' => array(
-		'manage' => array(
-		    'hmvcModuleName' => 'Admin',//hvmc模块名称
+		'demo' => array(
+		    'hmvcModuleName' => 'Demo',//hvmc模块名称
 		    'enable' => true,//单个开关，是否启用
 		    'domainOnly' => true//是否只能通过绑定的域名访问
 		)
