@@ -197,16 +197,25 @@
 						class Soter_Router_Get_Default extends Soter_Router {
 
 							public function find() {
-								$config = Sr::config(); 
+								$config = Sr::config();
 								$query = $config->getRequest()->getQueryString();
+								//pathinfo非空说明是pathinfo路由，get路由器不再处理直接返回
+								if (!$config->getRequest()->getPathInfo() || !$query) {
+									return $this->route->setFound(FALSE);
+								}
 								parse_str($query, $get);
 								$controllerName = Sr::arrayGet($get, $config->getRouterUrlControllerKey(), '');
 								$methodName = Sr::arrayGet($get, $config->getRouterUrlMethodKey(), '');
-								//检测域名是否绑定了hmvc模块
-								if (!($hmvcModuleName = Sr::config()->getHmvcDomain())) {
+								$hmvcModuleName = '';
+								//当前域名没有绑定hmvc模块,路由器需要处理hmvc模块
+								if (!(Sr::config()->getHmvcDomain())) {
 									$hmvcModuleName = Sr::arrayGet($get, $config->getRouterUrlModuleKey(), '');
+									//hmvc模块是domainOnly的就重置为空
+									if ($config->hmvcIsDomainOnly($hmvcModuleName)) {
+										$hmvcModuleName = '';
+									}
 								}
-								//hmvc检测
+								//处理hmvc模块
 								$hmvcModuleDirName = Soter::checkHmvc($hmvcModuleName, false);
 								if ($controllerName) {
 									$controllerName = $config->getControllerDirName() . '_' . $controllerName;
@@ -214,7 +223,7 @@
 								if ($methodName) {
 									$methodName = $config->getMethodPrefix() . $methodName;
 								}
-								return $this->route->setHmvcModuleName($hmvcModuleDirName ? $hmvcModule : '')
+								return $this->route->setHmvcModuleName($hmvcModuleDirName ? $hmvcModuleName : '')
 										->setController($controllerName)
 										->setMethod($methodName)
 										->setFound($hmvcModuleDirName || $controllerName);
@@ -229,16 +238,18 @@
 							//初始化请求
 							 ->setRequest(new Soter_Request_Default())
 					</pre>
-					<br>第6行： 使用系统函数parse_str解析$query为键值的$get数组。 
+					第6-9行： 判断pathinfo和$query是否非空，非空说明是pathinfo路由或者没有路由，get路由器不再处理直接返回
+					<br>第10行：使用系统函数parse_str解析$query为键值的$get数组。 
 					<br>比如把：c=Welcome&a=index解析为：array('a'=>'index','c'=>'Welcome')
-					<br>第07-08行：使用Soter的获取数组键值的方法Sr::arrayGet分别尝试从$get数组中获取：
+					<br>第11-12行：使用Soter的获取数组键值的方法Sr::arrayGet分别尝试从$get数组中获取：
 					<br>控制器名称$controllerName，方法名称$methodName。
-					<br>第10-12行：首先通过Sr::config()->getHmvcDomain()获取当前域名绑定的hvmc模块名称并赋值给$hmvcModuleName。
-					<br>如果Sr::config()->getHmvcDomain()没有找到hvmc模块名称，就继续尝试从$get数组中获取hvmc模块名称$hmvcModuleName。
-					<br>第14行：使用Soter的checkHmvc方法检查模块名称$hmvcModuleName是否有效，
+					<br>第13-21行：首先通过Sr::config()->getHmvcDomain()判断当前域名是否绑定hmvc模块。
+					<br>如果当前域名没有绑定hvmc模块，就从$get数组中获取hvmc模块名称$hmvcModuleName。
+					<br>最后看获取的hvmc模块名称$hmvcModuleName是否是domainOnly的，如果是就需要重置$hmvcModuleName为空。
+					<br>第23行：使用Soter的checkHmvc方法检查模块名称$hmvcModuleName是否有效，
 					<br>如果有效就会返回模块对应的<b>文件夹名称</b>,无效会返回false。
-					<br>第15-20行：如果控制器名称存在，方法名存在，就分别加上类名前缀，和方法名前缀。
-					<br>第21-24行：通过路由器的成员变量$this->route设置相关的路由信息，$this->route是路由信息Soter_Route类的一个对象。
+					<br>第23-29行：如果控制器名称存在，方法名存在，就分别加上类名前缀，和方法名前缀。
+					<br>第30-33行：通过路由器的成员变量$this->route设置相关的路由信息，$this->route是路由信息Soter_Route类的一个对象。
 					<br>设置hmvc模块名称：->setHmvcModuleName($hmvcModuleDirName ? $hmvcModule : '')，
 					<br>$hmvcModuleDirName=Soter::checkHmvc($hmvcModuleName, false),
 					<br>$hmvcModuleDirName是hmvc的文件夹名称，我们可以通过判断hmvc的文件夹名称是否是是空知道Url里面的hmvc模块是否存在。
@@ -257,10 +268,11 @@
 						<br>也就是说我们自定义的路由器只要完成这些工作就能让我们的路由器正常工作了。</b>
 					<br>1.自定义路由器类要继承抽象类Soter_Router，并实现find方法。
 					<br>2.通过$config->getRequest()获取当前的Soter_Request请求对象，然后分析Soter_Request对象提供的路由信息。
-					<br>3.尝试找到hmvc模块名称，并用Soter::checkHmvc($hmvcModuleName, false)检查hmvc模块名称。
-					<br>4.尝试找到控制器名称，方法名称，如果有效然后使用配置对象分别获取前缀信息，转化为完整的控制器类名和完整的方法名称。
-					<br>5.把找到的信息通过成员变量$this->route设置。
-					<br>6.最后返回成员变量$this->route。
+					<br>3.当前域名绑定了hvmc模块的时候，路由器不需要处理hvmc模块
+					<br>4.尝试找到hmvc模块名称，并用Soter::checkHmvc($hmvcModuleName, false)检查hmvc模块名称。
+					<br>5.尝试找到控制器名称，方法名称，如果有效然后使用配置对象分别获取前缀信息，转化为完整的控制器类名和完整的方法名称。
+					<br>6.把找到的信息通过成员变量$this->route设置。
+					<br>7.最后返回成员变量$this->route。
 					<br><b>下面我们自定义一个自己的简单的路由器，用来了解自定义路由器的过程。</b>
 					<br>1.新建文件application/classes/Router/MyRouter.php
 					<br>2.输入以下内容：
