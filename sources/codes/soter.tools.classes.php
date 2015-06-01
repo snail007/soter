@@ -209,13 +209,18 @@ class Soter_Router_Get_Default extends Soter_Router {
 	public function find() {
 		$config = Sr::config();
 		$query = $config->getRequest()->getQueryString();
+		//pathinfo非空说明是pathinfo路由，get路由器不再处理直接返回
+		if (!$config->getRequest()->getPathInfo() || !$query) {
+			return $this->route->setFound(FALSE);
+		}
 		parse_str($query, $get);
 		$controllerName = Sr::arrayGet($get, $config->getRouterUrlControllerKey(), '');
 		$methodName = Sr::arrayGet($get, $config->getRouterUrlMethodKey(), '');
-		//检测域名是否绑定了hmvc模块
-		//if (!($hmvcModuleName = Sr::config()->getHmvcDomain())) {
-		$hmvcModuleName = Sr::arrayGet($get, $config->getRouterUrlModuleKey(), '');
-		//}
+		$hmvcModuleName = '';
+		//当前域名没有绑定hmvc模块,路由器需要处理hmvc模块
+		if (!(Sr::config()->getHmvcDomain())) {
+			$hmvcModuleName = Sr::arrayGet($get, $config->getRouterUrlModuleKey(), '');
+		}
 		//hmvc检测
 		$hmvcModuleDirName = Soter::checkHmvc($hmvcModuleName, false);
 		if ($controllerName) {
@@ -237,9 +242,7 @@ class Soter_Router_PathInfo_Default extends Soter_Router {
 	public function find() {
 		$config = Soter::getConfig();
 		$uri = $config->getRequest()->getPathInfo();
-		//检测域名是否绑定了hmvc模块
-		$_hmvcModule = Sr::config()->getHmvcDomain();
-		if (empty($uri) && empty($_hmvcModule)) {
+		if (empty($uri)) {
 			//没有找到hmvc模块名称，或者控制器名称
 			return $this->route->setFound(FALSE);
 		} else {
@@ -250,11 +253,10 @@ class Soter_Router_PathInfo_Default extends Soter_Router {
 		$uri = trim($uri, '/');
 		//到此$uri形如：Welcome/index.do , Welcome/User , Welcome
 		$_info = explode('/', $uri);
-		$hmvcModule = empty($_hmvcModule) ? current($_info) : $_hmvcModule;
-		//hmvc检测 ，Soter::checkHmvc()执行后，主配置会被hmvc子项目配置覆盖
-		if ($hmvcModuleDirName = Soter::checkHmvc($hmvcModule, FALSE)) {
-			//没有域名绑定hmvc，uri中需要去除hmvc模块名称
-			if (empty($_hmvcModule)) {
+		$hmvcModule = current($_info);
+		//当前域名没有绑定hmvc模块,路由器需要处理hmvc模块
+		if (!Sr::config()->getHmvcDomain()) {
+			if ($hmvcModuleDirName = Soter::checkHmvc($hmvcModule, FALSE)) {
 				//找到hmvc模块,去除hmvc模块名称，得到真正的路径
 				$uri = ltrim(substr($uri, strlen($hmvcModule)), '/');
 			}
@@ -263,7 +265,6 @@ class Soter_Router_PathInfo_Default extends Soter_Router {
 		$controller = $config->getDefaultController();
 		$method = $config->getDefaultMethod();
 		$subfix = $config->getMethodUriSubfix();
-
 		/**
 		 * 到此，如果上面$uri被去除掉hmvc模块名称后，$uri有可能是空
 		 * 或者$uri有控制器名称或者方法-参数名称
