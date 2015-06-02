@@ -1016,7 +1016,7 @@ class Sr {
 				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return true;
 				    }
-				    $returnValue = self::xssClean($value);
+				    $returnValue = Sr::xssClean($value);
 				    return true;
 			    }, 'match' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    if (!Sr::arrayKeyExists($key, $data) || !Sr::arrayKeyExists(0, $args) || !Sr::arrayKeyExists($args[0], $data) || $value != $data[$args[0]]) {

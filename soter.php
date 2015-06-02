@@ -26,7 +26,7 @@
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         v1.0.50
- * @createdtime   2015-06-02 16:11:32
+ * @createdtime   2015-06-02 16:24:35
  */
  
 
@@ -1047,7 +1047,7 @@ class Sr {
 				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return true;
 				    }
-				    $returnValue = self::xssClean($value);
+				    $returnValue = Sr::xssClean($value);
 				    return true;
 			    }, 'match' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    if (!Sr::arrayKeyExists($key, $data) || !Sr::arrayKeyExists(0, $args) || !Sr::arrayKeyExists($args[0], $data) || $value != $data[$args[0]]) {
