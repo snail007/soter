@@ -26,7 +26,7 @@
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         v1.0.48
- * @createdtime   2015-06-01 14:35:20
+ * @createdtime   2015-06-02 10:09:39
  */
  
 
@@ -3430,12 +3430,15 @@ abstract class Soter_Task_Single extends Soter_Task {
 	public function _execute(Soter_CliArgs $args) {
 		$this->debug = $args->get('debug');
 		$this->_log('Single Task [ ' . __CLASS__ . ' ] start');
-		$tempDirPath = Sr::config()->getStorageDirPath();
-		$key = md5(Sr::config()->getApplicationDir() .
-			Sr::config()->getClassesDirName() . '/'
-			. Sr::config()->getTaskDirName() . '/'
-			. str_replace('_', '/', get_class($this)) . '.php');
-		$lockFilePath = Sr::realPath($tempDirPath) . '/' . $key . '.pid';
+		$lockFilePath = $args->get('pid');
+		if (!$lockFilePath) {
+			$tempDirPath = Sr::config()->getStorageDirPath();
+			$key = md5(Sr::config()->getApplicationDir() .
+				Sr::config()->getClassesDirName() . '/'
+				. Sr::config()->getTaskDirName() . '/'
+				. str_replace('_', '/', get_class($this)) . '.php');
+			$lockFilePath = Sr::realPath($tempDirPath) . '/' . $key . '.pid';
+		}
 		if (file_exists($lockFilePath)) {
 			$pid = file_get_contents($lockFilePath);
 			//lockfile进程pid存在，直接返回
@@ -3445,7 +3448,7 @@ abstract class Soter_Task_Single extends Soter_Task {
 		}
 		//写入进程pid到lockfile
 		if (file_put_contents($lockFilePath, getmypid()) === false) {
-			throw new Soter_Exception_500('directory [ ' . $tempDirPath . ' ] not writeable');
+			throw new Soter_Exception_500('can not create file : [ ' . $lockFilePath . ' ]');
 		}
 		$this->_log('update pid file [ ' . $lockFilePath . ' ]');
 		$startTime = Sr::microtime();
