@@ -406,19 +406,20 @@ abstract class Soter_Exception extends Exception {
 	}
 
 	public function getErrorMessage() {
-		return $this->errorMessage;
+		return $this->errorMessage?$this->errorMessage:$this->getMessage();
 	}
 
 	public function getErrorCode() {
-		return $this->errorCode;
+		return $this->errorCode?$this->errorCode:$this->getCode();
 	}
 
 	public function getErrorFile($safePath = FALSE) {
-		return $safePath ? Sr::safePath($this->errorFile) : $this->errorFile;
+		$file = $this->errorFile ? $this->errorFile : $this->getFile();
+		return $safePath ? Sr::safePath($file) : $file;
 	}
 
 	public function getErrorLine() {
-		return $this->errorLine;
+		return $this->errorLine ? $this->errorLine : $this->getLine();
 	}
 
 	public function getErrorType() {
