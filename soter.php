@@ -26,7 +26,7 @@
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         v1.0.50
- * @createdtime   2015-06-02 16:24:35
+ * @createdtime   2015-06-02 16:55:22
  */
  
 
@@ -3537,11 +3537,11 @@ abstract class Soter_Exception extends Exception {
 	}
 
 	public function getErrorMessage() {
-		return $this->errorMessage?$this->errorMessage:$this->getMessage();
+		return $this->errorMessage ? $this->errorMessage : $this->getMessage();
 	}
 
 	public function getErrorCode() {
-		return $this->errorCode?$this->errorCode:$this->getCode();
+		return $this->errorCode ? $this->errorCode : $this->getCode();
 	}
 
 	public function getErrorFile($safePath = FALSE) {
@@ -3550,7 +3550,7 @@ abstract class Soter_Exception extends Exception {
 	}
 
 	public function getErrorLine() {
-		return $this->errorLine ? $this->errorLine : $this->getLine();
+		return $this->errorLine ? $this->errorLine : ( $this->errorFile ? $this->errorLine : $this->getLine());
 	}
 
 	public function getErrorType() {

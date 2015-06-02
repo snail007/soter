@@ -406,11 +406,11 @@ abstract class Soter_Exception extends Exception {
 	}
 
 	public function getErrorMessage() {
-		return $this->errorMessage?$this->errorMessage:$this->getMessage();
+		return $this->errorMessage ? $this->errorMessage : $this->getMessage();
 	}
 
 	public function getErrorCode() {
-		return $this->errorCode?$this->errorCode:$this->getCode();
+		return $this->errorCode ? $this->errorCode : $this->getCode();
 	}
 
 	public function getErrorFile($safePath = FALSE) {
@@ -419,7 +419,7 @@ abstract class Soter_Exception extends Exception {
 	}
 
 	public function getErrorLine() {
-		return $this->errorLine ? $this->errorLine : $this->getLine();
+		return $this->errorLine ? $this->errorLine : ( $this->errorFile ? $this->errorLine : $this->getLine());
 	}
 
 	public function getErrorType() {
