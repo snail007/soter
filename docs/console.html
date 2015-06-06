@@ -88,19 +88,6 @@
 						<br>用来告诉Soter使用config目录下面的哪个目录作为配置文件夹目录。
 						<br>2.如果我们同时多次执行这个任务，会发现第一次执行没有结束的时候，后面启动执行的任务会自动退出，同一时间只会存在一个任务在执行。
 					</b>
-					<br><b>3.多个单例Task</b>
-					<br>有时候我们写了个任务，通过命令行传递参数做不同的工作。
-					<br>比如我们创建了任务TestTask,传递了参数a，TestTask做工作a。传递了参数b，TestTask做工作b。
-					<br>a,b两个工作每分钟执行一次，我们希望的是只存在a，b两个TestTask实例，而不是多个a和多个b。
-					<br><b class="text_strong">我们可以通过参数--pid指定pid文件保存位置，那么使用相同的pid文件的任务多次执行只会存在一个实例。</b>
-					<br>比如我们的crontab定时任务执行下面的命令：
-					<pre class="brush:php">
-						*/1 * * * *  php /home/www/soter/index.php --env=development  --task=TestTask  --test=hello --test=a  --pid=/tmp/mytask-a.pid
-						*/1 * * * *  php /home/www/soter/index.php --env=development  --task=TestTask  --test=hello --test=b  --pid=/tmp/mytask-b.pid
-					</pre>
-					上面的命令我们看到添加了两个执行TestTask任务，分别传递了--test=a和--test=b，让TestTask做不同的工作a和b，
-					<br>然后分别传递了不同的pid参数--pid=/tmp/mytask-a.pid和--pid=/tmp/mytask-b.pid，通过不同的pid文件我们
-					<br>就可以让a和b同时执行并只保留一个实例在运行。
 				</li>
 				<li><h2 class="title_h2">调试Task</h2>
 					当我们命令行运行任务的时候，如果想知道任务的一些执行流程，
