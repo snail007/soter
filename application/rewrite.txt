@@ -21,7 +21,7 @@ location ^~ /.gitignore {
 server {
    listen 80;
    server_name test.com;
-   root /www/test/microphp;
+   root /www/test/soter;
    index index.html index.htm index.php;
    charset UTF-8;
 
