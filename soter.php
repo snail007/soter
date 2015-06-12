@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.51
- * @createdtime   2015-06-08 14:05:55
+ * @since         v1.0.52
+ * @createdtime   2015-06-12 12:21:05
  */
  
 
@@ -1548,7 +1548,15 @@ class Sr {
 		}
 
 		static function sessionStart() {
-			if (!isset($_SESSION)) {
+			$started = false;
+			if (php_sapi_name() !== 'cli') {
+				if (version_compare(phpversion(), '5.4.0', '>=')) {
+					$started = session_status() === PHP_SESSION_ACTIVE ? TRUE : FALSE;
+				} else {
+					$started = session_id() === '' ? FALSE : TRUE;
+				}
+			}
+			if (!$started) {
 				session_start();
 			}
 		}

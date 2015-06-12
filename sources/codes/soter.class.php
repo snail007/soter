@@ -1517,7 +1517,15 @@ class Sr {
 		}
 
 		static function sessionStart() {
-			if (!isset($_SESSION)) {
+			$started = false;
+			if (php_sapi_name() !== 'cli') {
+				if (version_compare(phpversion(), '5.4.0', '>=')) {
+					$started = session_status() === PHP_SESSION_ACTIVE ? TRUE : FALSE;
+				} else {
+					$started = session_id() === '' ? FALSE : TRUE;
+				}
+			}
+			if (!$started) {
 				session_start();
 			}
 		}
