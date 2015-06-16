@@ -103,6 +103,7 @@ exec('cp -r ' . DIST_DIR . '../soter-docs/* ' . DIST_DIR . 'docs/');
 //内测版生成
 exec('cd ' . DIST_DIR . '&&tar zcvf "' . '../soter-alpha-' . $ver . '.tar.gz' . '" application docs composer.json index.php LICENSE README.md CHANGELOG soter.min.php soter.php');
 
+echo $ver;
 function common_replace(&$str) {
 	$str = preg_replace('|^ *// *[\w].*$\n|m', '', $str); //去掉英文单行注释
 	$str = preg_replace('|^ *$\n|m', '', $str); //去掉空行
