@@ -26,7 +26,7 @@
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         v1.0.52
- * @createdtime   2015-06-16 15:30:49
+ * @createdtime   2015-06-17 11:55:24
  */
  
 
@@ -1548,16 +1548,16 @@ class Sr {
 		}
 
 		static function sessionStart() {
-			$started = false;
-			if (php_sapi_name() !== 'cli') {
+			if (!self::isCli()) {
+				$started = false;
 				if (version_compare(phpversion(), '5.4.0', '>=')) {
 					$started = session_status() === PHP_SESSION_ACTIVE ? TRUE : FALSE;
 				} else {
 					$started = session_id() === '' ? FALSE : TRUE;
 				}
-			}
-			if (!$started) {
-				session_start();
+				if (!$started) {
+					session_start();
+				}
 			}
 		}
 
