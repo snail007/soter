@@ -26,7 +26,7 @@
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         v1.0.52
- * @createdtime   2015-06-17 12:00:54
+ * @createdtime   2015-06-17 12:12:38
  */
  
 
@@ -2948,7 +2948,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 			$where.=call_user_func_array(array($this, '_compileWhere'), $w);
 		}
 		if ($hasEmptyIn) {
-			return '0';
+			return ' WHERE 0';
 		}
 		$where = trim($where);
 		if ($where) {

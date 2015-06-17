@@ -1189,7 +1189,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 			$where.=call_user_func_array(array($this, '_compileWhere'), $w);
 		}
 		if ($hasEmptyIn) {
-			return '0';
+			return ' WHERE 0';
 		}
 		$where = trim($where);
 		if ($where) {
