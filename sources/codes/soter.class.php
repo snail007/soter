@@ -542,7 +542,7 @@ class Sr {
 
 	static function session($key = null, $default = null, $xssClean = false) {
 		self::sessionStart();
-		$value = is_null($key) ? $_SESSION : self::arrayGet($_SESSION, $key, $default);
+		$value = is_null($key) ? (empty($_SESSION) ? null : $_SESSION) : self::arrayGet($_SESSION, $key, $default);
 		return $xssClean ? self::xssClean($value) : $value;
 	}
 

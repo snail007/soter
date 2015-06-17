@@ -26,7 +26,7 @@
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         v1.0.52
- * @createdtime   2015-06-17 11:55:24
+ * @createdtime   2015-06-17 12:00:54
  */
  
 
@@ -573,7 +573,7 @@ class Sr {
 
 	static function session($key = null, $default = null, $xssClean = false) {
 		self::sessionStart();
-		$value = is_null($key) ? $_SESSION : self::arrayGet($_SESSION, $key, $default);
+		$value = is_null($key) ? (empty($_SESSION) ? null : $_SESSION) : self::arrayGet($_SESSION, $key, $default);
 		return $xssClean ? self::xssClean($value) : $value;
 	}
 
