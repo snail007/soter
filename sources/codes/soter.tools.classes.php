@@ -1214,6 +1214,8 @@ class Soter_Logger_Writer_Dispatcher {
 			} else {
 				$exception->render();
 			}
+		} elseif (Sr::isCli()) {
+			$exception->render();
 		}
 		exit();
 	}
