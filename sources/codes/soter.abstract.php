@@ -234,9 +234,10 @@ abstract class Soter_Dao {
 	public function search($page, $pagesize, $url, $fields, $cond, Array $values = array(), $pageBarOrder = array(1, 2, 3, 4, 5, 6), $pageBarACount = 10) {
 		$data = array();
 		$table = $this->getDb()->getTablePrefix() . $this->getTable();
-		$total = $this->getDb()
-			->execute('select count(*) as total from ' . $table . (strpos(trim($cond), 'order') === 0 ? ' ' : ' where ') . $cond, $values)
-			->value('total');
+		$rs = $this->getDb()
+			->execute('select count(*) as total from ' . $table . (strpos(trim($cond), 'order') === 0 ? ' ' : ' where ') . $cond, $values);
+		//如果 $cond 包含 group by，结果条数是$rs->total()
+		$total = $rs->total() > 1 ? $rs->total() : $rs->value('total');
 		$data['items'] = $this->getDb()
 			->execute('select ' . $fields . ' from ' . $table . (strpos(trim($cond), 'order') === 0 ? ' ' : ' where ') . $cond . ' limit ' . (($page - 1) * $pagesize) . ',' . $pagesize, $values)
 			->rows();
