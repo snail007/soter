@@ -134,6 +134,13 @@ class testDbMysql extends UnitTestCase {
 		$this->clean();
 	}
 
+	public function testUpdateSet() {
+		$this->init();
+		$this->db->insert('a', array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000)))->execute();
+		$this->assertEqual($this->db->where(array('id' => $this->db->lastId()))->set('gid','gid + 1',false)->update('a')->execute(), 1);
+		$this->clean();
+	}
+
 	public function testUpdateBatch() {
 		$this->init();
 		$data[] = array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000));
@@ -165,7 +172,7 @@ class testDbMysql extends UnitTestCase {
 		$updata[] = array('id' => ++$firstId, 'gid' => array('gid +' => 5));
 		$this->db->updateBatch('a', $updata, 'id');
 		$this->assertEqual($this->db->execute(), 3);
-		$rows=$this->db->from('a')->execute()->rows();
+		$rows = $this->db->from('a')->execute()->rows();
 		$this->assertEqual($rows[0]['gid'], 4);
 		$this->assertEqual($rows[1]['gid'], 5);
 		$this->assertEqual($rows[2]['gid'], 6);

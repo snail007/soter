@@ -740,8 +740,17 @@
 					通过update方法我们可以方便的更新一条数据，第一个参数是表名称，第二个是数据，第三个是where条件。
 					<pre class="brush:php">
 						echo Sr::db()->update('a', array('name' => '2222'), array('id' => 1));
-						//将输出：PDATE `a` SET `name` = ? WHERE `id` = ?
+						//将输出：UPDATE `a` SET `name` = ? WHERE `id` = ?
 					</pre>
+					如果我们想设置字段值自增，可以使用set方法，示例如下：
+					<pre class="brush:php">
+						echo Sr::db()->where(array('id' => 1))->set('gid', 'gid + 1', false)->update('a',array('name'=>'xxx'));
+						//将输出：UPDATE `a` SET `gid` = gid + 1 , `name` = ? WHERE `id` = ?
+					</pre>
+					set方法有三个参数：
+					<br>第一个：字段名称， 比如 gid
+					<br>第二个：字段值表达，比如 gid+1
+					<br>第三个：是否把第二个参数值全部作为值，默认true
 				</li>
 				<li><h3 class="title_h2">批量更新数据</h3>
 					通过updateBatch我们可以一次性更新多条数据，更新数据的格式如下$updata，$updata数组元素里面必须包含主键id，
