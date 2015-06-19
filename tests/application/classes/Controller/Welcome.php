@@ -3,7 +3,10 @@
 class Controller_Welcome extends Soter_Controller {
 
 	public function do_index() {
-		Sr::business('TestBusiness');
+		echo Sr::db()->updateBatch('test', array(
+		    array('id'=>1,'num'=>array('num +'=>1)),
+		    array('id'=>2,'num'=>array('num +'=>2)),
+		), 'id');
 	}
 
 	public function do_get() {

@@ -146,6 +146,27 @@ class testDbSqlite extends UnitTestCase {
 		$this->clean();
 	}
 
+	public function testUpdateBatchSet() {
+		$this->init();
+		$data[] = array('name' => 'name1', 'gid' => 3);
+		$data[] = array('name' => 'name2', 'gid' => 2);
+		$data[] = array('name' => 'name3', 'gid' => 1);
+		$this->db->insertBatch('a', $data);
+		$this->assertEqual($this->db->execute(), 3);
+		$firstId = $this->db->lastId();
+		$this->assertEqual($firstId, 1);
+		$updata[] = array('id' => $firstId, 'gid' => array('gid +' => 1));
+		$updata[] = array('id' => ++$firstId, 'gid' => array('gid +' => 3));
+		$updata[] = array('id' => ++$firstId, 'gid' => array('gid +' => 5));
+		$this->db->updateBatch('a', $updata, 'id');
+		$this->assertEqual($this->db->execute(), 3);
+		$rows = $this->db->from('a')->execute()->rows();
+		$this->assertEqual($rows[0]['gid'], 4);
+		$this->assertEqual($rows[1]['gid'], 5);
+		$this->assertEqual($rows[2]['gid'], 6);
+		$this->clean();
+	}
+
 	public function testSelect() {
 		$this->init();
 		$datac[] = array('cname' => 'cname1');

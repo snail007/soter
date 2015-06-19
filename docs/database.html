@@ -753,6 +753,16 @@
 						echo Sr::db()->updateBatch('a', $updata, 'id');
 						//将输出：UPDATE `a` SET `name` = CASE WHEN `id` = 1 THEN ? WHEN `id` = 2 THEN ? WHEN `id` = 3 THEN ? ELSE `name` END, `gid` = CASE WHEN `id` = 1 THEN ? WHEN `id` = 2 THEN ? WHEN `id` = 3 THEN ? ELSE `gid` END WHERE `id` IN (?,?,?)
 					</pre>
+					如果我们想在把某个字段的值自增，怎么办呢。只要把字段的值按着数组的形式即可，比如array('num +'=>3),就会生成 `num` + 3
+					<br>注意num后面要有空格，空格后面是数据库支持的计算操作符。
+					<br>下面是完整的例子：
+					<pre class="brush:php">
+						$updata[] = array('id' => 1, 'gid' =>array('gid +'=>1));
+						$updata[] = array('id' => 2,'gid' => array('gid +'=>2));
+						$updata[] = array('id' =>3,  'gid' => array('gid +'=>3));
+						echo Sr::db()->updateBatch('a', $updata, 'id');
+						//将输出：UPDATE `a` SET  `gid` = CASE WHEN `id` = 1 THEN `gid` + ? WHEN `id` = 2 THEN `gid` + ? WHEN `id` = 3 THEN `gid` + ? ELSE `gid` END WHERE `id` IN (?,?,?)
+					</pre>
 				</li>
 				<li><h3 class="title_h2">替换数据</h3>
 					我们可以通过replace方法方便的替换数据，
