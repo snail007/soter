@@ -3,7 +3,7 @@
 class Controller_Welcome extends Soter_Controller {
 
 	public function do_index() {
-		echo Sr::db()->where(array('id' => 1))->set('gid', 'gid + 1', false)->update('a',array('name'=>'xxx'));
+		 
 	}
 
 	public function do_get() {
