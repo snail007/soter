@@ -8,7 +8,6 @@
    提示：
    此参数和--debug参数只能存在一个，如果都存在则忽略--debug-error
 
---debug-error
 -> 手册 message redirect dao方法 异常json回调  json输出回调
    Sr里其它没有介绍的方法
 
