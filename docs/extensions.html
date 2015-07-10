@@ -83,18 +83,18 @@
                                         <pre class="brush:php">
                                                 $http = Sr::extension('Http');
                                                 //1.返回页面内容
-                                                $http->post('https://www.baidu.com/');
+                                                $html=$http->post('https://www.baidu.com/');
 
                                                 //2.返回页面内容并且传递数据
                                                 $args['code'] = '1';
-                                                $http->post('https://baidu.com/', $args);
+                                                $html=$http->post('https://baidu.com/', $args);
 
                                                 //3.返回页面内容并且附加HTTP头
                                                 $header = array('Connection:keep-alive','Cache-Control:max-age=0');
-                                                $http->post('https://baidu.com/', null, $header);
+                                                $html=$http->post('https://baidu.com/', null, $header);
 
                                                 //4.返回页面内容,遇到301或302时跳转的最大次数，默认 0 不跳转
-                                                $http->post('https://baidu.com/', null, null, 1);
+                                                $html=$http->post('https://baidu.com/', null, null, 1);
                                         </pre>
                                         <b>3.设置referer</b>
                                         <br>通过<code>setReferer($referer)</code>方法，来设置当次请求使用的referer，当get或者post请求完毕后，referer会被重置为null。
@@ -110,35 +110,37 @@
                                         <br>示例如下：
                                         <pre class="brush:php">
                                                 $http = Sr::extension('Http');
-                                                $http->errorCode();
+                                                echo $http->errorCode();
                                         </pre>
                                         <b>5.获取curl出错字符串信息</b>
                                         <br>通过<code>errorMsg()</code>方法，来获取curl出错字符串信息，如果没有错误，返回空。
                                         <br>示例如下：
                                         <pre class="brush:php">
                                                 $http = Sr::extension('Http');
-                                                $http->errorMsg();
+                                                echo $http->errorMsg();
                                         </pre>
-                                        <b>6.获取curl出错字符串信息</b>
-                                        <br>通过<code>code()</code>方法，来获取curl出错字符串信息。
+                                        <b>6.请求完成后，获取返回的HTTP状态码</b>
+                                        <br>通过<code>code()</code>方法，来获取服务器返回的HTTP状态码。
                                         <br>示例如下：
                                         <pre class="brush:php">
                                                 $http = Sr::extension('Http');
-                                                $http->code();
+                                                echo $http->code();
                                         </pre>
                                         <b>7.是否是重定向</b>
                                         <br>通过<code>isRedirect()</code>方法，来请求完成后，响应是否是重定向。
                                         <br>示例如下：
                                         <pre class="brush:php">
                                                 $http = Sr::extension('Http');
-                                                $http->isRedirect();
+                                                if($http->isRedirect()){
+							//do something
+						}
                                         </pre>
                                         <b>8.获取重定向的地址</b>
                                         <br>通过<code>location()</code>方法，来请求完成后，响应是重定向的时候，这里会返回重定向的链接，如果不是重定向返回null。
                                         <br>示例如下：
                                         <pre class="brush:php">
                                                 $http = Sr::extension('Http');
-                                                $http->location();
+                                                echo $http->location();
                                         </pre>
                                         <b>9.设置UserAgent</b>
                                         <br>通过<code>setUserAgent($user_agent)</code>方法，来设置UserAgent。
@@ -154,7 +156,7 @@
                                         <br>示例如下：
                                         <pre class="brush:php">
                                                 $http = Sr::extension('Http');
-                                                $http->header();
+                                                echo $http->header();
                                         </pre>
                                         <b>11.获取请求返回的页面内容</b>
                                         <br>通过<code>data($is_json = false)</code>方法，来获取请求返回的页面内容。
@@ -163,14 +165,14 @@
                                         <br>示例如下：
                                         <pre class="brush:php">
                                                 $http = Sr::extension('Http');
-                                                $http->data(true);
+                                                $data=$http->data(true);
                                         </pre>
                                         <b>12.获取最后一次请求的地址</b>
                                         <br>通过<code>lastUrl()</code>方法，来请求完成后，获取最后一次请求的地址，这个往往是有重定向的时候使用的。
                                         <br>示例如下：
                                         <pre class="brush:php">
                                                 $http = Sr::extension('Http');
-                                                $http->lastUrl();
+                                                $url=$http->lastUrl();
                                         </pre>
                                         <b>13.设置curl句柄参数</b>
                                         <br>通过<code>setOpt($opt, $val)</code>方法，来设置curl句柄参数。
