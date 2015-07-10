@@ -442,14 +442,10 @@
                                         <br>$pageBarACount 选填：分页条a的数量，可以参考<a href="system_functions.html">系统方法手册</a>中分页条方法
                                         <br>假如我们Business要调用,如下：
                                         <pre class="brush:php">
-						//第一页，每页10条      
-						$userDao = Sr::dao('Test');
-						$data=$userDao->getPage(1, 10, 'index.do?p={page}', '*', null, array(), array(1, 2, 3, 4, 5, 6), 10);
-						$rows=$data['items'];
-						$pageBar=$data['page'];
+                                                //第一页，每页10条      
+                                                $userDao = Sr::dao('Test');
+                                                $userDao->getPage(1, 10, 'index.do?p={page}', '*', null, array(), array(1, 2, 3, 4, 5, 6), 10);
                                         </pre>
-					getPage方法返回的是形如：array('items'=>array(array(...),...),'page'=>'...')关联数组，
-					<br>items键的值是数据,page是分页条html字符串。
                                         <h3 class="title_h3">10.SQL搜索</h3>
                                         通过<code>search($page, $pagesize, $url, $fields, $cond, Array $values = array(), $pageBarOrder = array(1, 2, 3, 4, 5, 6), $pageBarACount = 10)</code>方法，来获取SQL搜索。
                                         <br>$page 必填：第几页
@@ -462,14 +458,10 @@
                                         <br>$pageBarACount 选填：分页条a的数量，可以参考<a href="system_functions.html">系统方法手册</a>中分页条方法
                                         <br>假如我们Business要调用,如下：
                                         <pre class="brush:php">
-						//搜索id大于1，每页2条。
-						$userDao = Sr::dao('Test');
-						$userDao->search(1, 2, '#', '*','id>?', array(1));
-						$rows=$data['items'];
-						$pageBar=$data['page'];
+                                                //搜索id大于1，每页2条。
+                                                $userDao = Sr::dao('Test');
+                                                $userDao->search(1, 2, '#', '*','id>?', array(1));
                                         </pre>
-					search方法返回的是形如：array('items'=>array(array(...),...),'page'=>'...')关联数组，
-					<br>items键的值是数据,page是分页条html字符串。
                                 </li>
                         </ol>
                 </fieldset>
