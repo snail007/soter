@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.57
- * @createdtime   2015-07-10 09:34:51
+ * @since         v1.0.58
+ * @createdtime   2015-07-15 11:00:40
  */
  
 
@@ -2806,8 +2806,14 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 
 	private function _compileWhere($where, $leftWrap = 'AND', $rightWrap = '', $index = -1) {
 		$_where = array();
-		if ($index == 0 && strtoupper(trim($leftWrap)) == 'AND') {
-			$leftWrap = '';
+		if ($index == 0) {
+			$str=strtoupper(trim($leftWrap));
+			foreach (array('AND', 'OR') as   $v) {
+				if(stripos($str, $v)!==false){
+					$leftWrap = '';
+					break;
+				}
+			}
 		}
 		if (is_string($where)) {
 			return ' ' . $leftWrap . ' ' . $where . $rightWrap . ' ';

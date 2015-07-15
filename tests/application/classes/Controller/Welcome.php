@@ -3,7 +3,10 @@
 class Controller_Welcome extends Soter_Controller {
 
 	public function do_index() {
-		 
+		echo Sr::db()->select('cname')->from('user')
+			->where(array('id <=' => 2, 'id <>' => 3))
+			->where(array('id =' => 0), 'or')
+			->where(array('id >=' => 0), 'or');
 	}
 
 	public function do_get() {

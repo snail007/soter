@@ -611,9 +611,10 @@
 						$where['uid not']=array(4,5,6);
 						$where['id >']=0;
 						$where['id &lt;>']=-1;
+						$where['name like']='%test%';
 						echo Sr::db()->where($where);
 						//多次调用where都是可以的
-						//将输出：SELECT * FROM `user` WHERE `id` = ? AND `uid` IN (?,?,?) AND `name` IS NULL AND `man` = ? AND `uid` NOT IN (?,?,?) AND `id` > ? AND `id` &lt;> ?
+						//将输出：SELECT * FROM `user` WHERE `id` = ? AND `uid` IN (?,?,?) AND `name` IS NULL AND `man` = ? AND `uid` NOT IN (?,?,?) AND `id` > ? AND `id` &lt;> ? AND `name` like ?
 						//如果要执行这条语句，我们调用execute方法
 						 Sr::db()->execute();
 					</pre>
@@ -623,6 +624,13 @@
 							->where(array('id <=' => 2, 'id &lt;>' => 3), '(', ')')
 							->where(array('id >=' => 0));
 						//将输出：SELECT `cname` FROM `user` WHERE ( `id` <= ? AND `id` <> ? ) AND `id` >= ?
+					</pre>
+					WHERE条件之间默认是AND连接，我们可以通过第二个参数改变为OR，例子如下：
+					<pre class="brush:php">
+						echo Sr::db()->select('cname')->from('user')
+							->where(array('id <=' => 2, 'id &lt;>' => 3), '(', ')')
+							->where(array('id >=' => 0),'OR');
+						//将输出：SELECT `cname` FROM `user` WHERE ( `id` <= ? AND `id` <> ? ) OR `id` >= ?
 					</pre>
 					<h3 class="title_h3">6.group by</h3>
 					<pre class="brush:php">
