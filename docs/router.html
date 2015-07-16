@@ -52,8 +52,26 @@
 					<br>2.假如我们在入口文件里面注册了hmvc模块Demo，那么访问：<b>/index.php/Demo/Welcome/article.do</b>
 					<br>访问的就是控制器application/hvmc/demo/classes/Controller/Welcome.php,中的<b>do_article</b>方法。
 					<br>3.比如：<b>/index.php/Welcome/article-system-001.do</b>
-					<br>传递了两个参数给Welcome->do_article($cat='food',$id='002'),其中$cat是system，$id是001
-					<br>为了避免没有传递参数的时候报错，我们需要给$cat和$id设置默认值。
+					<br>Welcome控制器代码如下：
+					<pre class="brush:php">
+						class Controller_Welcome extends Soter_Controller {
+
+							public function do_article($cat='food',$id='002') {
+								 echo $cat;//$cat是system
+								 echo $cat;//$id是001
+							}
+
+						}
+					</pre>
+					<b class="text_strong">当我们访问/index.php/Welcome/article-system-001.do
+					<br>那么就传递了system和001两个参数给上面的do_article方法,system对应$cat，001对应$id，
+					<br>如果有更多个参数，url里面的参数顺序和方法里面参数顺序依次对应。
+					<br>上面的代码中输出的：$cat是system，$id是001。
+					<br><b>提示：</b>
+					<br>为了避免当我们在url中没有传递参数给do_article的时候，php报notice变量不存在的错误，
+					<br>我们给do_article方法的$cat和$id两个参数变量一个默认值food和002，
+					<br>这样就能避免我们没有传递参数的时候php不报错。
+					</b>
 					<br>4.比如：<b>/index.php/Welcome/article--001.do</b>
 					<br>传递了两个参数给Welcome->do_article($cat='food',$id='002'),其中$cat是空，$id是001
 					<br>5.比如：<b>/index.php/Welcome/article-system-.do</b>
