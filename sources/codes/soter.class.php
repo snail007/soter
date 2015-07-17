@@ -1525,7 +1525,7 @@ class Sr {
 					$started = session_id() === '' ? FALSE : TRUE;
 				}
 				if (!$started) {
-					session_start();
+					@session_start();
 				}
 			}
 		}
