@@ -10,6 +10,8 @@ define('SOTER_APP_PATH', Sr::realPath(dirname(__FILE__) . '/../../tests/applicat
 define('SOTER_PACKAGES_PATH', SOTER_APP_PATH . 'packages/');
 /* 初始化系统配置 */
 Soter::initialize()
+	/* 设置Soter管理异常错误 */
+	->setExceptionControl(true)
 	/* 时区设置 */
 	->setTimeZone('PRC')
 	/* 项目目录路径 */
@@ -58,7 +60,7 @@ Soter::initialize()
 	->setRequest(new Soter_Request_Default())
 	/* 网站是否开启了nginx或者apache的url“伪静态”重写，开启了这里设置为true，
 	  这样Sr::url方法在生成url的时候就知道是否加上入口文件名称 */
-	->setIsRewrite(FALSE)
+	->setIsRewrite(false)
 	/* 注册默认pathinfo路由器 */
 	->addRouter(new Soter_Router_PathInfo_Default())
 	/* pathinfo路由器,注册uri重写 */
@@ -90,11 +92,11 @@ Soter::initialize()
 	 * 注册的关联数组中的键名称，比如这里键demo的值hmvcModuleName是Demo，对应的hvmc模块就是上面注册的Demo模块。
 	 */
 	->setHmvcDomains(array(
-	    'enable' => false,//总开关，是否启用
+	    'enable' => false, //总开关，是否启用
 	    'domains' => array(
 		'demo' => array(
-		    'hmvcModuleName' => 'Demo',//hvmc模块名称
-		    'enable' => false,//单个开关，是否启用
+		    'hmvcModuleName' => 'Demo', //hvmc模块名称
+		    'enable' => false, //单个开关，是否启用
 		    'domainOnly' => true//是否只能通过绑定的域名访问
 		)
 	    )

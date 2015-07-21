@@ -28,8 +28,6 @@ class Soter {
 	 */
 	public static function initialize() {
 		self::$soterConfig = new Soter_Config();
-		//注册错误处理
-		Soter_Logger_Writer_Dispatcher::initialize();
 		//注册类自动加载
 		if (function_exists('__autoload')) {
 			spl_autoload_register('__autoload');
@@ -1524,7 +1522,7 @@ class Sr {
 				} else {
 					$started = session_id() === '' ? FALSE : TRUE;
 				}
-				if (!$started) {
+				if (!$started && !headers_sent()) {
 					@session_start();
 				}
 			}

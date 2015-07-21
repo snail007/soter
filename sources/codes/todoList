@@ -6,10 +6,9 @@
    任务执行是否失败，是根据任务的execute方法的返回值判断的，
    返回空代表执行成功 返回错误信息或者错误码表示执行失败。
    提示：
-   此参数和--debug参数只能存在一个，如果都存在则忽略--debug-error
+   --debug-error参数和--debug参数只能存在一个，如果都存在则忽略--debug
 
--> 手册 message redirect dao方法 异常json回调  json输出回调
-   Sr里其它没有介绍的方法
+
 
 
 
@@ -145,3 +144,6 @@
 -> * 重定向方法
 -> * json输出设计
 -> * Dao模型父类设计
+-> 手册 message redirect dao方法 异常json回调  json输出回调
+   Sr里其它没有介绍的方法
+-> * 关闭Soter错误控制功能

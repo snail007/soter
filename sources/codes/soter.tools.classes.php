@@ -381,6 +381,14 @@ class Soter_Config {
 
 	;
 
+	public function setExceptionControl($isExceptionControl) {
+		if ($isExceptionControl) {
+			//注册错误处理
+			Soter_Logger_Writer_Dispatcher::initialize();
+		}
+		return $this;
+	}
+
 	public function getStorageDirPath() {
 		return empty($this->storageDirPath) ? $this->getPrimaryApplicationDir() . 'storage/' : $this->storageDirPath;
 	}

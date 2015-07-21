@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.59
- * @createdtime   2015-07-16 13:04:11
+ * @since         v1.0.61
+ * @createdtime   2015-07-21 16:16:52
  */
  
 
@@ -59,8 +59,6 @@ class Soter {
 	 */
 	public static function initialize() {
 		self::$soterConfig = new Soter_Config();
-		//注册错误处理
-		Soter_Logger_Writer_Dispatcher::initialize();
 		//注册类自动加载
 		if (function_exists('__autoload')) {
 			spl_autoload_register('__autoload');
@@ -1555,8 +1553,8 @@ class Sr {
 				} else {
 					$started = session_id() === '' ? FALSE : TRUE;
 				}
-				if (!$started) {
-					session_start();
+				if (!$started && !headers_sent()) {
+					@session_start();
 				}
 			}
 		}
@@ -3411,7 +3409,7 @@ abstract class Soter_Bean {
 
 abstract class Soter_Task {
 
-	protected $debug = false;
+	protected $debug = false, $debugError = false;
 
 	public function __construct() {
 		if (!Sr::isCli()) {
@@ -3424,15 +3422,25 @@ abstract class Soter_Task {
 
 	public function _execute(Soter_CliArgs $args) {
 		$this->debug = $args->get('debug');
+		$this->debugError = $args->get('debug-error');
 		$startTime = Sr::microtime();
-		$this->_log('Task [ ' . __CLASS__ . ' ] start');
-		$this->execute($args);
-		$this->_log('Task [ ' . __CLASS__ . ' ] end , use time ' . (Sr::microtime() - $startTime) . ' ms');
+		if ($this->debugError) {
+			$_startTime = date('Y-m-d H:i:s.') . substr($startTime . '', strlen($startTime . '') - 3);
+			$error = $this->execute($args);
+			if ($error) {
+				$this->_log('Task [ ' . __CLASS__ . ' ] execute failed , started at [ ' . $_startTime . ' ], use time ' . (Sr::microtime() - $startTime) . ' ms , exited with error : [ ' . $error.' ]');
+			}
+		} else {
+			$this->_log('Task [ ' . __CLASS__ . ' ] start');
+			$this->execute($args);
+			$this->_log('Task [ ' . __CLASS__ . ' ] end , use time ' . (Sr::microtime() - $startTime) . ' ms');
+		}
 	}
 
 	public function _log($msg) {
-		if ($this->debug) {
-			echo date('[Y-m-d H:i:s] ') . $msg . "\n";
+		if ($this->debug || $this->debugError) {
+			$time = '' . Sr::microtime();
+			echo date('[Y-m-d H:i:s.' . substr($time, strlen($time) - 3) . '] ') . $msg . "\n";
 		}
 	}
 
@@ -4085,6 +4093,14 @@ class Soter_Config {
 		$hmvcDomains = array()
 
 	;
+
+	public function setExceptionControl($isExceptionControl) {
+		if ($isExceptionControl) {
+			//注册错误处理
+			Soter_Logger_Writer_Dispatcher::initialize();
+		}
+		return $this;
+	}
 
 	public function getStorageDirPath() {
 		return empty($this->storageDirPath) ? $this->getPrimaryApplicationDir() . 'storage/' : $this->storageDirPath;

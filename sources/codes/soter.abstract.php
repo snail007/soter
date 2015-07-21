@@ -257,7 +257,7 @@ abstract class Soter_Bean {
 
 abstract class Soter_Task {
 
-	protected $debug = false;
+	protected $debug = false, $debugError = false;
 
 	public function __construct() {
 		if (!Sr::isCli()) {
@@ -270,15 +270,25 @@ abstract class Soter_Task {
 
 	public function _execute(Soter_CliArgs $args) {
 		$this->debug = $args->get('debug');
+		$this->debugError = $args->get('debug-error');
 		$startTime = Sr::microtime();
-		$this->_log('Task [ ' . __CLASS__ . ' ] start');
-		$this->execute($args);
-		$this->_log('Task [ ' . __CLASS__ . ' ] end , use time ' . (Sr::microtime() - $startTime) . ' ms');
+		if ($this->debugError) {
+			$_startTime = date('Y-m-d H:i:s.') . substr($startTime . '', strlen($startTime . '') - 3);
+			$error = $this->execute($args);
+			if ($error) {
+				$this->_log('Task [ ' . __CLASS__ . ' ] execute failed , started at [ ' . $_startTime . ' ], use time ' . (Sr::microtime() - $startTime) . ' ms , exited with error : [ ' . $error.' ]');
+			}
+		} else {
+			$this->_log('Task [ ' . __CLASS__ . ' ] start');
+			$this->execute($args);
+			$this->_log('Task [ ' . __CLASS__ . ' ] end , use time ' . (Sr::microtime() - $startTime) . ' ms');
+		}
 	}
 
 	public function _log($msg) {
-		if ($this->debug) {
-			echo date('[Y-m-d H:i:s] ') . $msg . "\n";
+		if ($this->debug || $this->debugError) {
+			$time = '' . Sr::microtime();
+			echo date('[Y-m-d H:i:s.' . substr($time, strlen($time) - 3) . '] ') . $msg . "\n";
 		}
 	}
 
