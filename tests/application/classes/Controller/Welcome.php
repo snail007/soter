@@ -2,6 +2,55 @@
 
 class Controller_Welcome extends Soter_Controller {
 
+	public function do_show() {
+		echo <<<html
+		<form action="check.do">
+		<img src="captcha.do"><input type="text" name="code"/><input type="submit" value="check">	
+		</form>
+html;
+	}
+
+	public function do_captcha() {
+		Sr::sessionStart();
+		$captcha = new Soter_Captcha();
+		$captcha->create();
+	}
+
+	public function do_check() {
+		Sr::sessionStart();
+		if (strtolower(Sr::session('captcha_code')) == strtolower(Sr::getPost('code'))) {
+			echo 'okay';
+		} else {
+			echo 'error';
+		}
+		unset($_SESSION['captcha_code']);
+	}
+
+	public function do_httptest() {
+		$http = new Soter_Http();
+		$http->setCookieFilePath(Sr::config()->getStorageDirPath() . '/cache/http.cookie');
+		$http->get('http://gitcode.com/soter/tests/indexfortest.php/Welcome/show.do');
+		echo <<<html
+		<form action="httptest_submit.do">
+		<img src="httptest_captcha.do"><input type="text" name="code"/><input type="submit" value="check">	
+		</form>
+html;
+	}
+
+	public function do_httptest_submit() {
+		$http = new Soter_Http();
+		$http->setCookieFilePath(Sr::config()->getStorageDirPath() . '/cache/http.cookie');
+		$data['code'] = Sr::getPost('code');
+		echo $http->get('http://gitcode.com/soter/tests/indexfortest.php/Welcome/check.do', $data);
+	}
+
+	public function do_httptest_captcha() {
+		$http = new Soter_Http();
+		$http->setCookieFilePath(Sr::config()->getStorageDirPath() . '/cache/http.cookie');
+		header('Content-Type: image/jpeg');
+		echo $http->get('http://gitcode.com/soter/tests/indexfortest.php/Welcome/captcha.do');
+	}
+
 	public function do_index() {
 		echo Sr::db()->select('cname')->from('user')
 			->where(array('id <=' => 2, 'id <>' => 3))
