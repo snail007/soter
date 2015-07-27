@@ -32,12 +32,14 @@ html;
 		$http->get('http://gitcode.com/soter/tests/indexfortest.php/Welcome/show.do');
 		echo <<<html
 		<form action="httptest_submit.do">
+		<input type="file" name="test"/>
 		<img src="httptest_captcha.do"><input type="text" name="code"/><input type="submit" value="check">	
 		</form>
 html;
 	}
 
 	public function do_httptest_submit() {
+
 		$http = new Soter_Http();
 		$http->setCookieFilePath(Sr::config()->getStorageDirPath() . '/cache/http.cookie');
 		$data['code'] = Sr::getPost('code');
@@ -49,6 +51,17 @@ html;
 		$http->setCookieFilePath(Sr::config()->getStorageDirPath() . '/cache/http.cookie');
 		header('Content-Type: image/jpeg');
 		echo $http->get('http://gitcode.com/soter/tests/indexfortest.php/Welcome/captcha.do');
+	}
+
+	public function do_httptestupfile() {
+		if (Sr::post()) {
+			Sr::dump($_FILES, Sr::post());
+		} else {
+			$http = new Soter_Http();
+			$data = array('test' => '@' . __FILE__,'testvalue'=>'123');
+			$http->post('http://gitcode.com/soter/tests/indexfortest.php/Welcome/httptestupfile.do',$data);
+			echo $http->data();
+		}
 	}
 
 	public function do_index() {
