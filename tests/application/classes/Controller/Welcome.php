@@ -18,7 +18,7 @@ html;
 
 	public function do_check() {
 		Sr::sessionStart();
-		if (strtolower(Sr::session('captcha_code')) == strtolower(Sr::getPost('code'))) {
+		if (Sr::session('captcha_code')&&strtolower(Sr::session('captcha_code')) == strtolower(Sr::getPost('code'))) {
 			echo 'okay';
 		} else {
 			echo 'error';
