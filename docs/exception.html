@@ -184,24 +184,6 @@
                                                 })
                                         </pre>
 				</li>
-				<li><h2 class="title_h2">关闭异常处理功能</h2>
-					在某些未知的特殊运行环境中，程序执行后空白，即使我们打开了Soter的错误显示，
-					<br>还是没有任何错误信息输出，我们无法发现错误进行调试。
-					<br>这个时候我们可以<b>临时</b>关闭Soter管理异常功能，使用PHP原生的报错信息。
-					<br>我们可以通过修改入口文件的下面的配置，关闭Soter管理异常功能。
-					<pre class="brush:php">
-						/* 设置Soter管理异常错误 */
-						->setExceptionControl(false)
-                                        </pre>
-					参数：
-					<br>1.为false时关闭Soter管理异常功能。
-					<br>2.为true时打开Soter管理异常功能。
-					<br><b class="text_strong">提示：
-					<br>当我们关闭Soter管理异常功能后，上面的提到的异常各种管理功能和显示控制都将无效。
-					<br>当我们解决了错误之后，应该打开这个功能，也就是设置参数为true，恢复Soter对异常的控制，
-					<br>这样上面的提到的异常各种管理功能和显示控制才会有效。
-					</b>
-				</li>
 			</ol>
 		</fieldset>
 		<script src="js/inc.foot.js"></script>

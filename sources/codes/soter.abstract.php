@@ -272,16 +272,17 @@ abstract class Soter_Task {
 		$this->debug = $args->get('debug');
 		$this->debugError = $args->get('debug-error');
 		$startTime = Sr::microtime();
+		$class = get_class($this);
 		if ($this->debugError) {
 			$_startTime = date('Y-m-d H:i:s.') . substr($startTime . '', strlen($startTime . '') - 3);
 			$error = $this->execute($args);
 			if ($error) {
-				$this->_log('Task [ ' . __CLASS__ . ' ] execute failed , started at [ ' . $_startTime . ' ], use time ' . (Sr::microtime() - $startTime) . ' ms , exited with error : [ ' . $error.' ]');
+				$this->_log('Task [ ' . $class . ' ] execute failed , started at [ ' . $_startTime . ' ], use time ' . (Sr::microtime() - $startTime) . ' ms , exited with error : [ ' . $error . ' ]');
 			}
 		} else {
-			$this->_log('Task [ ' . __CLASS__ . ' ] start');
+			$this->_log('Task [ ' . $class . ' ] start');
 			$this->execute($args);
-			$this->_log('Task [ ' . __CLASS__ . ' ] end , use time ' . (Sr::microtime() - $startTime) . ' ms');
+			$this->_log('Task [ ' . $class . ' ] end , use time ' . (Sr::microtime() - $startTime) . ' ms');
 		}
 	}
 
@@ -309,7 +310,8 @@ abstract class Soter_Task_Single extends Soter_Task {
 
 	public function _execute(Soter_CliArgs $args) {
 		$this->debug = $args->get('debug');
-		$this->_log('Single Task [ ' . __CLASS__ . ' ] start');
+		$class = get_class($this);
+		$this->_log('Single Task [ ' . $class . ' ] start');
 		$lockFilePath = $args->get('pid');
 		if (!$lockFilePath) {
 			$tempDirPath = Sr::config()->getStorageDirPath();
@@ -323,7 +325,7 @@ abstract class Soter_Task_Single extends Soter_Task {
 			$pid = file_get_contents($lockFilePath);
 			//lockfile进程pid存在，直接返回
 			if ($this->pidIsExists($pid)) {
-				$this->_log('Single Task [ ' . __CLASS__ . ' ] is running , now exiting...');
+				$this->_log('Single Task [ ' . $class . ' ] is running , now exiting...');
 				return;
 			}
 		}
@@ -336,7 +338,7 @@ abstract class Soter_Task_Single extends Soter_Task {
 		$this->execute($args);
 		@unlink($lockFilePath);
 		$this->_log('clean pid file [ ' . $lockFilePath . ' ]');
-		$this->_log('Single Task [ ' . __CLASS__ . ' ] end , use time ' . (Sr::microtime() - $startTime) . ' ms');
+		$this->_log('Single Task [ ' . $class . ' ] end , use time ' . (Sr::microtime() - $startTime) . ' ms');
 	}
 
 }
