@@ -26,7 +26,7 @@
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         v1.0.63
- * @createdtime   2015-08-03 10:08:52
+ * @createdtime   2015-08-03 10:14:55
  */
  
 
@@ -5298,7 +5298,7 @@ class Soter_Cache_Redis implements Soter_Cache {
 
 	public function __construct($config) {
 		if (empty($config['slaves']) && !empty($config['masters'])) {
-			$config['slaves'][0] = $config['masters'][0];
+			$config['slaves'][] = current($config['masters']);
 		}
 		$this->config = $config;
 	}

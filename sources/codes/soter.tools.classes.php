@@ -1583,7 +1583,7 @@ class Soter_Cache_Redis implements Soter_Cache {
 
 	public function __construct($config) {
 		if (empty($config['slaves']) && !empty($config['masters'])) {
-			$config['slaves'][0] = $config['masters'][0];
+			$config['slaves'][] = current($config['masters']);
 		}
 		$this->config = $config;
 	}
