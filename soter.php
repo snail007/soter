@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.61
- * @createdtime   2015-07-24 17:36:17
+ * @since         v1.0.62
+ * @createdtime   2015-07-31 13:59:57
  */
  
 
@@ -5248,41 +5248,61 @@ class Soter_Cache_Redis implements Soter_Cache {
 
 	private $config, $handle;
 
-	private function _init() {
-		if (empty($this->handle)) {
-			$this->handle = array();
-			foreach (array('masters', 'slaves') as $type) {
-				foreach ($this->config[$type] as $k => $config) {
-					$this->handle[$type][$k] = new Redis();
-					if ($config['type'] == 'sock') {
-						$this->handle[$type][$k]->connect($config['sock']);
-					} else {
-						$this->handle[$type][$k]->connect($config['host'], $config['port'], $config['timeout'], $config['retry']);
+	private function _initMaters() {
+		if (empty($this->handle['masters'])) {
+			$this->handle['masters'] = array();
+			//array('masters', 'slaves')
+			foreach ($this->config['masters'] as $k => $config) {
+				$this->handle['masters'][$k] = new Redis();
+				if ($config['type'] == 'sock') {
+					$this->handle['masters'][$k]->connect($config['sock']);
+				} else {
+					$this->handle['masters'][$k]->connect($config['host'], $config['port'], $config['timeout'], $config['retry']);
+				}
+				if (!is_null($config['password'])) {
+					$this->handle['masters'][$k]->auth($config['password']);
+				}
+				if (!is_null($config['prefix'])) {
+					if ($config['prefix']{strlen($config['prefix']) - 1} != ':') {
+						$config['prefix'].=':';
 					}
-					if (!is_null($config['password'])) {
-						$this->handle[$type][$k]->auth($config['password']);
-					}
-					if (!is_null($config['prefix'])) {
-						if ($config['prefix']{strlen($config['prefix']) - 1} != ':') {
-							$config['prefix'].=':';
-						}
-						$this->handle[$type][$k]->setOption(Redis::OPT_PREFIX, $config['prefix']);
-					}
+					$this->handle['masters'][$k]->setOption(Redis::OPT_PREFIX, $config['prefix']);
 				}
 			}
-			if (empty($this->handle['slaves']) && !empty($this->handle['masters'])) {
-				$this->handle['slaves'] = array();
-				$this->handle['slaves'][0] = &$this->handle['masters'][key($this->handle['masters'])];
+		}
+	}
+
+	private function _initSlave() {
+		if (empty($this->handle['slave'])) {
+			//随机选取一个从redis配置，然后连接
+			$config = $this->config['slaves'][array_rand($this->config['slaves'])];
+			$this->handle['slave'] = new Redis();
+			if ($config['type'] == 'sock') {
+				$this->handle['slave']->connect($config['sock']);
+			} else {
+				$this->handle['slave']->connect($config['host'], $config['port'], $config['timeout'], $config['retry']);
+			}
+			if (!is_null($config['password'])) {
+				$this->handle['slave']->auth($config['password']);
+			}
+			if (!is_null($config['prefix'])) {
+				if ($config['prefix']{strlen($config['prefix']) - 1} != ':') {
+					$config['prefix'].=':';
+				}
+				$this->handle['slave']->setOption(Redis::OPT_PREFIX, $config['prefix']);
 			}
 		}
 	}
 
 	public function __construct($config) {
+		if (empty($config['slaves']) && !empty($config['masters'])) {
+			$config['slaves'][] = current($config['masters']);
+		}
 		$this->config = $config;
 	}
 
 	public function clean() {
-		$this->_init();
+		$this->_initMaters();
 		$status = true;
 		foreach ($this->handle['masters'] as &$handle) {
 			$status = $status & $handle->flushDB();
@@ -5291,7 +5311,7 @@ class Soter_Cache_Redis implements Soter_Cache {
 	}
 
 	public function delete($key) {
-		$this->_init();
+		$this->_initMaters();
 		$status = true;
 		foreach ($this->handle['masters'] as &$handle) {
 			$status = $status & $handle->delete($key);
@@ -5300,10 +5320,8 @@ class Soter_Cache_Redis implements Soter_Cache {
 	}
 
 	public function get($key) {
-		$this->_init();
-		$k = array_rand($this->handle['slaves']);
-		$handle = &$this->handle['slaves'][$k];
-		if ($data = $handle->get($key)) {
+		$this->_initSlave();
+		if ($data = $this->handle['slave']->get($key)) {
 			return @unserialize($data);
 		} else {
 			return null;
@@ -5311,7 +5329,7 @@ class Soter_Cache_Redis implements Soter_Cache {
 	}
 
 	public function set($key, $value, $cacheTime = 0) {
-		$this->_init();
+		$this->_initMaters();
 		$value = serialize($value);
 		foreach ($this->handle['masters'] as &$handle) {
 			if ($cacheTime) {
