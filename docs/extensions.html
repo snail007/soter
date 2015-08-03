@@ -219,7 +219,7 @@
 						 `file` VARCHAR( 1000 ) NOT NULL COMMENT  '出错文件路径',
 						 `line` INT NOT NULL COMMENT  '出错行数',
 						 `code` INT NOT NULL COMMENT  '出错代码',
-						 `type` VARCHAR( 50 ) NOT NULL COMMENT  '错误类型',
+						 `type` VARCHAR( 20 ) NOT NULL COMMENT  '错误类型',
 						 `request_data` TEXT NOT NULL COMMENT  '请求的数据',
 						 `create_time` INT NOT NULL COMMENT  '创建时间',
 						 PRIMARY KEY (  `error_logger_id` )
