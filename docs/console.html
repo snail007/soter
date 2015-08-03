@@ -80,7 +80,7 @@
 					<br><b>2.命令行执行这个Task任务</b>
 					<br>比如执行下面的命令：
 					<pre class="brush:php">
-						php /home/www/soter/index.php --env=development --task=My_SingleTask--test=hello	
+						php /home/www/soter/index.php --env=development --task=My_SingleTask  --test=hello	
 					</pre>
 					我们会看到输出了:hello,然后30秒后脚本退出。
 					<br><b class="text_strong">提示：
@@ -106,14 +106,27 @@
 					当我们命令行运行任务的时候，如果想知道任务的一些执行流程，
 					<br>可以开启task的调试功能，那么执行任务的时候就会看到有一些任务的信息输出。
 					<br>开启这个调试功能我们只需要传递--debug参数即可。
+					<br>还支持--debug-error参数，只有任务执行失败的时候才输出信息。
+					<br>任务执行是否失败，是根据任务的execute方法的返回值判断的，
+					<br>返回空代表执行成功 返回错误信息或者错误码表示执行失败。
+					<br>提示：
+					<br>--debug-error参数和--debug参数只能存在一个，如果都存在则忽略--debug
 					<br>比如下面的命令：
 					<br>1.普通Task
 					<pre class="brush:php">
-						php /home/www/soter/index.php --env=development --debug --task=My_FirstTask--test=hello	
+						php /home/www/soter/index.php --env=development --debug --task=My_FirstTask  --test=hello	
 					</pre>
 					2.单例Task
 					<pre class="brush:php">
-						php /home/www/soter/index.php --env=development --debug --task=My_SingleTask--test=hello	
+						php /home/www/soter/index.php --env=development --debug --task=My_SingleTask  --test=hello	
+					</pre>
+					3.普通Task
+					<pre class="brush:php">
+						php /home/www/soter/index.php --env=development --debug-error --task=My_FirstTask  --test=hello	
+					</pre>
+					4.单例Task
+					<pre class="brush:php">
+						php /home/www/soter/index.php --env=development --debug-error --task=My_SingleTask  --test=hello	
 					</pre>
 				</li>
 			</ol>
