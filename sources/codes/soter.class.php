@@ -1723,5 +1723,13 @@ class Sr {
 			return false;
 		}
 
+		/**
+		 * 判断是否是ajax请求，只对jquery的ajax请求有效
+		 * @return boolean
+		 */
+		static function isAjax() {
+			return isset($_SERVER['HTTP_X_REQUESTED_WITH']) && (strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest');
+		}
+
 	}
 	

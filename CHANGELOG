@@ -1,3 +1,13 @@
+============v1.0.64[2015/08/05]===========
+增加了：
+1.Sr::isAjax()方法，判断请求是否是ajax请求，该方法只对jquery的ajax请求有效。
+	原理是，jquery的ajax请求会在http头部加上X-Requested-With: XMLHttpRequest头，
+	Sr::isAjax()方法通过判断是否存在$_SERVER['HTTP_X_REQUESTED_WITH']而且值是XMLHttpRequest，
+	来判断是否是ajax请求。
+
+升级提示：
+无
+
 ============v1.0.63[2015/08/03]===========
 优化了：
 1.task命令行消息的输出格式中输出当前task的名称，方便查看。
