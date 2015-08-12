@@ -350,7 +350,7 @@ class Soter_Config {
 		$methodParametersDelimiter = '-',
 		$logsSubDirNameFormat = 'Y-m-d/H',
 		$cookiePrefix = '',
-		$backendServerIpWhitelist = '',
+		$backendServerIpWhitelist = array(),
 		$isRewrite = FALSE,
 		$request, $showError = true,
 		$routersContainer = array(),
