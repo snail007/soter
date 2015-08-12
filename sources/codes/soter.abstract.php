@@ -516,7 +516,9 @@ abstract class Soter_Exception extends Exception {
 	}
 
 	public function setHttpHeader() {
-		header($this->httpStatusLine);
+		if(!Sr::isCli()){
+			header($this->httpStatusLine);
+		}
 		return $this;
 	}
 

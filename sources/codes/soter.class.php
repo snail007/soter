@@ -594,7 +594,9 @@ class Sr {
 	}
 
 	static function setCookieRaw($key, $value, $life = null, $path = '/', $domian = null, $httpOnly = false) {
-		header('P3P: CP="CURa ADMa DEVa PSAo PSDo OUR BUS UNI PUR INT DEM STA PRE COM NAV OTC NOI DSP COR"');
+		if (!Sr::isCli()) {
+			header('P3P: CP="CURa ADMa DEVa PSAo PSDo OUR BUS UNI PUR INT DEM STA PRE COM NAV OTC NOI DSP COR"');
+		}
 		if (!is_null($domian)) {
 			$autoDomain = $domian;
 		} else {
