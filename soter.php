@@ -26,7 +26,7 @@
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         v1.0.67
- * @createdtime   2015-08-12 17:14:03
+ * @createdtime   2015-08-12 17:34:30
  */
  
 
@@ -625,7 +625,9 @@ class Sr {
 	}
 
 	static function setCookieRaw($key, $value, $life = null, $path = '/', $domian = null, $httpOnly = false) {
-		header('P3P: CP="CURa ADMa DEVa PSAo PSDo OUR BUS UNI PUR INT DEM STA PRE COM NAV OTC NOI DSP COR"');
+		if (!Sr::isCli()) {
+			header('P3P: CP="CURa ADMa DEVa PSAo PSDo OUR BUS UNI PUR INT DEM STA PRE COM NAV OTC NOI DSP COR"');
+		}
 		if (!is_null($domian)) {
 			$autoDomain = $domian;
 		} else {
@@ -3679,7 +3681,9 @@ abstract class Soter_Exception extends Exception {
 	}
 
 	public function setHttpHeader() {
-		header($this->httpStatusLine);
+		if(!Sr::isCli()){
+			header($this->httpStatusLine);
+		}
 		return $this;
 	}
 
@@ -4993,7 +4997,9 @@ class Soter_Logger_FileWriter implements Soter_Logger_Writer {
 class Soter_Maintain_Handle_Default implements Soter_Maintain_Handle {
 
 	public function handle() {
-		header('Content-type: text/html;charset=utf-8');
+		if (!Sr::isCli()) {
+			header('Content-type: text/html;charset=utf-8');
+		}
 		echo '<center><h2>server is under maintenance</h2><h3>服务器维护中</h3>' . date('Y/m/d H:i:s e') . '</center>';
 	}
 
