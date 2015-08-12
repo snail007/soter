@@ -1267,7 +1267,9 @@ class Soter_Logger_FileWriter implements Soter_Logger_Writer {
 class Soter_Maintain_Handle_Default implements Soter_Maintain_Handle {
 
 	public function handle() {
-		header('Content-type: text/html;charset=utf-8');
+		if (!Sr::isCli()) {
+			header('Content-type: text/html;charset=utf-8');
+		}
 		echo '<center><h2>server is under maintenance</h2><h3>服务器维护中</h3>' . date('Y/m/d H:i:s e') . '</center>';
 	}
 
