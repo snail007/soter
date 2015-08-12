@@ -26,7 +26,7 @@
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         v1.0.65
- * @createdtime   2015-08-12 10:08:42
+ * @createdtime   2015-08-12 13:35:27
  */
  
 
@@ -2218,6 +2218,9 @@ abstract class Soter_Database {
 			$key = empty($this->_cacheKey) ? md5($sql . var_export($values, true)) : $this->_cacheKey;
 			$return = $cacheHandle->get($key);
 			if (!is_null($return)) {
+				$this->_cacheKey = '';
+				$this->_cacheTime = 0;
+				$this->_reset();
 				return $return;
 			}
 		}
@@ -2813,9 +2816,9 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 	private function _compileWhere($where, $leftWrap = 'AND', $rightWrap = '', $index = -1) {
 		$_where = array();
 		if ($index == 0) {
-			$str=strtoupper(trim($leftWrap));
-			foreach (array('AND', 'OR') as   $v) {
-				if(stripos($str, $v)!==false){
+			$str = strtoupper(trim($leftWrap));
+			foreach (array('AND', 'OR') as $v) {
+				if (stripos($str, $v) !== false) {
 					$leftWrap = '';
 					break;
 				}

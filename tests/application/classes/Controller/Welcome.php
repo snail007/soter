@@ -18,7 +18,7 @@ html;
 
 	public function do_check() {
 		Sr::sessionStart();
-		if (Sr::session('captcha_code')&&strtolower(Sr::session('captcha_code')) == strtolower(Sr::getPost('code'))) {
+		if (Sr::session('captcha_code') && strtolower(Sr::session('captcha_code')) == strtolower(Sr::getPost('code'))) {
 			echo 'okay';
 		} else {
 			echo 'error';
@@ -58,17 +58,24 @@ html;
 			Sr::dump($_FILES, Sr::post());
 		} else {
 			$http = new Soter_Http();
-			$data = array('test' => '@' . __FILE__,'testvalue'=>'123');
-			$http->post('http://gitcode.com/soter/tests/indexfortest.php/Welcome/httptestupfile.do',$data);
+			$data = array('test' => '@' . __FILE__, 'testvalue' => '123');
+			$http->post('http://gitcode.com/soter/tests/indexfortest.php/Welcome/httptestupfile.do', $data);
 			echo $http->data();
 		}
 	}
 
 	public function do_index() {
-		echo Sr::db()->select('cname')->from('user')
-			->where(array('id <=' => 2, 'id <>' => 3))
-			->where(array('id =' => 0), 'or')
-			->where(array('id >=' => 0), 'or');
+		$total=Sr::db()->cache(300, 'key5')
+			->select('count(*) as total')
+			->from('test1')
+			->execute()
+			->value('total');
+		$row=Sr::db()->cache(300, 'key6')
+			->select('*')
+			->from('test1')
+			->execute()
+			->rows();
+		Sr::dump($total,$row);
 	}
 
 	public function do_get() {
