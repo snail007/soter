@@ -51,15 +51,24 @@
 					<pre class="brush:php">
 						class Exception_MyHandle implements Soter_Exception_Handle {
 							public function handle(Soter_Exception $exception) {
-								if($exception instanceof Soter_Exception_404){
-									exit('404 error');
-								}elseif($exception instanceof Soter_Exception_500){
-									exit('500 error');
-								}elseif($exception instanceof Soter_Exception_Database){
-									exit('db error');
-								}else{
-									exit('404');
+								if (Sr::isCli()) {
+									$exception->render();
+								} elseif (Sr::isAjax()) {
+									$exception->renderJson();
+								} else {
+									$exception->setHttpHeader();
+									$data['exception'] = $exception;
+									if ($exception instanceof Soter_Exception_404) {
+										Sr::view()->load('error/404', $data);
+									} elseif ($exception instanceof Soter_Exception_500) {
+										Sr::view()->load('error/404', $data);
+									} elseif ($exception instanceof Soter_Exception_Database) {
+										echo Sr::view()->load('error/404', $data);
+									} else {
+										Sr::view()->load('error/404', $data);
+									}
 								}
+								exit();
 							}
 						}
 					</pre>
