@@ -296,7 +296,7 @@ abstract class Soter_Task {
 	public final function pidIsExists($pid) {
 		if (PATH_SEPARATOR == ':') {
 			//linux
-			return trim(shell_exec("ps -ax | awk '{ print $1 }' | grep -e \"^{$pid}$\""), "\n") == $pid;
+			return trim(shell_exec("ps ax | awk '{ print $1 }' | grep -e \"^{$pid}$\""), "\n") == $pid;
 		} else {
 			//windows
 			return strpos(shell_exec('tasklist /NH /FI "PID eq ' . $pid . '"'), $pid) !== false;
