@@ -1303,6 +1303,8 @@ class Soter_Database_Resultset {
 	}
 
 	public function objects($beanClassName) {
+		$rowsKey = $this->_rowsKey;
+		$this->_rowsKey = '';
 		$beanDirName = Sr::config()->getBeanDirName();
 		if (stripos($beanClassName, $beanDirName . '_') === false) {
 			$beanClassName = $beanDirName . '_' . $beanClassName;
@@ -1319,7 +1321,11 @@ class Soter_Database_Resultset {
 				$method = "set" . str_replace(' ', '', ucwords(str_replace('_', ' ', $key)));
 				$object->{$method}($value);
 			}
-			$objects[] = $object;
+			if ($rowsKey) {
+				$objects[$row[$rowsKey]] = $object;
+			} else {
+				$objects[] = $object;
+			}
 		}
 		return $objects;
 	}
