@@ -11,11 +11,11 @@ class Bean_UserDao extends Soter_Bean {
 	//parent_id
 	private $parent_id;
 
-	public function getCatalog_id() {
+	public function getCatalogId() {
 		return $this->catalog_id;
 	}
 
-	public function setCatalog_id($catalog_id) {
+	public function setCatalogId($catalog_id) {
 		$this->catalog_id = $catalog_id;
 		return $this;
 	}
@@ -29,11 +29,11 @@ class Bean_UserDao extends Soter_Bean {
 		return $this;
 	}
 
-	public function getParent_id() {
+	public function getParentId() {
 		return $this->parent_id;
 	}
 
-	public function setParent_id($parent_id) {
+	public function setParentId($parent_id) {
 		$this->parent_id = $parent_id;
 		return $this;
 	}

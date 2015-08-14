@@ -91,4 +91,9 @@ class TestMisc extends UnitTestCase {
 		$this->assertEqual(Sr::decrypt(Sr::encrypt('123')), Sr::decrypt(Sr::encrypt('123'), '134134'));
 	}
 
+	function testDb() {
+		$this->assertReference(Sr::db(), Sr::db());
+		$this->assertReference(Sr::db('mysql'), Sr::db('mysql'));
+	}
+
 }

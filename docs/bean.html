@@ -130,15 +130,19 @@
                                         从上面代码可以看到使用bean+dao模式，降低了程序的复杂度和耦合度，增强了可维护性。 
                                         <br><b class="text_strong">提示：</b>
                                         <br>了解详细的Dao层,点击进入<a href="dao.html">Dao层</a>
-                                        
+
                                 </li>
 				<li>
 					<h2 class="title_h2">Bean实体规范</h2>
                                         1.Bean类文件都放在<code>application/classes/Bean</code>文件夹里面 
                                         <br>2.Bean必须要继承<code>Soter_Bean</code>类，类名必须带<code>Bean_</code>前缀。
-                                        <br>3.Bean是表字段绑定了，每个字段有个set方法和get方法，set方法和get方法都有规范。
-                                        <br>set规范是set+首字符大写表字段
-                                        <br>get规范是get+首字符大写表字段
+                                        <br>3.Bean是表的一行记录绑定的，每个表字段都有对应Bean的set方法和get方法，<b>set方法和get方法都有规范</b>。
+                                        <br><b>set规范</b>是set+不含下划线单词首字母大写的表字段名称。
+					<br>比如：表字段名称是：account_id,那么Bean的set方法名称就应该是setAccountId;
+					<br>比如：表字段名称是：phone,那么Bean的set方法名称就应该是setPhone;
+                                        <br><b>get规范</b>是get+不含下划线单词首字母大写的表字段名称。
+					<br>比如：表字段名称是：account_id,那么Bean的get方法名称就应该是getAccountId;
+					<br>比如：表字段名称是：phone,那么Bean的get方法名称就应该是getPhone;
                                         <br>比如我有以下这样表：
                                         <pre class="brush:sql">
                                                 CREATE TABLE `user` (

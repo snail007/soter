@@ -1752,12 +1752,13 @@ class Soter_Generator_Mysql extends Soter_Task {
 			$methods = array();
 			$fields = array();
 			$fieldTemplate = "	//{comment}\n	private \${column0};";
-			$methodTemplate = "	public function get{column}() {\n		return \$this->{column0};\n	}\n\n	public function set{column}(\${column0}) {\n		\$this->{column0} = \${column0};\n		return \$this;\n	}";
+			$methodTemplate = "	public function get{column}() {\n		return \$this->{column0};\n	}\n\n	public function set{column}(\${column1}) {\n		\$this->{column0} = \${column1};\n		return \$this;\n	}";
 			foreach ($columns as $value) {
-				$column = ucfirst($value['name']);
+				$column = str_replace(' ', '', ucwords(str_replace('_', ' ', $value['name'])));
 				$column0 = $value['name'];
+				$column1 = lcfirst($column);
 				$fields[] = str_replace(array('{column0}', '{comment}'), array($column0, $value['comment']), $fieldTemplate);
-				$methods[] = str_replace(array('{column}', '{column0}'), array($column, $column0), $methodTemplate);
+				$methods[] = str_replace(array('{column}', '{column0}', '{column1}'), array($column, $column0, $column1), $methodTemplate);
 			}
 			$code = "<?php\n\nclass {$classname} extends {$parentClass} {\n\n{fields}\n\n{methods}\n\n}";
 			$code = str_replace(array('{fields}', '{methods}'), array(implode("\n\n", $fields), implode("\n\n", $methods)), $code);

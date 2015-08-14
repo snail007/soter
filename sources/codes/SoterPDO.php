@@ -1296,7 +1296,7 @@ class Soter_Database_Resultset {
 		}
 		$row = $this->row($index);
 		foreach ($row as $key => $value) {
-			$method = "set" . ucfirst($key) . "";
+			$method = "set" . str_replace(' ', '', ucwords(str_replace('_', ' ', $key))) . "";
 			$object->{$method}($value);
 		}
 		return $object;
@@ -1316,7 +1316,7 @@ class Soter_Database_Resultset {
 		foreach ($rows as $row) {
 			$object = new $beanClassName();
 			foreach ($row as $key => $value) {
-				$method = "set" . ucfirst($key);
+				$method = "set" . str_replace(' ', '', ucwords(str_replace('_', ' ', $key)));
 				$object->{$method}($value);
 			}
 			$objects[] = $object;
