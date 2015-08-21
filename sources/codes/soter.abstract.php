@@ -278,20 +278,20 @@ abstract class Soter_Task {
 			$error = $this->execute($args);
 			if ($error) {
 				$this->_log('Task [ ' . $class . ' ] execute failed , started at [ ' . $_startTime . ' ], use time ' . (Sr::microtime() - $startTime) . ' ms , exited with error : [ ' . $error . ' ]');
-				$this->_log('');
+				$this->_log('',false);
 			}
 		} else {
 			$this->_log('Task [ ' . $class . ' ] start');
 			$this->execute($args);
 			$this->_log('Task [ ' . $class . ' ] end , use time ' . (Sr::microtime() - $startTime) . ' ms');
-			$this->_log('');
+			$this->_log('',false);
 		}
 	}
 
-	public function _log($msg) {
+	public function _log($msg, $time = true) {
 		if ($this->debug || $this->debugError) {
 			$time = '' . Sr::microtime();
-			echo date('[Y-m-d H:i:s.' . substr($time, strlen($time) - 3) . '] ') . $msg . "\n";
+			echo ($time ? date('[Y-m-d H:i:s.' . substr($time, strlen($time) - 3) . '] ') : '') . $msg . "\n";
 		}
 	}
 
@@ -330,7 +330,7 @@ abstract class Soter_Task_Single extends Soter_Task {
 			if ($this->pidIsExists($pid)) {
 				$this->_log('Single Task [ ' . $class . ' ] is running , now exiting...');
 				$this->_log('Single Task [ ' . $class . ' ] end , use time ' . (Sr::microtime() - $startTime) . ' ms');
-				$this->_log('');
+				$this->_log('',false);
 				return;
 			}
 		}
@@ -343,7 +343,7 @@ abstract class Soter_Task_Single extends Soter_Task {
 		@unlink($lockFilePath);
 		$this->_log('clean pid file [ ' . $lockFilePath . ' ]');
 		$this->_log('Single Task [ ' . $class . ' ] end , use time ' . (Sr::microtime() - $startTime) . ' ms');
-		$this->_log('');
+		$this->_log('',false);
 	}
 
 }
