@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.68
- * @createdtime   2015-08-14 12:52:17
+ * @since         v1.0.69
+ * @createdtime   2015-08-21 17:21:34
  */
  
 
@@ -3449,11 +3449,13 @@ abstract class Soter_Task {
 			$error = $this->execute($args);
 			if ($error) {
 				$this->_log('Task [ ' . $class . ' ] execute failed , started at [ ' . $_startTime . ' ], use time ' . (Sr::microtime() - $startTime) . ' ms , exited with error : [ ' . $error . ' ]');
+				$this->_log('');
 			}
 		} else {
 			$this->_log('Task [ ' . $class . ' ] start');
 			$this->execute($args);
 			$this->_log('Task [ ' . $class . ' ] end , use time ' . (Sr::microtime() - $startTime) . ' ms');
+			$this->_log('');
 		}
 	}
 
@@ -3687,7 +3689,7 @@ abstract class Soter_Exception extends Exception {
 	}
 
 	public function setHttpHeader() {
-		if(!Sr::isCli()){
+		if (!Sr::isCli()) {
 			header($this->httpStatusLine);
 		}
 		return $this;

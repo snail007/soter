@@ -278,11 +278,13 @@ abstract class Soter_Task {
 			$error = $this->execute($args);
 			if ($error) {
 				$this->_log('Task [ ' . $class . ' ] execute failed , started at [ ' . $_startTime . ' ], use time ' . (Sr::microtime() - $startTime) . ' ms , exited with error : [ ' . $error . ' ]');
+				$this->_log('');
 			}
 		} else {
 			$this->_log('Task [ ' . $class . ' ] start');
 			$this->execute($args);
 			$this->_log('Task [ ' . $class . ' ] end , use time ' . (Sr::microtime() - $startTime) . ' ms');
+			$this->_log('');
 		}
 	}
 
@@ -516,7 +518,7 @@ abstract class Soter_Exception extends Exception {
 	}
 
 	public function setHttpHeader() {
-		if(!Sr::isCli()){
+		if (!Sr::isCli()) {
 			header($this->httpStatusLine);
 		}
 		return $this;
