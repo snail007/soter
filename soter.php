@@ -26,7 +26,7 @@
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         v1.0.69
- * @createdtime   2015-08-21 17:21:34
+ * @createdtime   2015-08-21 17:33:05
  */
  
 
@@ -3484,6 +3484,7 @@ abstract class Soter_Task_Single extends Soter_Task {
 	public function _execute(Soter_CliArgs $args) {
 		$this->debug = $args->get('debug');
 		$class = get_class($this);
+		$startTime = Sr::microtime();
 		$this->_log('Single Task [ ' . $class . ' ] start');
 		$lockFilePath = $args->get('pid');
 		if (!$lockFilePath) {
@@ -3499,6 +3500,8 @@ abstract class Soter_Task_Single extends Soter_Task {
 			//lockfile进程pid存在，直接返回
 			if ($this->pidIsExists($pid)) {
 				$this->_log('Single Task [ ' . $class . ' ] is running , now exiting...');
+				$this->_log('Single Task [ ' . $class . ' ] end , use time ' . (Sr::microtime() - $startTime) . ' ms');
+				$this->_log('');
 				return;
 			}
 		}
@@ -3507,11 +3510,11 @@ abstract class Soter_Task_Single extends Soter_Task {
 			throw new Soter_Exception_500('can not create file : [ ' . $lockFilePath . ' ]');
 		}
 		$this->_log('update pid file [ ' . $lockFilePath . ' ]');
-		$startTime = Sr::microtime();
 		$this->execute($args);
 		@unlink($lockFilePath);
 		$this->_log('clean pid file [ ' . $lockFilePath . ' ]');
 		$this->_log('Single Task [ ' . $class . ' ] end , use time ' . (Sr::microtime() - $startTime) . ' ms');
+		$this->_log('');
 	}
 
 }
