@@ -290,8 +290,8 @@ abstract class Soter_Task {
 
 	public function _log($msg, $time = true) {
 		if ($this->debug || $this->debugError) {
-			$time = '' . Sr::microtime();
-			echo ($time ? date('[Y-m-d H:i:s.' . substr($time, strlen($time) - 3) . '] ') : '') . $msg . "\n";
+			$nowTime = '' . Sr::microtime();
+			echo ($time ? date('[Y-m-d H:i:s.' . substr($nowTime, strlen($nowTime) - 3) . '] ') : '') . $msg . "\n";
 		}
 	}
 
