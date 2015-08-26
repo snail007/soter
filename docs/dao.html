@@ -382,11 +382,11 @@
                                                 $userDao->find($where, true, array('addtime' => 'asc'));
                                         </pre>
                                         <h3 class="title_h3">7.获取多条数据</h3>
-                                        通过<code>findAll($where = null, Array $orderBy = array(), $limit = null, $fileds = null)</code>方法，我们可以获取一条或者多条数据。
+                                        通过<code>findAll($where = null, Array $orderBy = array(), $limit = null, $fields = null)</code>方法，我们可以获取一条或者多条数据。
                                         <br>$where 选填：where条件数组
                                         <br>$orderBy 选填：排序，比如：array('time'=>'desc')或者array('time'=>'desc','id'=>'asc')
                                         <br>$limit 选填：limit数量，比如：10
-                                        <br>$fileds 选填：要搜索的字段，比如：id,name。留空默认*
+                                        <br>$fields 选填：要搜索的字段，比如：id,name。留空默认*
                                         <br>假如我们Business要调用,如下：
                                         <pre class="brush:php">
                                                 //1.查询表所有数据

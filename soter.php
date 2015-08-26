@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.69
- * @createdtime   2015-08-21 18:08:28
+ * @since         v1.0.71
+ * @createdtime   2015-08-26 16:06:38
  */
  
 
@@ -1713,10 +1713,10 @@ class Sr {
 			if (!$key && !$_key) {
 				throw new Soter_Exception_500('encrypt key can not empty or you can set it in index.php : ->setEncryptKey()');
 			}
-			return substr(md5($attachKey ? $_key . $attachKey : $_key), 0, 8);
+			return substr(md5($_key . $attachKey), 0, 8);
 		}
 
-		static function encrypt($str, $key = '', $attachKey = false) {
+		static function encrypt($str, $key = '', $attachKey = '') {
 			if (!$str) {
 				return '';
 			}
@@ -1728,7 +1728,7 @@ class Sr {
 			return bin2hex(mcrypt_encrypt(MCRYPT_DES, $key, $str, MCRYPT_MODE_ECB));
 		}
 
-		static function decrypt($str, $key = '', $attachKey = false) {
+		static function decrypt($str, $key = '', $attachKey = '') {
 			if (!$str) {
 				return '';
 			}
@@ -3293,12 +3293,12 @@ abstract class Soter_Dao {
 	 * @param type $where   where条件数组
 	 * @param type $orderBy 排序，比如：array('time'=>'desc')或者array('time'=>'desc','id'=>'asc')
 	 * @param type $limit   limit数量，比如：10
-	 * @param type $fileds  要搜索的字段，比如：id,name。留空默认*
+	 * @param type $fields  要搜索的字段，比如：id,name。留空默认*
 	 * @return type
 	 */
-	public function findAll($where = null, Array $orderBy = array(), $limit = null, $fileds = null) {
-		if (!is_null($fileds)) {
-			$this->getDb()->select($fileds);
+	public function findAll($where = null, Array $orderBy = array(), $limit = null, $fields = null) {
+		if (!is_null($fields)) {
+			$this->getDb()->select($fields);
 		}
 		if (!is_null($where)) {
 			$this->getDb()->where($where);

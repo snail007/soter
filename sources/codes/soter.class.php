@@ -1682,10 +1682,10 @@ class Sr {
 			if (!$key && !$_key) {
 				throw new Soter_Exception_500('encrypt key can not empty or you can set it in index.php : ->setEncryptKey()');
 			}
-			return substr(md5($attachKey ? $_key . $attachKey : $_key), 0, 8);
+			return substr(md5($_key . $attachKey), 0, 8);
 		}
 
-		static function encrypt($str, $key = '', $attachKey = false) {
+		static function encrypt($str, $key = '', $attachKey = '') {
 			if (!$str) {
 				return '';
 			}
@@ -1697,7 +1697,7 @@ class Sr {
 			return bin2hex(mcrypt_encrypt(MCRYPT_DES, $key, $str, MCRYPT_MODE_ECB));
 		}
 
-		static function decrypt($str, $key = '', $attachKey = false) {
+		static function decrypt($str, $key = '', $attachKey = '') {
 			if (!$str) {
 				return '';
 			}

@@ -122,12 +122,12 @@ abstract class Soter_Dao {
 	 * @param type $where   where条件数组
 	 * @param type $orderBy 排序，比如：array('time'=>'desc')或者array('time'=>'desc','id'=>'asc')
 	 * @param type $limit   limit数量，比如：10
-	 * @param type $fileds  要搜索的字段，比如：id,name。留空默认*
+	 * @param type $fields  要搜索的字段，比如：id,name。留空默认*
 	 * @return type
 	 */
-	public function findAll($where = null, Array $orderBy = array(), $limit = null, $fileds = null) {
-		if (!is_null($fileds)) {
-			$this->getDb()->select($fileds);
+	public function findAll($where = null, Array $orderBy = array(), $limit = null, $fields = null) {
+		if (!is_null($fields)) {
+			$this->getDb()->select($fields);
 		}
 		if (!is_null($where)) {
 			$this->getDb()->where($where);

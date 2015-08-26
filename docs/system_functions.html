@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html>
         <head>
-                <title>系统函数</title>
+                <title>系统方法</title>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <script src="js/inc.js"></script>
         </head>
         <body>
                 <fieldset>
-                        <legend>系统函数</legend>
+                        <legend>系统方法</legend>
                         <ol>
                                 <li>
                                         <h2 class="title_h2">打印变量内容</h2>
@@ -252,15 +252,16 @@
                                 </li>
 				<li>
                                         <h2 class="title_h2">加密数据</h2>
-                                        通过Sr::encrypt($str, $key = '', $attachKey = false)方法，可以方便安全的加密数据。
+                                        通过Sr::encrypt($str, $key = '', $attachKey = '')方法，可以方便安全的加密数据。
                                         <br>$str 要加密的字符串
-                                        <br>$key 密钥key
-                                        <br>$attachKey 　true : 假如配置文件里面设置了加密密钥$key1，那么最终加密使用的密钥是$key1+$key。
-					<br>　　　　　　　false: 最终加密使用的是$key
+                                        <br>$key 加密密钥key 
+					<br>　　　　　　　<b>为空</b> : 假如配置文件里面设置了加密密钥<b>$config_key</b>，那么最终加密使用的密钥是: md5(<span class="text_strong"><b>$config_key</b>+$attachKey</span>)加密后32个字符结果的前8个字符。
+					<br>　　　　　　　<b>非空</b> ：最终加密使用的密钥是: md5(<span class="text_strong"><b>$key</b>+$attachKey</span>)加密后32个字符结果的前8个字符。
+                                        <br>$attachKey 　 附加的加密密钥
 					<br>提示：
 					<br>加密使用的是DES加密算法，密钥使用的是md5($userKey)加密后32个字符结果的前8个字符。
-					<br>$userKey就是用户设置的密钥。
-					<br>当没有传递第二个密钥参数的时候，必须在入口文件里面设置用户密钥。
+					<br>$userKey就是上面参数$key的描述中的红色部分。
+					<br>当没有传递第二个参数或者第二个参数为空的时候，必须在入口文件里面设置用户密钥。
 					<br>在入口文件里面可以看到下面的配置：
 					<pre class="brush:php">
 						/* 设置加密方法Sr::encrypt()和解密方法Sr::decrypt()使用的密钥,
@@ -297,22 +298,24 @@
 						Sr::encrypt('123');
 						//2.使用密钥abcd加密数据123
 						Sr::encrypt('123','abcd');
-						//3.使用入口文件设置的密钥lqreqc4245mrqce+用户密钥99999加密数据123
+						//3.使用入口文件设置的密钥lqreqc4245mrqce+附加密钥99999加密数据123
 						//最终加密使用的就是密钥：lqreqc4245mrqce99999
-						Sr::encrypt('123','99999',true);
+						Sr::encrypt('123','','99999');
                                         </pre>
                                 </li>
 				<li>
                                         <h2 class="title_h2">解密数据</h2>
-                                        通过Sr::decrypt($str, $key = '', $attachKey = false)方法，可以方便安全的解密数据。
+                                        通过Sr::decrypt($str, $key = '', $attachKey = '')方法，可以方便安全的解密数据。
                                         <br>$str 要解密的字符串
                                         <br>$key 密钥key
-                                        <br>$attachKey 　true : 假如配置文件里面设置了解密密钥$key1，那么最终解密使用的是$key1+$key。
-					<br>　　　　　　　false: 最终解密使用的是$key
+                                        <br>$key 加密密钥key 
+					<br>　　　　　　　<b>为空</b> : 假如配置文件里面设置了加密密钥<b>$config_key</b>，那么最终加密使用的密钥是: md5(<span class="text_strong"><b>$config_key</b>+$attachKey</span>)加密后32个字符结果的前8个字符。
+					<br>　　　　　　　<b>非空</b> ：最终加密使用的密钥是: md5(<span class="text_strong"><b>$key</b>+$attachKey</span>)加密后32个字符结果的前8个字符。
+                                        <br>$attachKey 　 附加的加密密钥
 					<br>提示：
 					<br>解密使用的是DES解密算法，密钥使用的是md5($userKey)解密后32个字符结果的前8个字符。
-					<br>$userKey就是用户设置的密钥。
-					<br>当没有传递第二个密钥参数的时候，必须在入口文件里面设置用户密钥。
+					<br>$userKey就是上面参数$key的描述中的红色部分。
+					<br>当没有传递第二个参数或者第二个参数为空的时候，必须在入口文件里面设置用户密钥。
 					<br>在入口文件里面可以看到下面的配置：
 					<pre class="brush:php">
 						/* 设置加密方法Sr::encrypt()和解密方法Sr::decrypt()使用的密钥,
@@ -337,9 +340,9 @@
 						Sr::decrypt('dcd68ede7e16fc62');
 						//2.使用密钥abcd解密数据1b5a0f72ba677d69
 						Sr::decrypt('1b5a0f72ba677d69','abcd');
-						//3.使用入口文件设置的密钥lqreqc4245mrqce+用户密钥99999解密数据33b01a9262e4ccec
+						//3.使用入口文件设置的密钥lqreqc4245mrqce+附加密钥99999解密数据33b01a9262e4ccec
 						//最终解密使用的就是密钥：lqreqc4245mrqce99999
-						Sr::decrypt('33b01a9262e4ccec','99999',true);
+						Sr::decrypt('33b01a9262e4ccec','','99999');
                                         </pre>
                                 </li>
                         </ol>

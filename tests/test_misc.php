@@ -89,6 +89,7 @@ class TestMisc extends UnitTestCase {
 		Sr::config()->setEncryptKey('134134');
 		$this->assertEqual(Sr::encrypt('123'), Sr::encrypt('123', '134134'));
 		$this->assertEqual(Sr::decrypt(Sr::encrypt('123')), Sr::decrypt(Sr::encrypt('123'), '134134'));
+		$this->assertEqual(Sr::encrypt('123', '', '5555'), Sr::encrypt('123', '1341345555'));
 	}
 
 	function testDb() {
