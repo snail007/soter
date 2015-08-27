@@ -773,17 +773,20 @@ class Sr {
 	}
 
 	/**
+	 * 
 	 * 获取数据库操作对象
-	 * @staticvar array $instances
-	 * @param type $group  数据库配置里面的组名称，默认是default组。也可以是一个数据库组配置的数组
+	 * @staticvar array $instances   数据库单例容器
+	 * @param type $group             配置组名称
+	 * @param type $isNewInstance     是否刷新单例
 	 * @return \Soter_Database_ActiveRecord
+	 * @throws Soter_Exception_Database
 	 */
-	static function &db($group = '') {
+	static function &db($group = '', $isNewInstance = false) {
 		static $instances = array();
 		if (is_array($group)) {
 			ksort($group);
 			$key = md5(var_export($group, true));
-			if (!Sr::arrayKeyExists($key, $instances)) {
+			if (!Sr::arrayKeyExists($key, $instances) || $isNewInstance) {
 				$instances[$key] = new Soter_Database_ActiveRecord($group);
 			}
 			return $instances[$key];
@@ -792,7 +795,7 @@ class Sr {
 				$config = self::config()->getDatabseConfig();
 				$group = $config['default_group'];
 			}
-			if (!Sr::arrayKeyExists($group, $instances)) {
+			if (!Sr::arrayKeyExists($group, $instances) || $isNewInstance) {
 				$config = self::config()->getDatabseConfig($group);
 				if (empty($config)) {
 					throw new Soter_Exception_Database('unknown database config group [ ' . $group . ' ]');
