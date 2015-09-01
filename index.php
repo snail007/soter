@@ -27,7 +27,7 @@
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         v1.0.71
- * @createdtime   2015-08-26 16:06:38
+ * @createdtime   2015-09-01 12:03:45
  */
  
 define("IN_SOTER", true);

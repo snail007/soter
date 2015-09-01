@@ -26,18 +26,15 @@
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         v1.0.71
- * @createdtime   2015-08-26 16:06:38
+ * @createdtime   2015-09-01 12:03:45
  */
  
-
 
 /**
  * @property Soter_Config $soterConfig
  */
 class Soter {
-
 	private static $soterConfig;
-
 	/**
 	 * 包类库自动加载器
 	 * @param type $className
@@ -52,7 +49,6 @@ class Soter {
 			}
 		}
 	}
-
 	/**
 	 * 初始化框架配置
 	 * @return \Soter_Config
@@ -74,7 +70,6 @@ class Soter {
 		}
 		return self::$soterConfig;
 	}
-
 	/**
 	 * 获取运行配置
 	 * @return Soter_Config
@@ -82,7 +77,6 @@ class Soter {
 	public static function &getConfig() {
 		return self::$soterConfig;
 	}
-
 	/**
 	 * 运行调度
 	 */
@@ -113,7 +107,6 @@ class Soter {
 			}
 		}
 	}
-
 	/**
 	 * web模式运行
 	 * @throws Soter_Exception_404
@@ -149,7 +142,6 @@ class Soter {
 			Sr::sessionStart();
 		}
 		//session初始化完毕
-
 		$class = '';
 		$method = '';
 		foreach ($config->getRouters() as $router) {
@@ -211,7 +203,6 @@ class Soter {
 		}
 		echo $contents;
 	}
-
 	/**
 	 * 命令行模式运行
 	 */
@@ -240,17 +231,15 @@ class Soter {
 		$args = empty($args) ? array() : $args;
 		$taskObject->_execute(new Soter_CliArgs($args));
 	}
-
 	/**
 	 * 插件模式运行
 	 */
 	private static function runPlugin() {
 		//插件模式
 	}
-
 	/**
 	 * 检测并加载hmvc模块,成功返回模块文件夹名称，失败返回false或抛出异常
-	 * @staticvar array $loadedModules  
+	 * @staticvar array $loadedModules
 	 * @param type $hmvcModuleName  hmvc模块在URI中的名称，即注册配置hmvc模块数组的键名称
 	 * @throws Soter_Exception_404
 	 */
@@ -280,19 +269,14 @@ class Soter {
 		}
 		return FALSE;
 	}
-
 }
-
 class Sr {
-
 	const ENV_TESTING = 1; //测试环境
 	const ENV_PRODUCTION = 2; //产品环境
 	const ENV_DEVELOPMENT = 3; //开发环境
-
 	static function arrayGet($array, $key, $default = null) {
 		return Sr::arrayKeyExists($key, $array) ? $array[$key] : $default;
 	}
-
 	static function dump() {
 		echo!self::isCli() ? '<pre style="line-height:1.5em;font-size:14px;">' : "\n";
 		@ob_start();
@@ -302,7 +286,6 @@ class Sr {
 		echo!self::isCli() ? htmlspecialchars($html) : $html;
 		echo!self::isCli() ? "</pre>" : "\n";
 	}
-
 	static function includeOnce($filePath) {
 		static $includeFiles = array();
 		$key = self::realPath($filePath);
@@ -311,7 +294,6 @@ class Sr {
 			$includeFiles[$key] = 1;
 		}
 	}
-
 	static function realPath($path, $addSlash = false) {
 		//是linux系统么？
 		$unipath = PATH_SEPARATOR == ':';
@@ -340,11 +322,9 @@ class Sr {
 		$path = str_replace(array('/', '\\'), '/', $path);
 		return $path . ($addSlash ? '/' : '');
 	}
-
 	static function isCli() {
 		return PHP_SAPI == 'cli';
 	}
-
 	static function stripSlashes($var) {
 		if (!get_magic_quotes_gpc()) {
 			return $var;
@@ -362,7 +342,6 @@ class Sr {
 		}
 		return $var;
 	}
-
 	static function business($businessName) {
 		$name = Soter::getConfig()->getBusinessDirName() . '_' . $businessName;
 		$object = self::factory($name);
@@ -371,7 +350,6 @@ class Sr {
 		}
 		return $object;
 	}
-
 	static function dao($daoName) {
 		$name = Soter::getConfig()->getDaoDirName() . '_' . $daoName;
 		$object = self::factory($name);
@@ -380,7 +358,6 @@ class Sr {
 		}
 		return $object;
 	}
-
 	static function model($modelName) {
 		$name = Soter::getConfig()->getModelDirName() . '_' . $modelName;
 		$object = self::factory($name);
@@ -389,15 +366,12 @@ class Sr {
 		}
 		return $object;
 	}
-
 	static function library($className) {
 		return self::factory($className);
 	}
-
 	static function extension($className) {
 		return self::factory('Soter_' . $className);
 	}
-
 	static function functions($functionFilename) {
 		static $loadedFunctionsFile = array();
 		if (Sr::arrayKeyExists($functionFilename, $loadedFunctionsFile)) {
@@ -419,7 +393,6 @@ class Sr {
 			throw new Soter_Exception_500('functions file [ ' . $functionFilename . '.php ] not found');
 		}
 	}
-
 	/**
 	 * 超级工厂方法
 	 * @param type $className      可以是完整的控制器类名，模型类名，类库类名
@@ -440,7 +413,6 @@ class Sr {
 		}
 		return new $className();
 	}
-
 	/**
 	 * 判断是否是插件模式运行
 	 * @return type
@@ -448,7 +420,6 @@ class Sr {
 	static function isPluginMode() {
 		return (defined('SOTER_RUN_MODE_PLUGIN') && SOTER_RUN_MODE_PLUGIN);
 	}
-
 	/**
 	 * 1.不传递参数返回系统配置对象（Soter_Config）。<br/>
 	 * 2.传递参数加载具体的配置<br/>
@@ -501,7 +472,6 @@ class Sr {
 			return $cfg;
 		}
 	}
-
 	/**
 	 * 解析命令行参数 $GLOBALS['argv'] 到一个数组<br>
 	 * 参数形式支持:		<br>
@@ -546,35 +516,29 @@ class Sr {
 		}
 		return empty($key) ? $result : (Sr::arrayKeyExists($key, $result) ? $result[$key] : null);
 	}
-
 	static function get($key = null, $default = null, $xssClean = false) {
 		$value = is_null($key) ? $_GET : self::arrayGet($_GET, $key, $default);
 		return $xssClean ? self::xssClean($value) : $value;
 	}
-
 	static function getPost($key, $default = null, $xssClean = false) {
 		$getValue = self::arrayGet($_GET, $key);
 		$value = is_null($getValue) ? self::arrayGet($_POST, $key, $default) : $getValue;
 		return $xssClean ? self::xssClean($value) : $value;
 	}
-
 	static function post($key = null, $default = null, $xssClean = false) {
 		$value = is_null($key) ? $_POST : self::arrayGet($_POST, $key, $default);
 		return $xssClean ? self::xssClean($value) : $value;
 	}
-
 	static function postGet($key, $default = null, $xssClean = false) {
 		$postValue = self::arrayGet($_POST, $key);
 		$value = is_null($postValue) ? self::arrayGet($_GET, $key, $default) : $postValue;
 		return $xssClean ? self::xssClean($value) : $value;
 	}
-
 	static function session($key = null, $default = null, $xssClean = false) {
 		self::sessionStart();
 		$value = is_null($key) ? (empty($_SESSION) ? null : $_SESSION) : self::arrayGet($_SESSION, $key, $default);
 		return $xssClean ? self::xssClean($value) : $value;
 	}
-
 	static function sessionSet($key = null, $value = null) {
 		self::sessionStart();
 		if (is_array($key)) {
@@ -583,11 +547,9 @@ class Sr {
 			$_SESSION[$key] = $value;
 		}
 	}
-
 	static function server($key = null, $default = null) {
 		return is_null($key) ? $_SERVER : self::arrayGet($_SERVER, strtoupper($key), $default);
 	}
-
 	/**
 	 * 获取原始的POST数据，即php://input获取到的
 	 * @return type
@@ -595,7 +557,6 @@ class Sr {
 	static function postRawBody() {
 		return file_get_contents('php://input');
 	}
-
 	/**
 	 * 获取一个cookie
 	 * 提醒:
@@ -608,12 +569,10 @@ class Sr {
 		$value = self::cookieRaw($key, $default, $xssClean);
 		return $xssClean ? self::xssClean($value) : $value;
 	}
-
 	static function cookieRaw($key = null, $default = null, $xssClean = false) {
 		$value = is_null($key) ? $_COOKIE : self::arrayGet($_COOKIE, $key, $default);
 		return $xssClean ? self::xssClean($value) : $value;
 	}
-
 	/**
 	 * 设置一个cookie，该方法会在key前面加上系统配置里面的getCookiePrefix()前缀<br>
 	 * 如果不想加前缀，可以使用方法：Sr::setCookieRaw()<br>
@@ -623,7 +582,6 @@ class Sr {
 		$key = Sr::config()->getCookiePrefix() . $key;
 		return self::setCookieRaw($key, $value, $life, $path, $domian, $http_only);
 	}
-
 	static function setCookieRaw($key, $value, $life = null, $path = '/', $domian = null, $httpOnly = false) {
 		if (!Sr::isCli()) {
 			header('P3P: CP="CURa ADMa DEVa PSAo PSDo OUR BUS UNI PUR INT DEM STA PRE COM NAV OTC NOI DSP COR"');
@@ -645,7 +603,6 @@ class Sr {
 		setcookie($key, $value, ($life ? $life + time() : null), $path, $autoDomain, (self::server('SERVER_PORT') == 443 ? 1 : 0), $httpOnly);
 		$_COOKIE[$key] = $value;
 	}
-
 	static function xssClean($var) {
 		if (is_array($var)) {
 			foreach ($var as $key => $val) {
@@ -660,27 +617,22 @@ class Sr {
 		}
 		return $var;
 	}
-
 	private static function xssClean0($data) {
 		// Fix &entity\n;
 		$data = str_replace(array('&amp;', '&lt;', '&gt;'), array('&amp;amp;', '&amp;lt;', '&amp;gt;'), $data);
 		$data = preg_replace('/(&#*\w+)[\x00-\x20]+;/u', '$1;', $data);
 		$data = preg_replace('/(&#x*[0-9A-F]+);*/iu', '$1;', $data);
 		$data = html_entity_decode($data, ENT_COMPAT, 'UTF-8');
-
 		// Remove any attribute starting with "on" or xmlns
 		$data = preg_replace('#(<[^>]+?[\x00-\x20"\'])(?:on|xmlns)[^>]*+>#iu', '$1>', $data);
-
 		// Remove javascript: and vbscript: protocols
 		$data = preg_replace('#([a-z]*)[\x00-\x20]*=[\x00-\x20]*([`\'"]*)[\x00-\x20]*j[\x00-\x20]*a[\x00-\x20]*v[\x00-\x20]*a[\x00-\x20]*s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:#iu', '$1=$2nojavascript...', $data);
 		$data = preg_replace('#([a-z]*)[\x00-\x20]*=([\'"]*)[\x00-\x20]*v[\x00-\x20]*b[\x00-\x20]*s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:#iu', '$1=$2novbscript...', $data);
 		$data = preg_replace('#([a-z]*)[\x00-\x20]*=([\'"]*)[\x00-\x20]*-moz-binding[\x00-\x20]*:#u', '$1=$2nomozbinding...', $data);
-
 		// Only works in IE: <span style="width: expression(alert('Ping!'));"></span>
 		$data = preg_replace('#(<[^>]+?)style[\x00-\x20]*=[\x00-\x20]*[`\'"]*.*?expression[\x00-\x20]*\([^>]*+>#i', '$1>', $data);
 		$data = preg_replace('#(<[^>]+?)style[\x00-\x20]*=[\x00-\x20]*[`\'"]*.*?behaviour[\x00-\x20]*\([^>]*+>#i', '$1>', $data);
 		$data = preg_replace('#(<[^>]+?)style[\x00-\x20]*=[\x00-\x20]*[`\'"]*.*?s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:*[^>]*+>#iu', '$1>', $data);
-
 		// Remove namespaced elements (we do not need them)
 		$data = preg_replace('#</*\w+:\w[^>]*+>#i', '', $data);
 		do {
@@ -688,11 +640,9 @@ class Sr {
 			$old_data = $data;
 			$data = preg_replace('#</*(?:applet|b(?:ase|gsound|link)|embed|iframe|frame(?:set)?|i(?:frame|layer)|l(?:ayer|ink)|meta|object|s(?:cript|tyle)|title|xml)[^>]*+>#i', '', $data);
 		} while ($old_data !== $data);
-
 		// we are done...
 		return $data;
 	}
-
 	/**
 	 * 服务器的hostname
 	 * @return type
@@ -700,7 +650,6 @@ class Sr {
 	static function hostname() {
 		return function_exists('gethostname') ? gethostname() : (function_exists('php_uname') ? php_uname('n') : 'unknown');
 	}
-
 	/**
 	 * 服务器的ip
 	 * @return type
@@ -708,7 +657,6 @@ class Sr {
 	static function serverIp() {
 		return self::isCli() ? gethostbyname(self::hostname()) : Sr::server('SERVER_ADDR');
 	}
-
 	static function clientIp() {
 		if ($ip = self::checkClientIp(Sr::arrayGet($_SERVER, 'HTTP_X_FORWARDED_FOR'))) {
 			return $ip;
@@ -726,7 +674,6 @@ class Sr {
 			return "Unknown";
 		}
 	}
-
 	private static function checkClientIp($ip) {
 		if (empty($ip)) {
 			return false;
@@ -739,15 +686,12 @@ class Sr {
 		}
 		return FALSE;
 	}
-
 	static function strBeginsWith($str, $sub) {
 		return ( substr($str, 0, strlen($sub)) == $sub );
 	}
-
 	static function strEndsWith($str, $sub) {
 		return ( substr($str, strlen($str) - strlen($sub)) == $sub );
 	}
-
 	/**
 	 * 获取IP段信息<br>
 	 * $ipAddr格式：192.168.1.10/24、192.168.1.10/32<br>
@@ -765,22 +709,18 @@ class Sr {
 	static function ipInfo($ipAddr, $key = null) {
 		$ipAddr = str_replace(" ", "", $ipAddr);    //去除字符串中的空格
 		$arr = explode('/', $ipAddr); //对IP段进行解剖
-
 		$ipAddr = $arr[0];    //得到IP地址
 		$ipAddrArr = explode('.', $ipAddr);
 		foreach ($ipAddrArr as &$v) {
 			$v = intval($v); //去掉192.023.20.01其中的023的0
 		}
 		$ipAddr = implode('.', $ipAddrArr); //修正后的ip地址
-
 		$netbits = intval((Sr::arrayKeyExists(1, $arr) ? $arr[1] : 0));   //得到掩码位
-
 		$subnetMask = long2ip(ip2long("255.255.255.255") << (32 - $netbits));
 		$ip = ip2long($ipAddr);
 		$nm = ip2long($subnetMask);
 		$nw = ($ip & $nm);
 		$bc = $nw | (~$nm);
-
 		$ips = array();
 		$ips['netmask'] = long2ip($nm);     //网络掩码
 		$ips['count'] = ($bc - $nw - 1);      //可用IP数目
@@ -799,22 +739,23 @@ class Sr {
 		$nw = sprintf('%u', $nw);
 		$ips['netaddress'] = long2ip($nw);       //网络地址
 		$ips['broadcast'] = long2ip($bc);       //广播地址
-
 		return is_null($key) ? $ips : $ips[$key];
 	}
-
 	/**
+	 *
 	 * 获取数据库操作对象
-	 * @staticvar array $instances
-	 * @param type $group  数据库配置里面的组名称，默认是default组。也可以是一个数据库组配置的数组
+	 * @staticvar array $instances   数据库单例容器
+	 * @param type $group             配置组名称
+	 * @param type $isNewInstance     是否刷新单例
 	 * @return \Soter_Database_ActiveRecord
+	 * @throws Soter_Exception_Database
 	 */
-	static function &db($group = '') {
+	static function &db($group = '', $isNewInstance = false) {
 		static $instances = array();
 		if (is_array($group)) {
 			ksort($group);
 			$key = md5(var_export($group, true));
-			if (!Sr::arrayKeyExists($key, $instances)) {
+			if (!Sr::arrayKeyExists($key, $instances) || $isNewInstance) {
 				$instances[$key] = new Soter_Database_ActiveRecord($group);
 			}
 			return $instances[$key];
@@ -823,7 +764,7 @@ class Sr {
 				$config = self::config()->getDatabseConfig();
 				$group = $config['default_group'];
 			}
-			if (!Sr::arrayKeyExists($group, $instances)) {
+			if (!Sr::arrayKeyExists($group, $instances) || $isNewInstance) {
 				$config = self::config()->getDatabseConfig($group);
 				if (empty($config)) {
 					throw new Soter_Exception_Database('unknown database config group [ ' . $group . ' ]');
@@ -833,11 +774,9 @@ class Sr {
 			return $instances[$group];
 		}
 	}
-
 	static function createSqlite3Database($path) {
 		return new PDO('sqlite:' . $path);
 	}
-
 	/**
 	 * 获取当前UNIX毫秒时间戳
 	 * @return float
@@ -848,7 +787,6 @@ class Sr {
 		$currentTime = (float) sprintf('%.0f', (floatval($s1) + floatval($s2)) * 1000);
 		return $currentTime;
 	}
-
 	/**
 	 * 屏蔽路径中系统的绝对路径部分，转换为安全的用于显示
 	 * @param type $path
@@ -864,7 +802,6 @@ class Sr {
 		$relPath = str_replace($siteRoot, '', rtrim(self::config()->getApplicationDir(), '/'));
 		return '~APPPATH~' . str_replace($relPath, '', $_path);
 	}
-
 	/**
 	 * 获取缓存操作对象
 	 * @param type $cacheType
@@ -873,7 +810,6 @@ class Sr {
 	static function cache($cacheType = null) {
 		return self::config()->getCacheHandle($cacheType);
 	}
-
 	/**
 	 * 删除文件夹和子文件夹
 	 * @param string $dirPath   文件夹路径
@@ -902,7 +838,6 @@ class Sr {
 		}
 		return true;
 	}
-
 	static function view() {
 		static $view;
 		if (!$view) {
@@ -910,13 +845,12 @@ class Sr {
 		}
 		return $view;
 	}
-
 	/**
 	 * 获取入口文件所在目录url路径。
 	 * 只能在web访问时使用，在命令行下面会抛出异常。
 	 * @param type $subpath  子路径或者文件路径，如果非空就会被附加在入口文件所在目录的后面
-	 * @return type           
-	 * @throws Exception     
+	 * @return type
+	 * @throws Exception
 	 */
 	static function urlPath($subpath = null, $addSlash = true) {
 		if (self::isCli()) {
@@ -933,7 +867,6 @@ class Sr {
 			return preg_replace('|^' . $root . '|', '', $path);
 		}
 	}
-
 	/**
 	 * 生成控制器方法的url
 	 * @param type $action   控制器方法
@@ -954,11 +887,10 @@ class Sr {
 		}
 		return $url;
 	}
-
 	/**
 	 * $source_data和$map的key一致，$map的value是返回数据的key
 	 * 根据$map的key读取$source_data中的数据，结果是以map的value为key的数数组
-	 * 
+	 *
 	 * @param Array $map 字段映射数组,格式：array('表单name名称'=>'表字段名称',...)
 	 */
 	static function readData(Array $map, $sourceData = null) {
@@ -971,7 +903,6 @@ class Sr {
 		}
 		return $data;
 	}
-
 	static function checkData($data, $rules, &$returnData, &$errorMessage, &$errorKey = null, &$db = null) {
 		static $checkRules;
 		if (empty($checkRules)) {
@@ -995,7 +926,6 @@ class Sr {
 				    if (is_array($value)) {
 					    $i = 0;
 					    foreach ($value as $k => $v) {
-
 						    $returnValue[$k] = empty($v) ? (Sr::arrayKeyExists($i, $args) ? $args[$i] : $args[0]) : $v;
 						    $i++;
 					    }
@@ -1546,7 +1476,6 @@ class Sr {
 			}
 			return true;
 		}
-
 		static function sessionStart() {
 			if (!self::isCli()) {
 				$started = false;
@@ -1560,7 +1489,6 @@ class Sr {
 				}
 			}
 		}
-
 		/**
 		 * 分页方法
 		 * @param type $total 一共多少记录
@@ -1630,7 +1558,6 @@ class Sr {
 			}
 			return $pages > 1 ? implode("", $output) : '';
 		}
-
 		static function json() {
 			$args = func_get_args();
 			$handle = Sr::config()->getOutputJsonRender();
@@ -1640,7 +1567,6 @@ class Sr {
 				return '';
 			}
 		}
-
 		static function redirect($url, $msg = null, $time = 3, $view = null) {
 			if (empty($msg) && empty($view)) {
 				header('Location: ' . $url);
@@ -1656,7 +1582,6 @@ class Sr {
 			}
 			exit();
 		}
-
 		static function message($msg, $url = null, $time = 3, $view = null) {
 			$time = intval($time) ? intval($time) : 3;
 			if (!empty($url)) {
@@ -1670,7 +1595,6 @@ class Sr {
 			}
 			exit();
 		}
-
 		public static function __callStatic($name, $arguments) {
 			$methods = self::config()->getSrMethods();
 			if (empty($methods[$name])) {
@@ -1689,7 +1613,6 @@ class Sr {
 				throw new soter_exception_500($name . ' unknown type of method [ ' . $name . ' ]');
 			}
 		}
-
 		static function arrayKeyExists($key, $array) {
 			if (empty($array) || !is_array($array)) {
 				return false;
@@ -1707,7 +1630,6 @@ class Sr {
 			}
 			return true;
 		}
-
 		private static function getEncryptKey($key, $attachKey) {
 			$_key = $key ? $key : self::config()->getEncryptKey();
 			if (!$key && !$_key) {
@@ -1715,7 +1637,6 @@ class Sr {
 			}
 			return substr(md5($_key . $attachKey), 0, 8);
 		}
-
 		static function encrypt($str, $key = '', $attachKey = '') {
 			if (!$str) {
 				return '';
@@ -1727,7 +1648,6 @@ class Sr {
 			$str .= str_repeat(chr($pad), $pad);
 			return bin2hex(mcrypt_encrypt(MCRYPT_DES, $key, $str, MCRYPT_MODE_ECB));
 		}
-
 		static function decrypt($str, $key = '', $attachKey = '') {
 			if (!$str) {
 				return '';
@@ -1742,7 +1662,6 @@ class Sr {
 			$pad = ord($str[($len = strlen($str)) - 1]);
 			return substr($str, 0, strlen($str) - $pad);
 		}
-
 		static function classIsExists($class) {
 			if (class_exists($class, false)) {
 				return true;
@@ -1755,7 +1674,6 @@ class Sr {
 			}
 			return false;
 		}
-
 		/**
 		 * 判断是否是ajax请求，只对jquery的ajax请求有效
 		 * @return boolean
@@ -1763,9 +1681,34 @@ class Sr {
 		static function isAjax() {
 			return isset($_SERVER['HTTP_X_REQUESTED_WITH']) && (strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest');
 		}
-
+		/**
+		 * 获取系统临时目录路径
+		 * @return type
+		 */
+		public function getTempPath() {
+			$path = '';
+			if (!function_exists('sys_get_temp_dir')) {
+				if (!empty($_ENV['TMP'])) {
+					$path = realpath($_ENV['TMP']);
+				} elseif (!empty($_ENV['TMPDIR'])) {
+					$path = realpath($_ENV['TMPDIR']);
+				} elseif (!empty($_ENV['TEMP'])) {
+					$path = realpath($_ENV['TEMP']);
+				} else {
+					$tempfile = tempnam(uniqid(rand(), TRUE), '');
+					if (file_exists($tempfile)) {
+						unlink($tempfile);
+						$path = realpath(dirname($tempfile));
+					}
+				}
+			} else {
+				$path = sys_get_temp_dir();
+			}
+			return $path ? $path . '/' : '';
+		}
 	}
 	
+
 
 /**
  * SoterPDO is simple and smart wrapper for PDO
@@ -4135,7 +4078,7 @@ class Soter_Config {
 	}
 
 	public function setStorageDirPath($storageDirPath) {
-		$this->storageDirPath = $storageDirPath;
+		$this->storageDirPath = Sr::realPath($storageDirPath, true);
 		return $this;
 	}
 

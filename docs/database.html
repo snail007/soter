@@ -445,6 +445,28 @@
 						//...do something
 					</pre>上面我们直接传递了一个数据库组配置数组$dbConfig给Sr::db()，
 					<br>然后用返回的$db数据库操作对象操作$dbConfig连接的数据库。
+					<br><b class="text_strong">Sr::db()第二个参数说明</b>
+					<br>Sr::db($group = '', $isNewInstance = false)是db方法的完整参数，
+					<br>可以看到有两个参数：
+					<br>$group 数据库配置组名称，也就是上面提到的mysql，sqlite等
+					<br>$isNewInstance 是否使用新的数据库操作对象重新连接数据库
+					<br><b class="text_strong">$isNewInstance参数详细说明如下</b>
+					<br>默认情况下，每个数据库配置组，为了节省资源Soter只会生成对应的唯一一个单例数据库操作对象。
+					<br>通过第二个参数为true的时候，可以让Soter重新生成一个和配置组对应的单例对象。
+					<br>第二个参数的意义：	
+					<br>比如下面的操作：
+					<br>a.Sr::db()->insert('a',$data)->execute();
+					<br>b.//做了一个耗时的操作，时间比较长，导致上面a的数据库操作单例对象连接到数据库的链接超时。
+					<br>c.Sr::db()->update('b',$data)->execute()//这里就会报错：mysql server has gone away
+					<b><br>c之所以报错，因为a和c使用的都是一个对象，而且是执行a的时候连接一次数据库，以后不再连接。
+					<br>经过b耗时操作，导致a中建立的数据库连接超时，失去到数据库服务器的连接。然后下面的c执行的时候就会报错。
+					<br>为了避免这种情况，我们可以通过第二个参数，让Soter不在使用旧的单例，每次都使用新的数据库操作对象，
+					<br>这样c执行的时候就会使用新的对象去重新连接数据库就不会出现超时的问题。</b>
+					<br>上面的问题可以进行下面的修改，可以避免超时：
+					<br>a.Sr::db()->insert('a',$data)->execute();
+					<br>b.//做了一个耗时的操作，时间比较长，导致上面a的数据库操作单例对象连接到数据库的链接超时。
+					<br>c.Sr::db('',true)->update('b',$data)->execute()//这里不会报错：mysql has gone away，因为这里通过第二个参数true，
+					<br>使用了新的数据库操作对象，会重新去连接数据库。
 				</li>
 				<li><h2 class="title_h2">配置中自定义处理类的使用说明</h2>
 					上面介绍中说了，Soter支持：
