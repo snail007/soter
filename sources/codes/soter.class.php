@@ -1733,5 +1733,31 @@ class Sr {
 			return isset($_SERVER['HTTP_X_REQUESTED_WITH']) && (strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest');
 		}
 
+		/**
+		 * 获取系统临时目录路径
+		 * @return type
+		 */
+		public function getTempPath() {
+			$path = '';
+			if (!function_exists('sys_get_temp_dir')) {
+				if (!empty($_ENV['TMP'])) {
+					$path = realpath($_ENV['TMP']);
+				} elseif (!empty($_ENV['TMPDIR'])) {
+					$path = realpath($_ENV['TMPDIR']);
+				} elseif (!empty($_ENV['TEMP'])) {
+					$path = realpath($_ENV['TEMP']);
+				} else {
+					$tempfile = tempnam(uniqid(rand(), TRUE), '');
+					if (file_exists($tempfile)) {
+						unlink($tempfile);
+						$path = realpath(dirname($tempfile));
+					}
+				}
+			} else {
+				$path = sys_get_temp_dir();
+			}
+			return $path ? $path . '/' : '';
+		}
+
 	}
 	

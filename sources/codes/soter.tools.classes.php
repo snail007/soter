@@ -394,7 +394,7 @@ class Soter_Config {
 	}
 
 	public function setStorageDirPath($storageDirPath) {
-		$this->storageDirPath = $storageDirPath;
+		$this->storageDirPath = Sr::realPath($storageDirPath, true);
 		return $this;
 	}
 
