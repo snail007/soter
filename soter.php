@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.71
- * @createdtime   2015-09-01 12:03:45
+ * @since         v1.0.72
+ * @createdtime   2015-09-02 10:17:26
  */
  
 
@@ -3583,27 +3583,17 @@ abstract class Soter_Exception extends Exception {
 	}
 
 	private function getTraceString($isCli) {
-		$trace = $this->trace;
-		array_shift($trace);
-		$trace = array_reverse($trace);
+		$trace = array_reverse($this->trace);
 		$str = $isCli ? "[ Debug Backtrace ]\n" : '<div style="padding:10px;">[ Debug Backtrace ]<br/>';
-		foreach ($trace as $e) {
-			array_shift($trace);
-			if (Sr::arrayGet($e, 'function') == 'call_user_func_array') {
-				break;
-			}
-		}
 		if (empty($trace)) {
 			return '';
 		}
+		$i=1;
 		foreach ($trace as $e) {
-			if (!empty($e['class']) && stripos($e['class'], 'Soter_') === 0) {
-				break;
-			}
 			$file = Sr::safePath(Sr::arrayGet($e, 'file'));
 			$line = Sr::arrayGet($e, 'line');
 			$func = (!empty($e['class']) ? "{$e['class']}{$e['type']}{$e['function']}()" : "{$e['function']}()");
-			$str.="&rarr; {$func} " . ($line ? "[ line:{$line} {$file} ]" : '') . ($isCli ? "\n" : '<br/>');
+			$str.="&rarr; ".($i++).".{$func} " . ($line ? "[ line:{$line} {$file} ]" : '') . ($isCli ? "\n" : '<br/>');
 		}
 		$str.=$isCli ? "\n" : '</div>';
 		return $str;

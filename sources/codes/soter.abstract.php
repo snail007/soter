@@ -469,27 +469,17 @@ abstract class Soter_Exception extends Exception {
 	}
 
 	private function getTraceString($isCli) {
-		$trace = $this->trace;
-		array_shift($trace);
-		$trace = array_reverse($trace);
+		$trace = array_reverse($this->trace);
 		$str = $isCli ? "[ Debug Backtrace ]\n" : '<div style="padding:10px;">[ Debug Backtrace ]<br/>';
-		foreach ($trace as $e) {
-			array_shift($trace);
-			if (Sr::arrayGet($e, 'function') == 'call_user_func_array') {
-				break;
-			}
-		}
 		if (empty($trace)) {
 			return '';
 		}
+		$i=1;
 		foreach ($trace as $e) {
-			if (!empty($e['class']) && stripos($e['class'], 'Soter_') === 0) {
-				break;
-			}
 			$file = Sr::safePath(Sr::arrayGet($e, 'file'));
 			$line = Sr::arrayGet($e, 'line');
 			$func = (!empty($e['class']) ? "{$e['class']}{$e['type']}{$e['function']}()" : "{$e['function']}()");
-			$str.="&rarr; {$func} " . ($line ? "[ line:{$line} {$file} ]" : '') . ($isCli ? "\n" : '<br/>');
+			$str.="&rarr; ".($i++).".{$func} " . ($line ? "[ line:{$line} {$file} ]" : '') . ($isCli ? "\n" : '<br/>');
 		}
 		$str.=$isCli ? "\n" : '</div>';
 		return $str;

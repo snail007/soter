@@ -65,17 +65,8 @@ html;
 	}
 
 	public function do_index() {
-		$total=Sr::db()->cache(300, 'key5')
-			->select('count(*) as total')
-			->from('test1')
-			->execute()
-			->value('total');
-		$row=Sr::db()->cache(300, 'key6')
-			->select('*')
-			->from('test1')
-			->execute()
-			->rows();
-		Sr::dump($total,$row);
+		Sr::business('TestBusiness')->dbError();
+		echo 'xxx';
 	}
 
 	public function do_get() {
