@@ -328,7 +328,7 @@ abstract class Soter_Task_Single extends Soter_Task {
 			$pid = file_get_contents($lockFilePath);
 			//lockfile进程pid存在，直接返回
 			if ($this->pidIsExists($pid)) {
-				$this->_log('Single Task [ ' . $class . ' ] is running , now exiting...');
+				$this->_log('Single Task [ ' . $class . ' ] is running with pid '.$pid.' , now exiting...');
 				$this->_log('Single Task [ ' . $class . ' ] end , use time ' . (Sr::microtime() - $startTime) . ' ms');
 				$this->_log('', false);
 				return;
