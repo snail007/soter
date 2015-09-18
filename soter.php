@@ -26,7 +26,7 @@
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         v1.0.73
- * @createdtime   2015-09-18 15:13:44
+ * @createdtime   2015-09-18 15:50:19
  */
  
 
@@ -3405,7 +3405,7 @@ abstract class Soter_Task {
 	public function _log($msg, $time = true) {
 		if ($this->debug || $this->debugError) {
 			$nowTime = '' . Sr::microtime();
-			echo ($time ? date('[Y-m-d H:i:s.' . substr($nowTime, strlen($nowTime) - 3) . '] [ PID:' .  sprintf('%- 8d',  getmypid()) . ' ] ') : '') . $msg . "\n";
+			echo ($time ? date('[Y-m-d H:i:s.' . substr($nowTime, strlen($nowTime) - 3) . ']').' [ PID:' .  sprintf('%- 5d',  getmypid()) . ' ] ' : '') . $msg . "\n";
 		}
 	}
 
