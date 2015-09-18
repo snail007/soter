@@ -26,7 +26,7 @@
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         v1.0.73
- * @createdtime   2015-09-18 16:33:09
+ * @createdtime   2015-09-18 17:14:51
  */
  
 
@@ -3442,7 +3442,7 @@ abstract class Soter_Task_Single extends Soter_Task {
 			$pid = file_get_contents($lockFilePath);
 			//lockfile进程pid存在，直接返回
 			if ($this->pidIsExists($pid)) {
-				$this->_log('Single Task [ ' . $class . ' ] is running , now exiting...');
+				$this->_log('Single Task [ ' . $class . ' ] is running with pid '.$pid.' , now exiting...');
 				$this->_log('Single Task [ ' . $class . ' ] end , use time ' . (Sr::microtime() - $startTime) . ' ms');
 				$this->_log('', false);
 				return;
