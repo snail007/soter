@@ -291,7 +291,7 @@ abstract class Soter_Task {
 	public function _log($msg, $time = true) {
 		if ($this->debug || $this->debugError) {
 			$nowTime = '' . Sr::microtime();
-			echo ($time ? date('[Y-m-d H:i:s.' . substr($nowTime, strlen($nowTime) - 3) . ']').' [ PID:' .  sprintf('%- 5d',  getmypid()) . ' ] ' : '') . $msg . "\n";
+			echo ($time ? date('[Y-m-d H:i:s.' . substr($nowTime, strlen($nowTime) - 3) . ']').' [PID:' .  sprintf('%- 5d',  getmypid()) . '] ' : '') . $msg . "\n";
 		}
 	}
 
