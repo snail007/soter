@@ -700,7 +700,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 	public function groupBy($key) {
 		$key = explode(',', $key);
 		foreach ($key as $k) {
-			$this->arGroupby[] = $k;
+			$this->arGroupby[] = trim($k);
 		}
 		return $this;
 	}
