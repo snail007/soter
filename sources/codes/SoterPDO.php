@@ -832,24 +832,35 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		if (count($values) && Sr::arrayKeyExists("0.$index", $values)) {
 			$ids = array();
 			$final = array();
+			$_values = array();
 			foreach ($values as $key => $val) {
 				$ids[] = $val[$index];
 				foreach (array_keys($val) as $field) {
 					if ($field != $index) {
-
 						if (is_array($val[$field])) {
 							$_column = explode(' ', key($val[$field]));
 							$column = $this->_protectIdentifier($_column[0]);
 							$op = isset($_column[1]) ? $_column[1] : '';
 							$final[$field][] = 'WHEN ' . $this->_protectIdentifier($index) . ' = ' . $val[$index] . ' THEN ' . $column . ' ' . $op . ' ' . "?";
-							$this->_values[] = current($val[$field]);
+							$_values[$field][] = current($val[$field]);
 						} else {
 							$final[$field][] = 'WHEN ' . $this->_protectIdentifier($index) . ' = ' . $val[$index] . ' THEN ' . "?";
-							$this->_values[] = $val[$field];
+							$_values[$field][] = $val[$field];
 						}
 					}
 				}
 			}
+			foreach ($_values as $field => $value) {
+				if ($field == $index) {
+					continue;
+				}
+				if (!empty($_values[$field]) && is_array($_values[$field])) {
+					foreach ($value as   $v) {
+						$this->_values[] = $v;
+					}
+				}
+			}
+			$_values = null;
 			$sql = "";
 			$cases = '';
 			foreach ($final as $k => $v) {

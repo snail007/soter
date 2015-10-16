@@ -137,7 +137,7 @@ class testDbMysql extends UnitTestCase {
 	public function testUpdateSet() {
 		$this->init();
 		$this->db->insert('a', array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000)))->execute();
-		$this->assertEqual($this->db->where(array('id' => $this->db->lastId()))->set('gid','gid + 1',false)->update('a')->execute(), 1);
+		$this->assertEqual($this->db->where(array('id' => $this->db->lastId()))->set('gid', 'gid + 1', false)->update('a')->execute(), 1);
 		$this->clean();
 	}
 
@@ -150,11 +150,21 @@ class testDbMysql extends UnitTestCase {
 		$this->assertEqual($this->db->execute(), 3);
 		$firstId = $this->db->lastId();
 		$this->assertEqual($firstId, 1);
-		$updata[] = array('id' => $firstId, 'name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000));
-		$updata[] = array('id' => ++$firstId, 'name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000));
-		$updata[] = array('id' => ++$firstId, 'name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000));
+		$updata[] = array('id' => $firstId, 'name' => 'name1', 'gid' => 11);
+		$updata[] = array('id' => ++$firstId, 'name' => 'name2', 'gid' => 22);
+		$updata[] = array('id' => ++$firstId, 'name' => 'name3', 'gid' => 33);
 		$this->db->updateBatch('a', $updata, 'id');
 		$this->assertEqual($this->db->execute(), 3);
+		$rows = $this->db->from('a')->orderBy('id', 'asc')->execute()->rows();
+		$this->assertEqual($rows[0]['id'], 1);
+		$this->assertEqual($rows[1]['id'], 2);
+		$this->assertEqual($rows[2]['id'], 3);
+		$this->assertEqual($rows[0]['name'], 'name1');
+		$this->assertEqual($rows[1]['name'], 'name2');
+		$this->assertEqual($rows[2]['name'], 'name3');
+		$this->assertEqual($rows[0]['gid'], 11);
+		$this->assertEqual($rows[1]['gid'], 22);
+		$this->assertEqual($rows[2]['gid'], 33);
 		$this->clean();
 	}
 

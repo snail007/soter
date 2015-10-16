@@ -114,4 +114,12 @@ class Controller_Test extends Soter_Controller {
 		return $total;
 	}
 
+	public function do_test() {
+		echo Sr::db()->updateBatch('test', array(
+		    array('id' => '1', 'a' => '111', 'b' => '222')
+		    , array('id' => '2', 'a' => '333', 'b' => '444')
+		    ), 'id');
+		Sr::dump(Sr::db()->execute());
+	}
+
 }
