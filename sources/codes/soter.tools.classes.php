@@ -382,7 +382,7 @@ class Soter_Config {
 	;
 
 	public function setExceptionControl($isExceptionControl) {
-		if ($isExceptionControl) {
+		if ($isExceptionControl && !Sr::isPluginMode()) {
 			//注册错误处理
 			Soter_Logger_Writer_Dispatcher::initialize();
 		}

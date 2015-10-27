@@ -205,6 +205,15 @@
                                                 //2.设置多个cookie
                                                 $http->setCookie(array('username' => '1122@qq.com', 'password' => '123456'));
                                         </pre>
+					<b>15.设置每次请求之后需要sleep的时间</b>
+                                        <br>通过<code>sleep($microSeconds)</code>方法，来设置每次请求之后需要sleep的时间，单位是毫秒，比如1000是一秒，
+					<br>这个往往是抓数据的网站对访问频率进行了限制的时候使用的。
+					<br>提示：设置参数是0的时候，则每次请求之后不会sleep。
+                                        <br>示例如下：
+                                        <pre class="brush:php">
+                                                $http = Sr::extension('Http');
+                                                $url=$http->sleep(1000);
+                                        </pre>
                                 </li>
 				<li><h2 class="title_h2">异常记录数据库类</h2>
 					异常记录数据库类可以在发生系统错误的时候，将详细的错误信息记录到数据库，方便我们安全地调试。

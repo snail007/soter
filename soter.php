@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.74
- * @createdtime   2015-10-16 11:59:57
+ * @since         v1.0.75
+ * @createdtime   2015-10-27 11:26:31
  */
  
 
@@ -2410,7 +2410,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 	public function groupBy($key) {
 		$key = explode(',', $key);
 		foreach ($key as $k) {
-			$this->arGroupby[] = $k;
+			$this->arGroupby[] = trim($k);
 		}
 		return $this;
 	}
@@ -4067,7 +4067,7 @@ class Soter_Config {
 	;
 
 	public function setExceptionControl($isExceptionControl) {
-		if ($isExceptionControl) {
+		if ($isExceptionControl && !Sr::isPluginMode()) {
 			//注册错误处理
 			Soter_Logger_Writer_Dispatcher::initialize();
 		}
