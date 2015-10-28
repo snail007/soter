@@ -26,7 +26,7 @@
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         v1.0.75
- * @createdtime   2015-10-28 11:39:43
+ * @createdtime   2015-10-28 12:03:08
  */
  
 
@@ -2565,7 +2565,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 					continue;
 				}
 				if (!empty($_values[$field]) && is_array($_values[$field])) {
-					foreach ($value as   $v) {
+					foreach ($value as $v) {
 						$this->_values[] = $v;
 					}
 				}
@@ -2892,7 +2892,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 	}
 
 	private function _protectIdentifier($str) {
-		if (stripos($str, '(')) {
+		if (stripos($str, '(') || trim($str) == '*') {
 			return $str;
 		}
 		$_str = explode(' ', $str);
