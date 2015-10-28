@@ -607,14 +607,15 @@
 						//	   FROM  `a` AS `dd`
 					</pre>
 					<h3 class="title_h3">3.join</h3>
+					第一个参数是数组的时候：array('原始表名称'=>'as别名')。
 					<pre class="brush:php">
-						echo Sr::db()->select('c.id as cat_id , b.id as group_id, dd.id as user_id')
+						echo Sr::db()->select('x.id as cat_id , b.id as group_id, dd.id as user_id')
 								->from('a', 'dd')
 								->join('b', 'dd.gid=b.id', 'left')
-								->join('c', 'b.cid=c.id', 'left')
+								->join(array('c'=>'x'), 'b.cid=x.id', 'left')
 								->where(array('dd.id <=' => 2));
-						//将输出： SELECT `c`.`id` AS `cat_id`,`b`.`id` AS `group_id`,`dd`.`id` AS `user_id`
-						//	   FROM  `a` AS `dd`   LEFT JOIN `b` ON  `dd`.`gid`  =  `b`.`id`   LEFT JOIN `c` ON  `b`.`cid`  =  `c`.`id`  
+						//将输出： SELECT `x`.`id` AS `cat_id`,`b`.`id` AS `group_id`,`dd`.`id` AS `user_id`
+						//	   FROM  `a` AS `dd`   LEFT JOIN `b` ON  `dd`.`gid`  =  `b`.`id`   LEFT JOIN `c` as `x` ON  `b`.`cid`  =  `x`.`id`  
 						//	   WHERE `dd`.`id` <= ?
 					</pre>
 					<h3 class="title_h3">4.where</h3>
