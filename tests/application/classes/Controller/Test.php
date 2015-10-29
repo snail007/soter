@@ -115,11 +115,13 @@ class Controller_Test extends Soter_Controller {
 	}
 
 	public function do_test() {
-		echo Sr::db()->updateBatch('test', array(
-		    array('id' => '1', 'a' => '111', 'b' => '222')
-		    , array('id' => '2', 'a' => '333', 'b' => '444')
-		    ), 'id');
-		Sr::dump(Sr::db()->execute());
+		echo Sr::db()->select('rrr.*,r.*,rr,*')
+                                ->from('admin_resource', 'r')
+                                ->join(array('admin_role_resource_relation'=>'rrr'), 'rrr.admin_resource_id=r.id')
+                                ->join(array('admin_role_relation'=>'rr'), 'rr.admin_role_id=rrr.admin_role_id')
+                                ->where(array('rr.admin_id'=>0))
+                                ->orderBy('r.sort','asc');
+
 	}
 
 }

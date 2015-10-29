@@ -987,7 +987,6 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 	}
 
 	private function _getSelectSql() {
-		$select = $this->_compileSelect();
 		$from = $this->_getFrom();
 		$where = $this->_getWhere();
 		$having = '';
@@ -1007,6 +1006,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 			$orderBy = "\n" . ' ORDER BY ' . $orderBy;
 		}
 		$limit = $this->_getLimit();
+		$select = $this->_compileSelect();
 		$sql = "\n" . ' SELECT ' . $select
 			. "\n" . ' FROM ' . $from
 			. $where

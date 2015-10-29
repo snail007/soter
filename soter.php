@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.75
- * @createdtime   2015-10-28 12:03:08
+ * @since         v1.0.76
+ * @createdtime   2015-10-29 10:46:58
  */
  
 
@@ -2697,7 +2697,6 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 	}
 
 	private function _getSelectSql() {
-		$select = $this->_compileSelect();
 		$from = $this->_getFrom();
 		$where = $this->_getWhere();
 		$having = '';
@@ -2717,6 +2716,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 			$orderBy = "\n" . ' ORDER BY ' . $orderBy;
 		}
 		$limit = $this->_getLimit();
+		$select = $this->_compileSelect();
 		$sql = "\n" . ' SELECT ' . $select
 			. "\n" . ' FROM ' . $from
 			. $where
