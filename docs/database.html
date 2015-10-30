@@ -854,6 +854,32 @@
 						<br>也就是说调用getSql()方法之后不应该再进行sql查询改变。
 					</b>
 				</li>
+				<li><h3 class="title_h2">直接执行SQL语句</h3>
+					通过Sr::db()->execute($sql,$values=array())方法我们可以直接执行一个sql语句，
+					<br>第一个参数是sql语句，第二个参数是第一个参数中的问号?占位符对应的值。
+					<br>写入型的sql返回bool或者影响的行数（insert,delete,replace,update），查询型的返回结果集。
+					<br>示例：
+					<pre class="brush:php">
+						Sr::db()->execute('select * from test');
+						Sr::db()->execute('select * from test where id&gt;? and uid&lt;?',array(21,33));
+						//执行的是：select * from test where id&gt;21 and uid&lt;33
+					</pre>
+					<br>提示:
+					<br>直接执行sql语句的时候，如果我们在数据库配置里面设置了表前缀，为了应对前缀的不断变化，
+					<br>我们可以看到数据库配置里面有一个配置项“tablePrefixSqlIdentifier”，它的默认值是“_tablePrefix_”。
+					<br>1.那么当我们设置的表前缀是“soter_”的时候，执行下面的sql：
+					<pre class="brush:php">
+						Sr::db()->execute('select * from _tablePrefix_test');
+						//实际执行的是：select * from soter_test
+					</pre>
+					2.那么当我们设置的表前缀是“空”的时候，执行下面的sql：
+					<pre class="brush:php">
+						Sr::db()->execute('select * from _tablePrefix_test');
+						//实际执行的是：select * from test
+					</pre>
+					通过1和2我们可以发现，配置项“tablePrefixSqlIdentifier”的值就是表前缀的占位符，
+					<br>这样我们每次修改表前缀都不用修改sql语句，增加代码了灵活性。
+				</li>
 				<li><h3 class="title_h2">事务</h3>
 					通过begin、commit、rollback三个方法的配合
 					我们可以方便的处理事务，下面是一个完整的事务例子。

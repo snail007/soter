@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.76
- * @createdtime   2015-10-29 10:46:58
+ * @since         v1.0.77
+ * @createdtime   2015-10-30 10:59:51
  */
  
 
@@ -2134,7 +2134,7 @@ abstract class Soter_Database {
 	private function _checkPrefixIdentifier($str) {
 		$prefix = $this->getTablePrefix();
 		$identifier = $this->getTablePrefixSqlIdentifier();
-		return $identifier && $prefix ? str_replace($identifier, $prefix, $str) : $str;
+		return $identifier ? str_replace($identifier, $prefix, $str) : $str;
 	}
 
 	/**

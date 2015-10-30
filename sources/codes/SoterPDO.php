@@ -424,7 +424,7 @@ abstract class Soter_Database {
 	private function _checkPrefixIdentifier($str) {
 		$prefix = $this->getTablePrefix();
 		$identifier = $this->getTablePrefixSqlIdentifier();
-		return $identifier && $prefix ? str_replace($identifier, $prefix, $str) : $str;
+		return $identifier ? str_replace($identifier, $prefix, $str) : $str;
 	}
 
 	/**
