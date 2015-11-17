@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.78
- * @createdtime   2015-11-17 11:05:59
+ * @since         v1.0.79
+ * @createdtime   2015-11-17 17:50:54
  */
  
 
@@ -4865,7 +4865,7 @@ class Soter_Logger_Writer_Dispatcher {
 		}
 	}
 
-	final public function handleException(Exception $exception) {
+	final public function handleException($exception) {
 
 		if (is_subclass_of($exception, 'Soter_Exception')) {
 			$this->dispatch($exception);
@@ -5133,12 +5133,12 @@ class Soter_Cache_Memcached implements Soter_Cache {
 
 	public function clean() {
 		$this->_init();
-		$this->handle->flush();
+		return $this->handle->flush();
 	}
 
 	public function delete($key) {
 		$this->_init();
-		$this->handle->delete($key);
+		return $this->handle->delete($key);
 	}
 
 	public function get($key) {
