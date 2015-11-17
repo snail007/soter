@@ -12,21 +12,23 @@ require_once('simpletest/autorun.php');
 class TestCache extends UnitTestCase {
 
 	public function testMemcache() {
-		$cache = new Soter_Cache_Memcache(array(
-		    //$name $port
-		    array("127.0.0.1", 11211),
-			//array("new.host.ip",11211),
-		));
-		$this->assertTrue($cache->set('test', 'testvalue', 1));
-		$this->assertEqual($cache->get('test'), 'testvalue');
-		$this->assertTrue($cache->delete('test'));
-		$this->assertFalse($cache->get('test'));
-		$this->assertTrue($cache->set('test', 'testvalue', 1));
-		$this->assertTrue($cache->clean());
-		$this->assertFalse($cache->get('test'));
-		$this->assertTrue($cache->set('test', 'testvalue', 1));
-		sleep(2);
-		$this->assertEqual($cache->get('test'), null);
+		if (class_exists('Memcache', FALSE)) {
+			$cache = new Soter_Cache_Memcache(array(
+			    //$name $port
+			    array("127.0.0.1", 11211),
+				//array("new.host.ip",11211),
+			));
+			$this->assertTrue($cache->set('test', 'testvalue', 1));
+			$this->assertEqual($cache->get('test'), 'testvalue');
+			$this->assertTrue($cache->delete('test'));
+			$this->assertFalse($cache->get('test'));
+			$this->assertTrue($cache->set('test', 'testvalue', 1));
+			$this->assertTrue($cache->clean());
+			$this->assertFalse($cache->get('test'));
+			$this->assertTrue($cache->set('test', 'testvalue', 1));
+			sleep(2);
+			$this->assertEqual($cache->get('test'), null);
+		}
 	}
 
 	public function testMemcached() {
@@ -49,6 +51,7 @@ class TestCache extends UnitTestCase {
 		}
 	}
 
+//
 	public function testApc() {
 		if (function_exists('apc_store')) {
 			$cache = new Soter_Cache_Apc();

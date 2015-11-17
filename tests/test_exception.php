@@ -41,7 +41,7 @@ class Test_model extends UnitTestCase {
 		$this->assertTrue(!empty($obj->time));
 		$this->assertTrue(!empty($obj->file));
 		$this->assertTrue(!empty($obj->line));
-		$this->assertTrue(!empty($obj->code));
+		$this->assertTrue(isset($obj->code));
 		$this->assertTrue(!empty($obj->message));
 		$flag = 'Call to undefined function none()';
 		$this->assertTrue(fixString($obj->message) === fixString($flag));
@@ -66,7 +66,7 @@ class Test_model extends UnitTestCase {
 		$browser = new SimpleBrowser();
 		$browser->get(testUrl('Demo/Welcome/exceptionCli.html'));
 		$flag1 = 'Soter_Exception_500 [ ERROR ]';
-		$this->assertTrue(strpos($browser->getContent(), $flag1) === 0);
+		$this->assertTrue(strpos(strtoupper($browser->getContent()), strtoupper($flag1)) === 0);
 		$flag2 = 'Call to undefined function none()';
 		$this->assertTrue(strpos(fixString($browser->getContent()), fixString($flag2)) !== FALSE);
 	}
@@ -101,7 +101,7 @@ class Test_model extends UnitTestCase {
 		$this->assertTrue(!empty($obj->time));
 		$this->assertTrue(!empty($obj->file));
 		$this->assertTrue(!empty($obj->line));
-		$this->assertTrue(!empty($obj->code));
+		$this->assertTrue(isset($obj->code));
 		$this->assertTrue(!empty($obj->message));
 		$flag = 'Call to undefined function none()';
 		$this->assertTrue(strpos(fixString($obj->message), fixString($flag)) !== FALSE);
@@ -126,7 +126,7 @@ class Test_model extends UnitTestCase {
 		$browser = new SimpleBrowser();
 		$browser->get(testUrl('Welcome/exceptionCli.do'));
 		$flag1 = 'Soter_Exception_500 [ ERROR ]';
-		$this->assertTrue(strpos($browser->getContent(), $flag1) === 0);
+		$this->assertTrue(strpos(strtoupper($browser->getContent()), strtoupper($flag1)) === 0);
 		$flag2 = 'Call to undefined function none()';
 		$this->assertTrue(strpos(fixString($browser->getContent()), fixString($flag2)) !== FALSE);
 	}

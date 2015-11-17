@@ -1180,7 +1180,7 @@ class Soter_Logger_Writer_Dispatcher {
 		}
 	}
 
-	final public function handleException(Exception $exception) {
+	final public function handleException($exception) {
 
 		if (is_subclass_of($exception, 'Soter_Exception')) {
 			$this->dispatch($exception);
@@ -1448,12 +1448,12 @@ class Soter_Cache_Memcached implements Soter_Cache {
 
 	public function clean() {
 		$this->_init();
-		$this->handle->flush();
+		return $this->handle->flush();
 	}
 
 	public function delete($key) {
 		$this->_init();
-		$this->handle->delete($key);
+		return $this->handle->delete($key);
 	}
 
 	public function get($key) {
