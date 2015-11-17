@@ -1593,8 +1593,8 @@ class Soter_Cache_Redis implements Soter_Cache {
 	public function clean() {
 		$this->_initMaters();
 		$status = true;
-		foreach ($this->handle['masters'] as &$handle) {
-			$status = $status & $handle->flushDB();
+		foreach ($this->handle['masters'] as $k=>$handle) {
+			$status = $status & $this->handle['masters'][$k]->flushDB();
 		}
 		return $status;
 	}
@@ -1602,8 +1602,8 @@ class Soter_Cache_Redis implements Soter_Cache {
 	public function delete($key) {
 		$this->_initMaters();
 		$status = true;
-		foreach ($this->handle['masters'] as &$handle) {
-			$status = $status & $handle->delete($key);
+		foreach ($this->handle['masters'] as $k=>$v) {
+			$status = $status & $this->handle['masters'][$k]->delete($key);
 		}
 		return $status;
 	}
@@ -1620,11 +1620,11 @@ class Soter_Cache_Redis implements Soter_Cache {
 	public function set($key, $value, $cacheTime = 0) {
 		$this->_initMaters();
 		$value = serialize($value);
-		foreach ($this->handle['masters'] as &$handle) {
+		foreach ($this->handle['masters'] as $k=>$v) {
 			if ($cacheTime) {
-				return $handle->setex($key, $cacheTime, $value);
+				return $this->handle['masters'][$k]->setex($key, $cacheTime, $value);
 			} else {
-				return $handle->set($key, $value);
+				return $this->handle['masters'][$k]->set($key, $value);
 			}
 		}
 	}

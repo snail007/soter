@@ -864,7 +864,7 @@
 						Sr::db()->execute('select * from test where id&gt;? and uid&lt;?',array(21,33));
 						//执行的是：select * from test where id&gt;21 and uid&lt;33
 					</pre>
-					<br>提示:
+					提示:
 					<br>直接执行sql语句的时候，如果我们在数据库配置里面设置了表前缀，为了应对前缀的不断变化，
 					<br>我们可以看到数据库配置里面有一个配置项“tablePrefixSqlIdentifier”，它的默认值是“_tablePrefix_”。
 					<br>1.那么当我们设置的表前缀是“soter_”的时候，执行下面的sql：

@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.77
- * @createdtime   2015-10-30 10:59:51
+ * @since         v1.0.78
+ * @createdtime   2015-11-17 11:05:59
  */
  
 
@@ -711,8 +711,8 @@ class Sr {
 		$arr = explode('/', $ipAddr); //对IP段进行解剖
 		$ipAddr = $arr[0];    //得到IP地址
 		$ipAddrArr = explode('.', $ipAddr);
-		foreach ($ipAddrArr as &$v) {
-			$v = intval($v); //去掉192.023.20.01其中的023的0
+		foreach ($ipAddrArr as $k=>$v) {
+			$ipAddrArr[$k] = intval($v); //去掉192.023.20.01其中的023的0
 		}
 		$ipAddr = implode('.', $ipAddrArr); //修正后的ip地址
 		$netbits = intval((Sr::arrayKeyExists(1, $arr) ? $arr[1] : 0));   //得到掩码位
@@ -5278,8 +5278,8 @@ class Soter_Cache_Redis implements Soter_Cache {
 	public function clean() {
 		$this->_initMaters();
 		$status = true;
-		foreach ($this->handle['masters'] as &$handle) {
-			$status = $status & $handle->flushDB();
+		foreach ($this->handle['masters'] as $k=>$handle) {
+			$status = $status & $this->handle['masters'][$k]->flushDB();
 		}
 		return $status;
 	}
@@ -5287,8 +5287,8 @@ class Soter_Cache_Redis implements Soter_Cache {
 	public function delete($key) {
 		$this->_initMaters();
 		$status = true;
-		foreach ($this->handle['masters'] as &$handle) {
-			$status = $status & $handle->delete($key);
+		foreach ($this->handle['masters'] as $k=>$v) {
+			$status = $status & $this->handle['masters'][$k]->delete($key);
 		}
 		return $status;
 	}
@@ -5305,11 +5305,11 @@ class Soter_Cache_Redis implements Soter_Cache {
 	public function set($key, $value, $cacheTime = 0) {
 		$this->_initMaters();
 		$value = serialize($value);
-		foreach ($this->handle['masters'] as &$handle) {
+		foreach ($this->handle['masters'] as $k=>$v) {
 			if ($cacheTime) {
-				return $handle->setex($key, $cacheTime, $value);
+				return $this->handle['masters'][$k]->setex($key, $cacheTime, $value);
 			} else {
-				return $handle->set($key, $value);
+				return $this->handle['masters'][$k]->set($key, $value);
 			}
 		}
 	}

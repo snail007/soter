@@ -737,8 +737,8 @@ class Sr {
 
 		$ipAddr = $arr[0];    //得到IP地址
 		$ipAddrArr = explode('.', $ipAddr);
-		foreach ($ipAddrArr as &$v) {
-			$v = intval($v); //去掉192.023.20.01其中的023的0
+		foreach ($ipAddrArr as $k=>$v) {
+			$ipAddrArr[$k] = intval($v); //去掉192.023.20.01其中的023的0
 		}
 		$ipAddr = implode('.', $ipAddrArr); //修正后的ip地址
 
