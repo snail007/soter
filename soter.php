@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.79
- * @createdtime   2015-11-17 17:50:54
+ * @since         v1.0.80
+ * @createdtime   2015-11-26 18:12:57
  */
  
 
@@ -607,7 +607,7 @@ class Sr {
 		if (is_array($var)) {
 			foreach ($var as $key => $val) {
 				if (is_array($val)) {
-					$var[$key] = self::xss_clean($val);
+					$var[$key] = self::xssClean($val);
 				} else {
 					$var[$key] = self::xssClean0($val);
 				}

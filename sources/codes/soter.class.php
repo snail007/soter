@@ -619,7 +619,7 @@ class Sr {
 		if (is_array($var)) {
 			foreach ($var as $key => $val) {
 				if (is_array($val)) {
-					$var[$key] = self::xss_clean($val);
+					$var[$key] = self::xssClean($val);
 				} else {
 					$var[$key] = self::xssClean0($val);
 				}
