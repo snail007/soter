@@ -96,5 +96,25 @@ class TestMisc extends UnitTestCase {
 		$this->assertReference(Sr::db(), Sr::db());
 		$this->assertReference(Sr::db('mysql'), Sr::db('mysql'));
 	}
+	function testBefore() {
+		$browser = new SimpleBrowser();
+		$browser->get(testUrl('Welcome/testBefore-1.do'));
+		$this->assertEqual($browser->getContent(), 'before1x1');
+	}
+	function testAfter() {
+		$browser = new SimpleBrowser();
+		$browser->get(testUrl('Welcome/testAfter-1.do'));
+		$this->assertEqual($browser->getContent(), 'after1test');
+	}
+	function testHmvcBefore() {
+		$browser = new SimpleBrowser();
+		$browser->get(testUrl('Demo/Welcome/testBefore-1.html'));
+		$this->assertEqual($browser->getContent(), 'hmvc-before1x1');
+	}
+	function testHmvcAfter() {
+		$browser = new SimpleBrowser();
+		$browser->get(testUrl('Demo/Welcome/testAfter-1.html'));
+		$this->assertEqual($browser->getContent(), 'hmvc-after1test');
+	}
 
 }

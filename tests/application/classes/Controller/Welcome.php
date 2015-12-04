@@ -2,6 +2,24 @@
 
 class Controller_Welcome extends Soter_Controller {
 
+	public function before($method,$args){
+		if($method=='testBefore'){
+			echo 'before'.$args[0];
+		}
+	}
+	public function after($method,$args,$contents){
+		if($method=='testAfter'){
+			echo 'after'.$args[0].$contents;
+		}else{
+			echo $contents;
+		}
+	}
+	public function do_testBefore($a){
+		echo 'x'.$a;
+	}
+	public function do_testAfter(){
+		echo  'test';
+	}
 	public function do_show() {
 		echo <<<html
 		<form action="check.do">

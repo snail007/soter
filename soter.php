@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.81
- * @createdtime   2015-12-04 14:08:08
+ * @since         v1.0.82
+ * @createdtime   2015-12-04 16:06:54
  */
  
 
@@ -183,25 +183,43 @@ class Soter {
 		if (!method_exists($controllerObject, $method)) {
 			throw new Soter_Exception_404('Method [ ' . $class . '->' . $method . '() ] not found');
 		}
+		//前置方法检查执行
+		if (method_exists($controllerObject, 'before')) {
+			$controllerObject->before(str_replace($config->getMethodPrefix(), '', $method), $route->getArgs());
+		}
 		//方法缓存检测
 		$cacheClassName = preg_replace('/^' . Sr::config()->getControllerDirName() . '_/', '', $class);
 		$cacheMethodName = preg_replace('/^' . Sr::config()->getMethodPrefix() . '/', '', $method);
-		$methoKey = $cacheClassName . '::' . $cacheMethodName;
+		$methodKey = $cacheClassName . '::' . $cacheMethodName;
 		$cacheMethodConfig = $config->getMethodCacheConfig();
-		if (!empty($cacheMethodConfig) && Sr::arrayKeyExists($methoKey, $cacheMethodConfig) && $cacheMethodConfig[$methoKey]['cache'] && ($cacheMethoKey = $cacheMethodConfig[$methoKey]['key']())) {
+		if (!empty($cacheMethodConfig) && Sr::arrayKeyExists($methodKey, $cacheMethodConfig) && $cacheMethodConfig[$methodKey]['cache'] && ($cacheMethoKey = $cacheMethodConfig[$methodKey]['key']())) {
 			if (!($contents = Sr::cache()->get($cacheMethoKey))) {
 				@ob_start();
 				$response = call_user_func_array(array($controllerObject, $method), $route->getArgs());
 				$contents = @ob_get_contents();
 				@ob_end_clean();
 				$contents.=is_array($response) ? Sr::view()->set($response)->load("$cacheClassName/$cacheMethodName") : $response;
-				Sr::cache()->set($cacheMethoKey, $contents, $cacheMethodConfig[$methoKey]['time']);
+				Sr::cache()->set($cacheMethoKey, $contents, $cacheMethodConfig[$methodKey]['time']);
 			}
 		} else {
-			$response = call_user_func_array(array($controllerObject, $method), $route->getArgs());
-			$contents = is_array($response) ? Sr::view()->set($response)->load("$cacheClassName/$cacheMethodName") : $response;
+			if (method_exists($controllerObject, 'after')) {
+				//如果有后置方法，这里应该捕获输出然后传递给后置方法处理
+				@ob_start();
+				$response = call_user_func_array(array($controllerObject, $method), $route->getArgs());
+				$contents = @ob_get_contents();
+				@ob_end_clean();
+				$contents.=is_array($response) ? Sr::view()->set($response)->load("$cacheClassName/$cacheMethodName") : $response;
+			} else {
+				$response = call_user_func_array(array($controllerObject, $method), $route->getArgs());
+				$contents = is_array($response) ? Sr::view()->set($response)->load("$cacheClassName/$cacheMethodName") : $response;
+			}
 		}
-		echo $contents;
+		//后置方法检查执行
+		if (method_exists($controllerObject, 'after')) {
+			echo $controllerObject->after(str_replace($config->getMethodPrefix(), '', $method), $route->getArgs(), $contents);
+		} else {
+			echo $contents;
+		}
 	}
 	/**
 	 * 命令行模式运行
