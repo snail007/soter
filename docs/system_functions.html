@@ -236,7 +236,7 @@
                                         <h2 class="title_h2">获取数组的值</h2>
                                         通过Sr::arrayGet($array, $key, $default = null)方法，获取数组的值。
                                         <br>$array 必填： 数组
-                                        <br>$key 必填： 键值 
+                                        <br>$key 必填： 键值 ，支持点方式直接获取数组内层数据。
                                         <br>$default 选填： 默认值 
                                         <br>示例如下
                                         <pre class="brush:php">
@@ -248,6 +248,16 @@
                                                 Sr::arrayGet(array('a'=>1, 'b'=>2), 'c', '3');
                                                 //上面将输出:3
                                                 //如果第三个参数没填就会输出"null"
+						
+						//3.比如有数组：
+							$array=array(
+									'a'=>'1',
+									'b'=>array(
+										'd'=>'2'
+									)
+								);
+						//那么如果要直接获取$array['b']['d'],
+						//$key可以写为：b.d，即：Sr::arrayGet($array, 'b.d')，值是2。
                                         </pre>
                                 </li>
 				<li>

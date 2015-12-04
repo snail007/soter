@@ -16,6 +16,9 @@
  * Redis托管
  */
 //return new Soter_Session_Redis(array('path' => 'tcp://127.0.0.1:6379'));
+//如果Redis有密码，比如：test，写法如下
+//return new Soter_Session_Redis(array('path' => 'tcp://127.0.0.1:6379?auth=test'));
+
 /**
  * Mongodb托管
  */

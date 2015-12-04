@@ -12,8 +12,31 @@
                         我们写WEB程序，可以同过$_GET,$_POST等超全局变量里面获取外界数据。
                         但是直接使用这些数组是不方便的有时候我们经常需要进行很多的判断，
                         为了方便Soter提供了获取各种外界数据的方法。
-                        请看下面对这些方法的详细介绍：
-                        <ol>
+			<br><b class="text_strong">提示：</b>
+			下面的方法的$key参数都支持点方式直接获取数组内层数据。
+			<pre class="brush:php">
+			Sr::get($key = null, $default = null, $xssClean = false)
+			Sr::getPost($key, $default = null, $xssClean = false)
+			Sr::post($key = null, $default = null, $xssClean = false) 
+			Sr::postGet($key, $default = null, $xssClean = false)
+			Sr::session($key = null, $default = null, $xssClean = false)
+			Sr::server($key = null, $default = null)
+			Sr::cookie($key = null, $default = null, $xssClean = false) 
+			Sr::cookieRaw($key = null, $default = null, $xssClean = false) 
+			</pre>			
+			比如$_SESSION数组是：
+			<pre class="brush:php">
+			$_SESSION=array(
+				'a'=>'1',
+				'b'=>array(
+					'd'=>'2'
+				)
+			);
+			</pre>
+			那么如果要直接获取$_SESSION['b']['d'],$key可以写为：b.d，即：Sr::session('b.d'),值是2。
+                       <br>
+			请看下面对这些方法的详细介绍：
+			<ol>
                                 <li>
                                         <h2 class="title_h2">获取get数据</h2>
                                         通过<b>Sr::get()</b>方法;我们可以方便的获取url传递过来的get数据。<br/>

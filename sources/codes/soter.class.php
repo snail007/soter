@@ -259,7 +259,12 @@ class Sr {
 	const ENV_DEVELOPMENT = 3; //开发环境
 
 	static function arrayGet($array, $key, $default = null) {
-		return Sr::arrayKeyExists($key, $array) ? $array[$key] : $default;
+		$_info = explode('.', $key);
+		$keyStrArray = '';
+		foreach ($_info as $k) {
+			$keyStrArray.= "['{$k}']";
+		}
+		return eval('return Sr::arrayKeyExists(\'' . implode('.', $_info) . '\',$array)?$array' . $keyStrArray . ':$default;');
 	}
 
 	static function dump() {
@@ -459,13 +464,7 @@ class Sr {
 			}
 		}
 		if ($cfg && count($_info) > 1) {
-			array_shift($_info);
-			$keyStrArray = '';
-			foreach ($_info as $k) {
-				$keyStrArray.= "['{$k}']";
-			}
-			$val = eval('return Sr::arrayKeyExists(\'' . implode('.', $_info) . '\',$cfg)?$cfg' . $keyStrArray . ':null;');
-			return $val;
+			return self::arrayGet($cfg, implode('.', array_slice($_info, 1)));
 		} else {
 			return $cfg;
 		}
@@ -737,7 +736,7 @@ class Sr {
 
 		$ipAddr = $arr[0];    //得到IP地址
 		$ipAddrArr = explode('.', $ipAddr);
-		foreach ($ipAddrArr as $k=>$v) {
+		foreach ($ipAddrArr as $k => $v) {
 			$ipAddrArr[$k] = intval($v); //去掉192.023.20.01其中的023的0
 		}
 		$ipAddr = implode('.', $ipAddrArr); //修正后的ip地址
@@ -902,7 +901,7 @@ class Sr {
 			chdir($old_path);
 			$path = str_replace(array("/", "\\"), '/', realpath('.') . ($subpath ? '/' . trim($subpath, '/\\') : ''));
 			$path = self::realPath($path) . ($addSlash ? '/' : '');
-			return preg_replace('|^' . $root . '|', '', $path);
+			return preg_replace('|^' . self::realPath($root) . '|', '', $path);
 		}
 	}
 

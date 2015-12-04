@@ -1,3 +1,33 @@
+============v1.0.81[2015-12-04]===========
+修复了：
+1、Sr::urlPath方法在Windows下面路径开始的/会丢失的问题。
+
+优化了：
+1.优化了Sr::arrayGet($array, $key, $default = null)方法。
+  $key支持点方式直接获取数组内层数据。
+  比如有数组：
+	$array=array(
+			'a'=>'1',
+			'b'=>array(
+				'd'=>'2'
+			)
+		);
+  那么如果要直接获取$array['b']['d'],$key可以写为：b.d，即：Sr::arrayGet($array, 'b.d')
+
+2.下面的方法的$key参数都支持上面1总提到的$key的写法。
+  Sr::get($key = null, $default = null, $xssClean = false)
+  Sr::getPost($key, $default = null, $xssClean = false)
+  Sr::post($key = null, $default = null, $xssClean = false) 
+  Sr::postGet($key, $default = null, $xssClean = false)
+  Sr::session($key = null, $default = null, $xssClean = false)
+  Sr::server($key = null, $default = null)
+  Sr::cookie($key = null, $default = null, $xssClean = false) 
+  Sr::cookieRaw($key = null, $default = null, $xssClean = false) 
+
+
+升级提示：
+无
+
 ============v1.0.80[2015-11-26]===========
 修复了：
 1、修复了xssClean方法里面的拼写错误，self::xss_clean修正为self::xssClean
