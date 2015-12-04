@@ -465,7 +465,6 @@ class Sr {
 		}
 		if ($cfg && count($_info) > 1) {
 			$val = self::arrayGet($cfg, implode('.', array_slice($_info, 1)));
-			;
 			return $val;
 		} else {
 			return $cfg;
