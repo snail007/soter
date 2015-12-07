@@ -13,7 +13,7 @@
  */
 class Controller_Test extends Soter_Controller {
 	public function do_m() {
-		  
+
 		
 	}
 	public function do_wx() {
