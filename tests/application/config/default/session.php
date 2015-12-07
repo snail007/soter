@@ -49,7 +49,7 @@ UNIQUE KEY `id` (`id`,`timestamp`),
 KEY `timestamp` (`timestamp`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
  */
-/* 
+/* */
 return new Soter_Session_Mysql(array(
     //如果使用数据库配置里面的组信息，这里可以设置group组名称，没有就留空
     //设置group组名称后，下面连接的配置不再起作用，group优先级大于下面的连接信息
@@ -67,4 +67,3 @@ return new Soter_Session_Mysql(array(
     'database' => 'test',
 	)
 );
-*/

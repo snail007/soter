@@ -566,7 +566,6 @@ class Soter_Config {
 	}
 
 	public function setSessionHandle($sessionHandle) {
-
 		if ($sessionHandle instanceof Soter_Session) {
 			$this->sessionHandle = $sessionHandle;
 		} else {
@@ -1993,20 +1992,23 @@ class Soter_Session_Mysql extends Soter_Session {
 		if (!is_object($this->dbConnection)) {
 			$this->connect();
 		}
+		
 		return TRUE;
 	}
 
 	public function close() {
-		return $this->dbConnection->close();
+		$this->dbConnection->close();
+		return true;
 	}
 
 	public function read($id) {
+		
 		$result = $this->dbConnection->from($this->dbTable)->where(array('id' => $id))->execute();
 		if ($result->total()) {
 			$record = $result->row();
-			$where['id'] = $record['id'];
+			$where['id'] = $id;
 			$data['timestamp'] = time() + intval($this->config['lifetime']);
-			$this->dbConnection->update($this->dbTable, $data, $where)->execute();
+			$this->dbConnection->update($this->dbTable, $data,$where)->execute();
 			return $record['data'];
 		} else {
 			return false;
@@ -2014,21 +2016,22 @@ class Soter_Session_Mysql extends Soter_Session {
 		return true;
 	}
 
-	public function write($id, $sessionData) {
+	public function write($id, $sessionData) { 
+		
 		$data['id'] = $id;
 		$data['data'] = $sessionData;
 		$data['timestamp'] = time() + intval($this->config['lifetime']);
 		$this->dbConnection->replace($this->dbTable, $data);
-		return $this->dbConnection->execute();
+		return $this->dbConnection->execute()>0;
 	}
 
 	public function destroy($id) {
 		unset($_SESSION);
-		return $this->dbConnection->delete($this->dbTable, array('id' => $id))->execute();
+		return $this->dbConnection->delete($this->dbTable, array('id' => $id))->execute()>0;
 	}
 
 	public function gc($max = 0) {
-		return $this->dbConnection->delete($this->dbTable, array('timestamp <' => time()))->execute();
+		return $this->dbConnection->delete($this->dbTable, array('timestamp <' => time()))->execute()>0;
 	}
 
 }

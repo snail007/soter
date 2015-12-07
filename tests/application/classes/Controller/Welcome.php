@@ -1,7 +1,11 @@
 <?php
 
 class Controller_Welcome extends Soter_Controller {
-
+	public function do_session(){
+		$value=  rand(0, 10000);
+		Sr::sessionSet('test', $value);
+//		Sr::dump(Sr::db()->from('session_handler_table')->execute()->rows());
+	}
 	public function before($method,$args){
 		if($method=='testBefore'){
 			echo 'before'.$args[0];

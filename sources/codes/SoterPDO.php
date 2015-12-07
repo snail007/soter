@@ -121,10 +121,10 @@ abstract class Soter_Database {
 	}
 
 	public function close() {
-		$this->_masterPdo=null;
-		$this->_lastPdoInstance=null;
-		$this->connectionMasters=array();
-		$this->connectionSlaves=array();
+		$this->_masterPdo = null;
+		$this->_lastPdoInstance = null;
+		$this->connectionMasters = array();
+		$this->connectionSlaves = array();
 		return $this;
 	}
 
@@ -320,7 +320,7 @@ abstract class Soter_Database {
 		    'slowQueryTime' => 3000, //慢查询最小时间，单位毫秒，1秒=1000毫秒
 		    'slowQueryHandle' => null,
 		    //是否记录没有满足设置的索引类型的查询
-		    'indexDebug' => true,
+		    'indexDebug' => false,
 		    /**
 		     * 索引使用的最小情况，只有小于最小情况的时候才会记录sql到日志
 		     * minIndexType值从好到坏依次是:
@@ -465,7 +465,6 @@ abstract class Soter_Database {
 				return $return;
 			}
 		}
-
 		$isWriteType = $this->_isWriteType($sql);
 		$isWritetRowsType = $this->_isWriteRowsType($sql);
 		$isWriteInsertType = $this->_isWriteInsertType($sql);
@@ -521,8 +520,10 @@ abstract class Soter_Database {
 
 			//explain查询
 			$explainRows = array();
+			
 			if ($this->_isMysql() && ($this->slowQueryDebug || $this->indexDebug)) {
 				reset($this->connectionMasters);
+				$sql='EXPLAIN ' . $sql;
 				$sth = $this->connectionMasters[key($this->connectionMasters)]->prepare('EXPLAIN ' . $sql);
 				$sth->execute($this->_getValues());
 				$explainRows = $sth->fetchAll(PDO::FETCH_ASSOC);
