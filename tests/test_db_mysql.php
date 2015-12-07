@@ -329,6 +329,20 @@ class testDbMysql extends UnitTestCase {
 		$this->clean();
 	}
 
+	public function testClose() {
+		$this->init();
+		$this->db->insert('a', array('id' => 5, 'name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000)));
+		$this->assertEqual($this->db->execute(), 1);
+		$rows = $this->db->from('a')->execute()->key('id')->rows();
+		$key = key($rows);
+		$this->assertEqual($key, 5);
+		$this->db->close();
+		$rows = $this->db->from('a')->execute()->key('id')->rows();
+		$key = key($rows);
+		$this->assertEqual($key, 5);
+		$this->clean();
+	}
+
 	public function testLock() {
 		$this->init();
 		$this->db->lock();

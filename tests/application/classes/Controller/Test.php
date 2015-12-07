@@ -13,6 +13,12 @@
  */
 class Controller_Test extends Soter_Controller {
 
+	public function do_wx() {
+		$http=Sr::extension('Http');
+		$http->get('http://weixin.sogou.com/');
+		echo $http->get('http://weixin.sogou.com/websearch/art.jsp?sg=2kVjpB5lvwP_5Pq_wCCcwd4d5JCwogS1ZMykK8lRdl7JD3SRvBqgtA0hmuaECDWmzJ7mtX9nU2HK1z9mood5CTFfnGMZisygmtFzCsWC2v4L9-ZKswiVj9TRYtEdua2nbxH0bYLTzu_LqsaZUK7G5A..&url=p0OVDH8R4SHyUySb8E88hkJm8GF_McJfBfynRTbN8wi2zlX9joQkTLabMYIEDBDNFJmAPOq06Mx8S8IK4g9sh1LvkvBrfA0sV5HZrOvvfxP2RYxvxntd5DEr0w2_qRDUsKSb_q3oUE9Yy-5x5In7jJFmExjqCxhpkyjFvwP6PuGcQ64lGQ2ZDMuqxplQrsbk');
+	}
+
 	public function do_index() {
 		//$typeid = 213; //所属主栏目编号【必填】，后台文章栏目id
 		$typeid = 2;
@@ -116,12 +122,11 @@ class Controller_Test extends Soter_Controller {
 
 	public function do_test() {
 		echo Sr::db()->select('rrr.*,r.*,rr,*')
-                                ->from('admin_resource', 'r')
-                                ->join(array('admin_role_resource_relation'=>'rrr'), 'rrr.admin_resource_id=r.id')
-                                ->join(array('admin_role_relation'=>'rr'), 'rr.admin_role_id=rrr.admin_role_id')
-                                ->where(array('rr.admin_id'=>0))
-                                ->orderBy('r.sort','asc');
-
+			->from('admin_resource', 'r')
+			->join(array('admin_role_resource_relation' => 'rrr'), 'rrr.admin_resource_id=r.id')
+			->join(array('admin_role_relation' => 'rr'), 'rr.admin_role_id=rrr.admin_role_id')
+			->where(array('rr.admin_id' => 0))
+			->orderBy('r.sort', 'asc');
 	}
 
 }

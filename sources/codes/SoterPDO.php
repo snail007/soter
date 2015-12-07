@@ -120,6 +120,14 @@ abstract class Soter_Database {
 		return $this->_errorMsg;
 	}
 
+	public function close() {
+		$this->_masterPdo=null;
+		$this->_lastPdoInstance=null;
+		$this->connectionMasters=array();
+		$this->connectionSlaves=array();
+		return $this;
+	}
+
 	public function lastSql() {
 		return $this->_lastSql;
 	}
@@ -353,8 +361,6 @@ abstract class Soter_Database {
 			'connectionSlaves',
 		    ),
 		);
-		$slaves = $this->getSlaves();
-		$masters = $this->getMasters();
 		try {
 			foreach ($info as $type => $group) {
 				$configGroup = $this->{$group[0]}();
@@ -486,7 +492,7 @@ abstract class Soter_Database {
 				//非事务模式
 				if ($this->isLocked()) {
 					//锁定状态使用固定的一个主数据库
-					$pdo = $this->_masterPdo;
+					$pdo = &$this->_masterPdo;
 				} else {
 					//非锁定状态，使用随机选择一个主数据库进行写，随机选择一个从数据库进行读
 					if ($isWriteType) {

@@ -1,5 +1,5 @@
 <?php
-$ver = "v1.0.82";
+$ver = "v1.0.83";
 define('SOTER_RUN_MODE_PLUGIN', TRUE);
 require dirname(__FILE__) . '/../codes/index.php';
 /*
