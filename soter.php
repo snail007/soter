@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.83
- * @createdtime   2015-12-07 15:31:54
+ * @since         v1.0.85
+ * @createdtime   2015-12-07 18:35:01
  */
  
 
@@ -1786,6 +1786,7 @@ abstract class Soter_Database {
 		$slaves,
 		$connectionMasters,
 		$connectionSlaves,
+		$versionThan56=false,
 		$_errorMsg,
 		$_lastSql,
 		$_lastPdoInstance,
@@ -1848,10 +1849,10 @@ abstract class Soter_Database {
 	}
 
 	public function close() {
-		$this->_masterPdo=null;
-		$this->_lastPdoInstance=null;
-		$this->connectionMasters=array();
-		$this->connectionSlaves=array();
+		$this->_masterPdo = null;
+		$this->_lastPdoInstance = null;
+		$this->connectionMasters = array();
+		$this->connectionSlaves = array();
 		return $this;
 	}
 
@@ -2047,7 +2048,7 @@ abstract class Soter_Database {
 		    'slowQueryTime' => 3000, //慢查询最小时间，单位毫秒，1秒=1000毫秒
 		    'slowQueryHandle' => null,
 		    //是否记录没有满足设置的索引类型的查询
-		    'indexDebug' => true,
+		    'indexDebug' => false,
 		    /**
 		     * 索引使用的最小情况，只有小于最小情况的时候才会记录sql到日志
 		     * minIndexType值从好到坏依次是:
@@ -2192,7 +2193,6 @@ abstract class Soter_Database {
 				return $return;
 			}
 		}
-
 		$isWriteType = $this->_isWriteType($sql);
 		$isWritetRowsType = $this->_isWriteRowsType($sql);
 		$isWriteInsertType = $this->_isWriteInsertType($sql);
@@ -2248,7 +2248,7 @@ abstract class Soter_Database {
 
 			//explain查询
 			$explainRows = array();
-			if ($this->_isMysql() && ($this->slowQueryDebug || $this->indexDebug)) {
+			if ($this->_isMysql() && ($this->slowQueryDebug || $this->indexDebug) && (($this->_isExplain56Type($sql) && $this->versionThan56) || ($this->_isExplainType($sql) && !$this->versionThan56))) {
 				reset($this->connectionMasters);
 				$sth = $this->connectionMasters[key($this->connectionMasters)]->prepare('EXPLAIN ' . $sql);
 				$sth->execute($this->_getValues());
@@ -2312,6 +2312,20 @@ abstract class Soter_Database {
 
 	private function _isWriteInsertType($sql) {
 		if (!preg_match('/^\s*"?(INSERT|REPLACE)\s+/i', $sql)) {
+			return FALSE;
+		}
+		return TRUE;
+	}
+
+	private function _isExplain56Type($sql) {
+		if (!preg_match('/^\s*"?(SELECT|INSERT|UPDATE|DELETE|REPLACE)\s+/i', $sql)) {
+			return FALSE;
+		}
+		return TRUE;
+	}
+
+	private function _isExplainType($sql) {
+		if (!preg_match('/^\s*"?(SELECT)\s+/i', $sql)) {
 			return FALSE;
 		}
 		return TRUE;
@@ -4274,7 +4288,6 @@ class Soter_Config {
 	}
 
 	public function setSessionHandle($sessionHandle) {
-
 		if ($sessionHandle instanceof Soter_Session) {
 			$this->sessionHandle = $sessionHandle;
 		} else {
@@ -5701,20 +5714,23 @@ class Soter_Session_Mysql extends Soter_Session {
 		if (!is_object($this->dbConnection)) {
 			$this->connect();
 		}
+		
 		return TRUE;
 	}
 
 	public function close() {
-		return $this->dbConnection->close();
+		$this->dbConnection->close();
+		return true;
 	}
 
 	public function read($id) {
+		
 		$result = $this->dbConnection->from($this->dbTable)->where(array('id' => $id))->execute();
 		if ($result->total()) {
 			$record = $result->row();
-			$where['id'] = $record['id'];
+			$where['id'] = $id;
 			$data['timestamp'] = time() + intval($this->config['lifetime']);
-			$this->dbConnection->update($this->dbTable, $data, $where)->execute();
+			$this->dbConnection->update($this->dbTable, $data,$where)->execute();
 			return $record['data'];
 		} else {
 			return false;
@@ -5722,21 +5738,22 @@ class Soter_Session_Mysql extends Soter_Session {
 		return true;
 	}
 
-	public function write($id, $sessionData) {
+	public function write($id, $sessionData) { 
+		
 		$data['id'] = $id;
 		$data['data'] = $sessionData;
 		$data['timestamp'] = time() + intval($this->config['lifetime']);
 		$this->dbConnection->replace($this->dbTable, $data);
-		return $this->dbConnection->execute();
+		return $this->dbConnection->execute()>0;
 	}
 
 	public function destroy($id) {
 		unset($_SESSION);
-		return $this->dbConnection->delete($this->dbTable, array('id' => $id))->execute();
+		return $this->dbConnection->delete($this->dbTable, array('id' => $id))->execute()>0;
 	}
 
 	public function gc($max = 0) {
-		return $this->dbConnection->delete($this->dbTable, array('timestamp <' => time()))->execute();
+		return $this->dbConnection->delete($this->dbTable, array('timestamp <' => time()))->execute()>0;
 	}
 
 }

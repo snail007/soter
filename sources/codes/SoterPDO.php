@@ -59,6 +59,7 @@ abstract class Soter_Database {
 		$slaves,
 		$connectionMasters,
 		$connectionSlaves,
+		$versionThan56=false,
 		$_errorMsg,
 		$_lastSql,
 		$_lastPdoInstance,
@@ -520,10 +521,8 @@ abstract class Soter_Database {
 
 			//explain查询
 			$explainRows = array();
-			
-			if ($this->_isMysql() && ($this->slowQueryDebug || $this->indexDebug)) {
+			if ($this->_isMysql() && ($this->slowQueryDebug || $this->indexDebug) && (($this->_isExplain56Type($sql) && $this->versionThan56) || ($this->_isExplainType($sql) && !$this->versionThan56))) {
 				reset($this->connectionMasters);
-				$sql='EXPLAIN ' . $sql;
 				$sth = $this->connectionMasters[key($this->connectionMasters)]->prepare('EXPLAIN ' . $sql);
 				$sth->execute($this->_getValues());
 				$explainRows = $sth->fetchAll(PDO::FETCH_ASSOC);
@@ -586,6 +585,20 @@ abstract class Soter_Database {
 
 	private function _isWriteInsertType($sql) {
 		if (!preg_match('/^\s*"?(INSERT|REPLACE)\s+/i', $sql)) {
+			return FALSE;
+		}
+		return TRUE;
+	}
+
+	private function _isExplain56Type($sql) {
+		if (!preg_match('/^\s*"?(SELECT|INSERT|UPDATE|DELETE|REPLACE)\s+/i', $sql)) {
+			return FALSE;
+		}
+		return TRUE;
+	}
+
+	private function _isExplainType($sql) {
+		if (!preg_match('/^\s*"?(SELECT)\s+/i', $sql)) {
 			return FALSE;
 		}
 		return TRUE;

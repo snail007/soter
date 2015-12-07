@@ -12,7 +12,10 @@
  * @author pengmeng
  */
 class Controller_Test extends Soter_Controller {
-
+	public function do_m() {
+		  
+		
+	}
 	public function do_wx() {
 		$http=Sr::extension('Http');
 		$http->get('http://weixin.sogou.com/');

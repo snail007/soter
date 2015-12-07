@@ -23,7 +23,7 @@ class testDbMysql extends UnitTestCase {
 		    'slowQueryDebug' => FALSE,
 		    'slowQueryTime' => 100, //单位毫秒，1秒=1000毫秒
 		    'slowQueryHandle' => new Soter_Database_SlowQuery_Handle_Default(),
-		    'indexDebug' => FALSE,
+		    'indexDebug' => true,
 		    'minIndexType' => 'index',
 		    'indexHandle' => new Soter_Database_Index_Handle_Default(),
 		    'masters' => array(

@@ -19,6 +19,13 @@ return
 		'database' => 'test',
 		'tablePrefix' => '',
 		'tablePrefixSqlIdentifier' => '_tablePrefix_',
+		/**
+		 * 因为mysql从5.6开始explain才支持SELECT DELETE INSERT REPLACE UPDATE五种类型
+		 * 5.5及之前版本explain只支持SELECT类型语句。
+		 * 当你启用了下面的“慢查询记录”或者“索引类型的查询记录”，它们需执行explain语句，
+		 * 为了开发的时候更好的分析程序查询性能，这里务必设置好你要连接的mysql的版本是否大于5.6
+		 */
+		'versionThan56' => false,//mysql的版本是否大于5.6，true：大于，false：小于
 		//是否开启慢查询记录
 		'slowQueryDebug' => false,
 		'slowQueryTime' => 3000, //慢查询最小时间,单位毫秒，1秒=1000毫秒
