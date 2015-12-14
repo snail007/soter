@@ -359,4 +359,12 @@ class testDbMysql extends UnitTestCase {
 		$this->clean();
 	}
 
+	public function testCache() {
+		$this->init();
+		$this->db->insert('a', array('id' => 5, 'name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000)))->execute();
+		$this->db->cache(5)->from('a')->execute()->rows();
+		$this->assertIsA(Sr::cache()->get('846a4d597474c1ef3b6d383b0bf94e9e'), 'Soter_Database_Resultset');
+		$this->clean();
+	}
+
 }

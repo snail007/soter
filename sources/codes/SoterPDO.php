@@ -59,7 +59,7 @@ abstract class Soter_Database {
 		$slaves,
 		$connectionMasters,
 		$connectionSlaves,
-		$versionThan56=false,
+		$versionThan56 = false,
 		$_errorMsg,
 		$_lastSql,
 		$_lastPdoInstance,
@@ -452,13 +452,14 @@ abstract class Soter_Database {
 
 		//读查询缓存
 		$cacheHandle = null;
+		$cacheKey='';
 		if ($this->_cacheTime) {
+			$cacheKey = empty($this->_cacheKey) ? md5($sql . var_export($values, true)) : $this->_cacheKey;
 			$cacheHandle = Sr::config()->getCacheHandle();
 			if (empty($cacheHandle)) {
 				throw new Soter_Exception_500('no cache handle found , please set cache handle');
 			}
-			$key = empty($this->_cacheKey) ? md5($sql . var_export($values, true)) : $this->_cacheKey;
-			$return = $cacheHandle->get($key);
+			$return = $cacheHandle->get($cacheKey);
 			if (!is_null($return)) {
 				$this->_cacheKey = '';
 				$this->_cacheTime = 0;
@@ -567,8 +568,7 @@ abstract class Soter_Database {
 		}
 		//写查询缓存
 		if ($this->_cacheTime) {
-			$key = empty($this->_cacheKey) ? md5($sql) : $this->_cacheKey;
-			$cacheHandle->set($key, $return, $this->_cacheTime);
+			$cacheHandle->set($cacheKey, $return, $this->_cacheTime);
 		}
 		$this->_cacheKey = '';
 		$this->_cacheTime = 0;
