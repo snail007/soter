@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.87
- * @createdtime   2015-12-14 13:55:08
+ * @since         v1.0.88
+ * @createdtime   2015-12-17 18:10:26
  */
  
 
@@ -5278,6 +5278,7 @@ class Soter_Cache_Redis implements Soter_Cache {
 					}
 					$this->handle['masters'][$k]->setOption(Redis::OPT_PREFIX, $config['prefix']);
 				}
+				$this->handle['masters'][$k]->select($config['db']);
 			}
 		}
 	}
@@ -5301,6 +5302,7 @@ class Soter_Cache_Redis implements Soter_Cache {
 				}
 				$this->handle['slave']->setOption(Redis::OPT_PREFIX, $config['prefix']);
 			}
+			$this->handle['slave']->select($config['db']);
 		}
 	}
 

@@ -104,7 +104,7 @@ class TestCache extends UnitTestCase {
 			    //连接失败后的重试时间间隔，单位毫秒
 			    'retry' => 100,
 			    // 数据库序号，默认0, 参考 http://redis.io/commands/select
-			    'db' => 0,
+			    'db' => 2,
 			),
 		    ),
 		    'slaves' => array(

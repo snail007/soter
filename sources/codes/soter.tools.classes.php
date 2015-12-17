@@ -1556,6 +1556,7 @@ class Soter_Cache_Redis implements Soter_Cache {
 					}
 					$this->handle['masters'][$k]->setOption(Redis::OPT_PREFIX, $config['prefix']);
 				}
+				$this->handle['masters'][$k]->select($config['db']);
 			}
 		}
 	}
@@ -1579,6 +1580,7 @@ class Soter_Cache_Redis implements Soter_Cache {
 				}
 				$this->handle['slave']->setOption(Redis::OPT_PREFIX, $config['prefix']);
 			}
+			$this->handle['slave']->select($config['db']);
 		}
 	}
 
