@@ -94,23 +94,19 @@ class Soter_View {
 		//当load方法在主项目的视图中被调用，然后hmvc主项目load了这个视图，那么这个视图里面的load应该使用的是主项目视图。
 		//hmvc访问
 		if ($hmvcDirName) {
+			$hmvcPath = $config->getPrimaryApplicationDir() . $config->getHmvcDirName() . '/' . $hmvcDirName;
 			$trace = debug_backtrace();
-			$last = array();
+			$calledIsInHmvc = false;
 			foreach ($trace as $t) {
-				$isInternalClass = !empty($t['class']) && (strtoupper($t['class']) == 'SR' || strtoupper($t['class']) == 'SOTER' || stripos($t['class'], 'Soter_') === 0);
-				$isCall = !empty($t['function']) && $t['function'] == 'call_user_func_array';
-				if (!$isInternalClass && !$isCall) {
-					$calledFilePath = $t;
+				$filepath = Sr::arrayGet($t, 'file', '');
+				if (!empty($filepath)) {
+					$methodIsLoad = Sr::arrayGet($t, 'function', '') == 'load';
+					if ($filepath && $methodIsLoad && strpos(Sr::realPath($filepath), sr::realPath($hmvcPath)) === 0) {
+						$calledIsInHmvc = true;
+					}
 					break;
 				}
-				$last = $t;
 			}
-			$calledFilePath = Sr::realPath(Sr::arrayGet($calledFilePath, 'file'));
-			if (empty($calledFilePath)) {
-				$calledFilePath = Sr::realPath(Sr::arrayGet($last, 'file'));
-			}
-			$hmvcPath = $config->getPrimaryApplicationDir() . $config->getHmvcDirName() . '/' . $hmvcDirName;
-			$calledIsInHmvc = $calledFilePath && $hmvcDirName && (strpos($calledFilePath, $hmvcPath) === 0);
 			//发现load是在主项目中被调用的，使用主项目视图
 			if (!$calledIsInHmvc) {
 				$path = $config->getPrimaryApplicationDir() . $config->getViewsDirName() . '/' . $viewName . '.php';

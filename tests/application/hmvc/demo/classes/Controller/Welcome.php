@@ -139,7 +139,7 @@ class Controller_Welcome extends Soter_Controller {
 	}
 
 	public function do_hvmcLoadAndParentLoad() {
-		Sr::view()->load('header_hmvc');
+		Sr::view()->load('header_hmvc2');
 	}
 
 	public function do_viewLoad() {

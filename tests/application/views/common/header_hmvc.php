@@ -1,1 +1,1 @@
-<?php Sr::view()->load('common/header_load')?>test_hmvc_load_parent_load
+<?php Sr::view()->load('common/header_load');?>test_hmvc_load_parent_load
