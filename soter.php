@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2016, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.91
- * @createdtime   2016-01-04 13:22:31
+ * @since         v1.0.92
+ * @createdtime   2016-01-04 13:46:35
  */
  
 
@@ -3822,17 +3822,22 @@ class Soter_View {
 		//当load方法在主项目的视图中被调用，然后hmvc主项目load了这个视图，那么这个视图里面的load应该使用的是主项目视图。
 		//hmvc访问
 		if ($hmvcDirName) {
-			$hmvcPath = $config->getPrimaryApplicationDir() . $config->getHmvcDirName() . '/' . $hmvcDirName;
+			$hmvcPath = Sr::realPath($config->getPrimaryApplicationDir() . $config->getHmvcDirName() . '/' . $hmvcDirName);
 			$trace = debug_backtrace();
 			$calledIsInHmvc = false;
+			$appPath = Sr::realPath($config->getApplicationDir());
 			foreach ($trace as $t) {
 				$filepath = Sr::arrayGet($t, 'file', '');
 				if (!empty($filepath)) {
-					$methodIsLoad = Sr::arrayGet($t, 'function', '') == 'load';
-					if ($filepath && $methodIsLoad && strpos(Sr::realPath($filepath), sr::realPath($hmvcPath)) === 0) {
+					$filepath = Sr::realPath($filepath);
+					$checkList = array('load','runWeb', 'message', 'redirect');
+					$function = Sr::arrayGet($t, 'function', '');
+					if ($filepath && in_array($function, $checkList) && strpos($filepath, $appPath) === 0 && strpos($filepath, $hmvcPath) === 0) {
 						$calledIsInHmvc = true;
+						break;
+					} elseif (!in_array($function, $checkList)) {
+						break;
 					}
-					break;
 				}
 			}
 			//发现load是在主项目中被调用的，使用主项目视图
