@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2015 Soter(狂奔的蜗牛 672308444@163.com)
+ * Copyright 2016 Soter(狂奔的蜗牛 672308444@163.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,10 @@
  * @package       Soter
  * @author        狂奔的蜗牛
  * @email         672308444@163.com
- * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
+ * @copyright     Copyright (c) 2015 - 2016, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.88
- * @createdtime   2015-12-17 18:10:26
+ * @since         v1.0.89
+ * @createdtime   2016-01-04 11:13:24
  */
  
 
@@ -892,6 +892,12 @@ class Sr {
 	 * @return string
 	 */
 	static function url($action = '', $getData = array()) {
+		$config = Sr::config();
+		$hmvcModuleName = $config->getHmvcDomain(); //当前域名绑定的hmvc模块名称
+		//访问的是hmvc模块且绑定了当前域名，且是DomainOnly的，就去掉开头的模块名称
+		if ($hmvcModuleName && $config->hmvcIsDomainOnly($hmvcModuleName)) {
+			$action = preg_replace('|^/' . $hmvcModuleName . '/?|', '/', $action);
+		}
 		$index = self::config()->getIsRewrite() ? '' : self::config()->getIndexName() . '/';
 		$url = self::urlPath($index . $action);
 		$url = rtrim($url, '/');
@@ -3817,8 +3823,20 @@ class Soter_View {
 		//hmvc访问
 		if ($hmvcDirName) {
 			$trace = debug_backtrace();
-			$calledFilePath = array_shift($trace);
+			$last = array();
+			foreach ($trace as $t) {
+				$isInternalClass = !empty($t['class']) && (strtoupper($t['class']) == 'SR' || strtoupper($t['class']) == 'SOTER' || stripos($t['class'], 'Soter_') === 0);
+				$isCall = !empty($t['function']) && $t['function'] == 'call_user_func_array';
+				if (!$isInternalClass && !$isCall) {
+					$calledFilePath = $t;
+					break;
+				}
+				$last = $t;
+			}
 			$calledFilePath = Sr::realPath(Sr::arrayGet($calledFilePath, 'file'));
+			if (empty($calledFilePath)) {
+				$calledFilePath = Sr::realPath(Sr::arrayGet($last, 'file'));
+			}
 			$hmvcPath = $config->getPrimaryApplicationDir() . $config->getHmvcDirName() . '/' . $hmvcDirName;
 			$calledIsInHmvc = $calledFilePath && $hmvcDirName && (strpos($calledFilePath, $hmvcPath) === 0);
 			//发现load是在主项目中被调用的，使用主项目视图
@@ -5316,7 +5334,7 @@ class Soter_Cache_Redis implements Soter_Cache {
 	public function clean() {
 		$this->_initMaters();
 		$status = true;
-		foreach ($this->handle['masters'] as $k=>$handle) {
+		foreach ($this->handle['masters'] as $k => $handle) {
 			$status = $status & $this->handle['masters'][$k]->flushDB();
 		}
 		return $status;
@@ -5325,7 +5343,7 @@ class Soter_Cache_Redis implements Soter_Cache {
 	public function delete($key) {
 		$this->_initMaters();
 		$status = true;
-		foreach ($this->handle['masters'] as $k=>$v) {
+		foreach ($this->handle['masters'] as $k => $v) {
 			$status = $status & $this->handle['masters'][$k]->delete($key);
 		}
 		return $status;
@@ -5343,7 +5361,7 @@ class Soter_Cache_Redis implements Soter_Cache {
 	public function set($key, $value, $cacheTime = 0) {
 		$this->_initMaters();
 		$value = serialize($value);
-		foreach ($this->handle['masters'] as $k=>$v) {
+		foreach ($this->handle['masters'] as $k => $v) {
 			if ($cacheTime) {
 				return $this->handle['masters'][$k]->setex($key, $cacheTime, $value);
 			} else {
@@ -5716,7 +5734,7 @@ class Soter_Session_Mysql extends Soter_Session {
 		if (!is_object($this->dbConnection)) {
 			$this->connect();
 		}
-		
+
 		return TRUE;
 	}
 
@@ -5726,13 +5744,13 @@ class Soter_Session_Mysql extends Soter_Session {
 	}
 
 	public function read($id) {
-		
+
 		$result = $this->dbConnection->from($this->dbTable)->where(array('id' => $id))->execute();
 		if ($result->total()) {
 			$record = $result->row();
 			$where['id'] = $id;
 			$data['timestamp'] = time() + intval($this->config['lifetime']);
-			$this->dbConnection->update($this->dbTable, $data,$where)->execute();
+			$this->dbConnection->update($this->dbTable, $data, $where)->execute();
 			return $record['data'];
 		} else {
 			return false;
@@ -5740,22 +5758,22 @@ class Soter_Session_Mysql extends Soter_Session {
 		return true;
 	}
 
-	public function write($id, $sessionData) { 
-		
+	public function write($id, $sessionData) {
+
 		$data['id'] = $id;
 		$data['data'] = $sessionData;
 		$data['timestamp'] = time() + intval($this->config['lifetime']);
 		$this->dbConnection->replace($this->dbTable, $data);
-		return $this->dbConnection->execute()>0;
+		return $this->dbConnection->execute() > 0;
 	}
 
 	public function destroy($id) {
 		unset($_SESSION);
-		return $this->dbConnection->delete($this->dbTable, array('id' => $id))->execute()>0;
+		return $this->dbConnection->delete($this->dbTable, array('id' => $id))->execute() > 0;
 	}
 
 	public function gc($max = 0) {
-		return $this->dbConnection->delete($this->dbTable, array('timestamp <' => time()))->execute()>0;
+		return $this->dbConnection->delete($this->dbTable, array('timestamp <' => time()))->execute() > 0;
 	}
 
 }

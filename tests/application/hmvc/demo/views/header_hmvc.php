@@ -1,0 +1,1 @@
+<?php Sr::view()->loadParent('common/header_hmvc')?>

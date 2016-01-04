@@ -59,6 +59,12 @@ class TestView extends UnitTestCase {
 		$this->assertEqual($browser->getContent(), 'bb');
 	}
 
+	public function testHvmcLoadAndParentLoad() {
+		$browser = new SimpleBrowser();
+		$browser->get(testUrl('Demo/Welcome/hvmcLoadAndParentLoad.html'));
+		$this->assertEqual($browser->getContent(), 'atest_hmvc_load_parent_load');
+	}
+
 	public function testHvmcLoadDataRetrun() {
 		$browser = new SimpleBrowser();
 		$browser->get(testUrl('Demo/Welcome/viewLoadDataReturn.html'));

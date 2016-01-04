@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright 2015 Soter(狂奔的蜗牛 672308444@163.com)
+ * Copyright 2016 Soter(狂奔的蜗牛 672308444@163.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,10 @@
  * @package       Soter
  * @author        狂奔的蜗牛
  * @email         672308444@163.com
- * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
+ * @copyright     Copyright (c) 2015 - 2016, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.88
- * @createdtime   2015-12-17 18:10:26
+ * @since         v1.0.89
+ * @createdtime   2016-01-04 11:13:24
  */
  
 define("IN_SOTER", true);

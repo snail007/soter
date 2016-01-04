@@ -367,4 +367,12 @@ class testDbMysql extends UnitTestCase {
 		$this->clean();
 	}
 
+	public function testExecute() {
+		$this->init();
+		$this->db->insert('a', array('id' => 5, 'name' => 'na?me', 'gid' => rand(1000, 10000)))->execute();
+		$row = $this->db->execute("select * from test_a where name like '%?%'", array('?'))->row();
+		$this->assertEqual($row['name'], 'na?me');
+		$this->clean();
+	}
+
 }

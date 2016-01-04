@@ -95,8 +95,20 @@ class Soter_View {
 		//hmvc访问
 		if ($hmvcDirName) {
 			$trace = debug_backtrace();
-			$calledFilePath = array_shift($trace);
+			$last = array();
+			foreach ($trace as $t) {
+				$isInternalClass = !empty($t['class']) && (strtoupper($t['class']) == 'SR' || strtoupper($t['class']) == 'SOTER' || stripos($t['class'], 'Soter_') === 0);
+				$isCall = !empty($t['function']) && $t['function'] == 'call_user_func_array';
+				if (!$isInternalClass && !$isCall) {
+					$calledFilePath = $t;
+					break;
+				}
+				$last = $t;
+			}
 			$calledFilePath = Sr::realPath(Sr::arrayGet($calledFilePath, 'file'));
+			if (empty($calledFilePath)) {
+				$calledFilePath = Sr::realPath(Sr::arrayGet($last, 'file'));
+			}
 			$hmvcPath = $config->getPrimaryApplicationDir() . $config->getHmvcDirName() . '/' . $hmvcDirName;
 			$calledIsInHmvc = $calledFilePath && $hmvcDirName && (strpos($calledFilePath, $hmvcPath) === 0);
 			//发现load是在主项目中被调用的，使用主项目视图
@@ -1594,7 +1606,7 @@ class Soter_Cache_Redis implements Soter_Cache {
 	public function clean() {
 		$this->_initMaters();
 		$status = true;
-		foreach ($this->handle['masters'] as $k=>$handle) {
+		foreach ($this->handle['masters'] as $k => $handle) {
 			$status = $status & $this->handle['masters'][$k]->flushDB();
 		}
 		return $status;
@@ -1603,7 +1615,7 @@ class Soter_Cache_Redis implements Soter_Cache {
 	public function delete($key) {
 		$this->_initMaters();
 		$status = true;
-		foreach ($this->handle['masters'] as $k=>$v) {
+		foreach ($this->handle['masters'] as $k => $v) {
 			$status = $status & $this->handle['masters'][$k]->delete($key);
 		}
 		return $status;
@@ -1621,7 +1633,7 @@ class Soter_Cache_Redis implements Soter_Cache {
 	public function set($key, $value, $cacheTime = 0) {
 		$this->_initMaters();
 		$value = serialize($value);
-		foreach ($this->handle['masters'] as $k=>$v) {
+		foreach ($this->handle['masters'] as $k => $v) {
 			if ($cacheTime) {
 				return $this->handle['masters'][$k]->setex($key, $cacheTime, $value);
 			} else {
@@ -1994,7 +2006,7 @@ class Soter_Session_Mysql extends Soter_Session {
 		if (!is_object($this->dbConnection)) {
 			$this->connect();
 		}
-		
+
 		return TRUE;
 	}
 
@@ -2004,13 +2016,13 @@ class Soter_Session_Mysql extends Soter_Session {
 	}
 
 	public function read($id) {
-		
+
 		$result = $this->dbConnection->from($this->dbTable)->where(array('id' => $id))->execute();
 		if ($result->total()) {
 			$record = $result->row();
 			$where['id'] = $id;
 			$data['timestamp'] = time() + intval($this->config['lifetime']);
-			$this->dbConnection->update($this->dbTable, $data,$where)->execute();
+			$this->dbConnection->update($this->dbTable, $data, $where)->execute();
 			return $record['data'];
 		} else {
 			return false;
@@ -2018,22 +2030,22 @@ class Soter_Session_Mysql extends Soter_Session {
 		return true;
 	}
 
-	public function write($id, $sessionData) { 
-		
+	public function write($id, $sessionData) {
+
 		$data['id'] = $id;
 		$data['data'] = $sessionData;
 		$data['timestamp'] = time() + intval($this->config['lifetime']);
 		$this->dbConnection->replace($this->dbTable, $data);
-		return $this->dbConnection->execute()>0;
+		return $this->dbConnection->execute() > 0;
 	}
 
 	public function destroy($id) {
 		unset($_SESSION);
-		return $this->dbConnection->delete($this->dbTable, array('id' => $id))->execute()>0;
+		return $this->dbConnection->delete($this->dbTable, array('id' => $id))->execute() > 0;
 	}
 
 	public function gc($max = 0) {
-		return $this->dbConnection->delete($this->dbTable, array('timestamp <' => time()))->execute()>0;
+		return $this->dbConnection->delete($this->dbTable, array('timestamp <' => time()))->execute() > 0;
 	}
 
 }

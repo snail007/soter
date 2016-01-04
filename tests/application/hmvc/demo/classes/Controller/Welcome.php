@@ -11,7 +11,7 @@ class Controller_Welcome extends Soter_Controller {
 	public function after($method, $args, $contents) {
 		if ($method == 'testAfter') {
 			echo 'hmvc-after' . $args[0] . $contents;
-		}else{
+		} else {
 			echo $contents;
 		}
 	}
@@ -22,6 +22,10 @@ class Controller_Welcome extends Soter_Controller {
 
 	public function do_testAfter() {
 		echo 'test';
+	}
+
+	public function do_url1() {
+		echo Sr::url('/Demo/Welcome/Index.do');
 	}
 
 	public function do_index() {
@@ -134,6 +138,10 @@ class Controller_Welcome extends Soter_Controller {
 		echo Sr::view()->loadParent('test_load_data_return', $data, true);
 	}
 
+	public function do_hvmcLoadAndParentLoad() {
+		Sr::view()->load('header_hmvc');
+	}
+
 	public function do_viewLoad() {
 		Sr::view()->load('hmvc_test_load');
 	}
@@ -168,6 +176,10 @@ class Controller_Welcome extends Soter_Controller {
 		Sr::view()->add('a', 'bb');
 		Sr::view()->set('a', 'cc');
 		Sr::view()->load('hmvc_test_load_data');
+	}
+
+	public function do_message() {
+		Sr::message('', '', 0, 'message');
 	}
 
 }
