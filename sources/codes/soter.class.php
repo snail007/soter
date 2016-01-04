@@ -937,7 +937,7 @@ class Sr {
 		$hmvcModuleName = $config->getHmvcDomain(); //当前域名绑定的hmvc模块名称
 		//访问的是hmvc模块且绑定了当前域名，且是DomainOnly的，就去掉开头的模块名称
 		if ($hmvcModuleName && $config->hmvcIsDomainOnly($hmvcModuleName)) {
-			$action = preg_replace('|^/' . $hmvcModuleName . '/?|', '/', $action);
+			$action = preg_replace('|^' . $hmvcModuleName . '/?|', '/', $action);
 		}
 		$index = self::config()->getIsRewrite() ? '' : self::config()->getIndexName() . '/';
 		$url = self::urlPath($index . $action);

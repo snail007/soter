@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2016, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.89
- * @createdtime   2016-01-04 11:17:12
+ * @since         v1.0.90
+ * @createdtime   2016-01-04 11:51:30
  */
  
 
@@ -896,7 +896,7 @@ class Sr {
 		$hmvcModuleName = $config->getHmvcDomain(); //当前域名绑定的hmvc模块名称
 		//访问的是hmvc模块且绑定了当前域名，且是DomainOnly的，就去掉开头的模块名称
 		if ($hmvcModuleName && $config->hmvcIsDomainOnly($hmvcModuleName)) {
-			$action = preg_replace('|^/' . $hmvcModuleName . '/?|', '/', $action);
+			$action = preg_replace('|^' . $hmvcModuleName . '/?|', '/', $action);
 		}
 		$index = self::config()->getIsRewrite() ? '' : self::config()->getIndexName() . '/';
 		$url = self::urlPath($index . $action);
