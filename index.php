@@ -26,8 +26,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2016, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.92
- * @createdtime   2016-01-04 13:46:35
+ * @since         v1.0.93
+ * @createdtime   2016-01-04 18:18:46
  */
  
 define("IN_SOTER", true);
@@ -193,6 +193,7 @@ Soter::initialize()
 	})
 	/* 设置发生异常的时候，调用异常对象的renderJson()方法输出json的回调函数，这里可以自定义json输出格式 */
 	->setExceptionJsonRender(function(Exception $e) {
+		$json['environment'] = $e->getEnvironment();
 		$json['file'] = $e->getErrorFile();
 		$json['line'] = $e->getErrorLine();
 		$json['message'] = $e->getErrorMessage();

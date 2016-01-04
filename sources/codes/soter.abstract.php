@@ -291,7 +291,7 @@ abstract class Soter_Task {
 	public function _log($msg, $time = true) {
 		if ($this->debug || $this->debugError) {
 			$nowTime = '' . Sr::microtime();
-			echo ($time ? date('[Y-m-d H:i:s.' . substr($nowTime, strlen($nowTime) - 3) . ']').' [PID:' .  sprintf('%- 5d',  getmypid()) . '] ' : '') . $msg . "\n";
+			echo ($time ? date('[Y-m-d H:i:s.' . substr($nowTime, strlen($nowTime) - 3) . ']') . ' [PID:' . sprintf('%- 5d', getmypid()) . '] ' : '') . $msg . "\n";
 		}
 	}
 
@@ -328,7 +328,7 @@ abstract class Soter_Task_Single extends Soter_Task {
 			$pid = file_get_contents($lockFilePath);
 			//lockfile进程pid存在，直接返回
 			if ($this->pidIsExists($pid)) {
-				$this->_log('Single Task [ ' . $class . ' ] is running with pid '.$pid.' , now exiting...');
+				$this->_log('Single Task [ ' . $class . ' ] is running with pid ' . $pid . ' , now exiting...');
 				$this->_log('Single Task [ ' . $class . ' ] end , use time ' . (Sr::microtime() - $startTime) . ' ms');
 				$this->_log('', false);
 				return;
@@ -432,6 +432,11 @@ abstract class Soter_Exception extends Exception {
 		return $this->errorCode ? $this->errorCode : $this->getCode();
 	}
 
+	public function getEnvironment() {
+		$array=array(Sr::ENV_PRODUCTION=>'Sr::ENV_PRODUCTION',Sr::ENV_TESTING=>'Sr::ENV_TESTING',Sr::ENV_DEVELOPMENT=>'Sr::ENV_DEVELOPMENT');
+		return $array[Sr::config()->getEnvironment()];
+	}
+
 	public function getErrorFile($safePath = FALSE) {
 		$file = $this->errorFile ? $this->errorFile : $this->getFile();
 		return $safePath ? Sr::safePath($file) : $file;
@@ -487,6 +492,7 @@ abstract class Soter_Exception extends Exception {
 
 	public function renderCli() {
 		return "$this->exceptionName [ " . $this->getErrorType() . " ]\n"
+			. "Environment: " . $this->getEnvironment()."\n"
 			. "Line: " . $this->getErrorLine() . ". " . $this->getErrorFile() . "\n"
 			. "Message: " . $this->getErrorMessage() . "\n"
 			. "Time: " . date('Y/m/d H:i:s T') . "\n";
@@ -496,6 +502,7 @@ abstract class Soter_Exception extends Exception {
 		return '<body style="padding:0;margin:0;background:black;color:whitesmoke;">'
 			. '<div style="padding:10px;background:red;font-size:18px;">' . $this->exceptionName . ' [ ' . $this->getErrorType() . ' ] </div>'
 			. '<div style="padding:10px;background:black;font-size:14px;color:yellow;line-height:1.5em;">'
+			. '<font color="whitesmoke">Environment: </font>' . $this->getEnvironment().'<br/>'
 			. '<font color="whitesmoke">Line: </font>' . $this->getErrorLine() . ' [ ' . $this->getErrorFile(TRUE) . ' ]<br/>'
 			. '<font color="whitesmoke">Message: </font>' . htmlspecialchars($this->getErrorMessage()) . '</br>'
 			. '<font color="whitesmoke">Time: </font>' . date('Y/m/d H:i:s T') . '</div>'

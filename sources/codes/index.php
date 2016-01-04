@@ -164,6 +164,7 @@ Soter::initialize()
 	})
 	/* 设置发生异常的时候，调用异常对象的renderJson()方法输出json的回调函数，这里可以自定义json输出格式 */
 	->setExceptionJsonRender(function(Exception $e) {
+		$json['environment'] = $e->getEnvironment();
 		$json['file'] = $e->getErrorFile();
 		$json['line'] = $e->getErrorLine();
 		$json['message'] = $e->getErrorMessage();
