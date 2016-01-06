@@ -1,3 +1,11 @@
+============v1.0.94[2015-01-06]===========
+增加了：
+1.手册的路由部分的默认控制器和方法部分，增加了2和4示例，非常酸爽。
+
+升级提示：
+1.入口文件里面“->setExceptionJsonRender(function(Exception $e) { ”增加如下一行。
+		$json['environment'] = $e->getEnvironment();
+
 ============v1.0.93[2015-01-04]===========
 增加了：
 1.Soter_Exception对象增加了getEnvironment方法，获取当前的环境字符串标识。
