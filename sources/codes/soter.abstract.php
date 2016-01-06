@@ -433,7 +433,7 @@ abstract class Soter_Exception extends Exception {
 	}
 
 	public function getEnvironment() {
-		$array=array(Sr::ENV_PRODUCTION=>'Sr::ENV_PRODUCTION',Sr::ENV_TESTING=>'Sr::ENV_TESTING',Sr::ENV_DEVELOPMENT=>'Sr::ENV_DEVELOPMENT');
+		$array=array(Sr::ENV_PRODUCTION=>'PRODUCTION',Sr::ENV_TESTING=>'TESTING',Sr::ENV_DEVELOPMENT=>'DEVELOPMENT');
 		return $array[Sr::config()->getEnvironment()];
 	}
 

@@ -26,7 +26,7 @@
  * @copyright     Copyright (c) 2015 - 2016, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         v1.0.94
- * @createdtime   2016-01-06 10:37:06
+ * @createdtime   2016-01-06 10:41:17
  */
  
 
@@ -3601,7 +3601,7 @@ abstract class Soter_Exception extends Exception {
 	}
 
 	public function getEnvironment() {
-		$array=array(Sr::ENV_PRODUCTION=>'Sr::ENV_PRODUCTION',Sr::ENV_TESTING=>'Sr::ENV_TESTING',Sr::ENV_DEVELOPMENT=>'Sr::ENV_DEVELOPMENT');
+		$array=array(Sr::ENV_PRODUCTION=>'PRODUCTION',Sr::ENV_TESTING=>'TESTING',Sr::ENV_DEVELOPMENT=>'DEVELOPMENT');
 		return $array[Sr::config()->getEnvironment()];
 	}
 
