@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2016, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.94
- * @createdtime   2016-01-06 10:41:17
+ * @since         v1.0.95
+ * @createdtime   2016-01-19 18:04:07
  */
  
 
@@ -3994,6 +3994,7 @@ class Soter_Router_PathInfo_Default extends Soter_Router {
 	public function find() {
 		$config = Soter::getConfig();
 		$uri = $config->getRequest()->getPathInfo();
+		$uri = trim($uri, '/');
 		if (empty($uri)) {
 			//没有找到hmvc模块名称，或者控制器名称
 			return $this->route->setFound(FALSE);
@@ -4002,7 +4003,6 @@ class Soter_Router_PathInfo_Default extends Soter_Router {
 				$uri = $uriRewriter->rewrite($uri);
 			}
 		}
-		$uri = trim($uri, '/');
 		//到此$uri形如：Welcome/index.do , Welcome/User , Welcome
 		$_info = explode('/', $uri);
 		$hmvcModule = current($_info);

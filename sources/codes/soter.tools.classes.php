@@ -259,6 +259,7 @@ class Soter_Router_PathInfo_Default extends Soter_Router {
 	public function find() {
 		$config = Soter::getConfig();
 		$uri = $config->getRequest()->getPathInfo();
+		$uri = trim($uri, '/');
 		if (empty($uri)) {
 			//没有找到hmvc模块名称，或者控制器名称
 			return $this->route->setFound(FALSE);
@@ -267,7 +268,6 @@ class Soter_Router_PathInfo_Default extends Soter_Router {
 				$uri = $uriRewriter->rewrite($uri);
 			}
 		}
-		$uri = trim($uri, '/');
 		//到此$uri形如：Welcome/index.do , Welcome/User , Welcome
 		$_info = explode('/', $uri);
 		$hmvcModule = current($_info);
