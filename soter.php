@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2016, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.95
- * @createdtime   2016-01-19 18:04:07
+ * @since         v1.0.96
+ * @createdtime   2016-01-20 10:26:57
  */
  
 
@@ -450,7 +450,7 @@ class Sr {
 	 * @param type $configName
 	 * @return Soter_Config|mixed
 	 */
-	static function &config($configName = null) {
+	static function &config($configName = null, $caching = true) {
 		if (empty($configName)) {
 			return Soter::getConfig();
 		}
@@ -458,7 +458,7 @@ class Sr {
 		$configFileName = current($_info);
 		static $loadedConfig = array();
 		$cfg = null;
-		if (Sr::arrayKeyExists($configFileName, $loadedConfig)) {
+		if ($caching && Sr::arrayKeyExists($configFileName, $loadedConfig)) {
 			$cfg = $loadedConfig[$configFileName];
 		} else {
 			$config = Soter::getConfig();
@@ -768,28 +768,35 @@ class Sr {
 	 * @return \Soter_Database_ActiveRecord
 	 * @throws Soter_Exception_Database
 	 */
+	private static $dbInstances = array();
+	static function clearDbInstances($key = null) {
+		if (!is_null($key)) {
+			unset(self::$dbInstances[$key]);
+		} else {
+			self::$dbInstances = array();
+		}
+	}
 	static function &db($group = '', $isNewInstance = false) {
-		static $instances = array();
 		if (is_array($group)) {
 			ksort($group);
 			$key = md5(var_export($group, true));
-			if (!Sr::arrayKeyExists($key, $instances) || $isNewInstance) {
-				$instances[$key] = new Soter_Database_ActiveRecord($group);
+			if (!Sr::arrayKeyExists($key, self::$dbInstances) || $isNewInstance) {
+				self::$dbInstances[$key] = new Soter_Database_ActiveRecord($group);
 			}
-			return $instances[$key];
+			return self::$dbInstances[$key];
 		} else {
 			if (empty($group)) {
 				$config = self::config()->getDatabseConfig();
 				$group = $config['default_group'];
 			}
-			if (!Sr::arrayKeyExists($group, $instances) || $isNewInstance) {
+			if (!Sr::arrayKeyExists($group, self::$dbInstances) || $isNewInstance) {
 				$config = self::config()->getDatabseConfig($group);
 				if (empty($config)) {
 					throw new Soter_Exception_Database('unknown database config group [ ' . $group . ' ]');
 				}
-				$instances[$group] = new Soter_Database_ActiveRecord($config);
+				self::$dbInstances[$group] = new Soter_Database_ActiveRecord($config);
 			}
-			return $instances[$group];
+			return self::$dbInstances[$group];
 		}
 	}
 	static function createSqlite3Database($path) {
@@ -4233,7 +4240,7 @@ class Soter_Config {
 	}
 
 	public function setDataCheckRules($dataCheckRules) {
-		$this->dataCheckRules = is_array($dataCheckRules) ? $dataCheckRules : Sr::config($dataCheckRules);
+		$this->dataCheckRules = is_array($dataCheckRules) ? $dataCheckRules : Sr::config($dataCheckRules,false);
 		return $this;
 	}
 
@@ -4242,7 +4249,7 @@ class Soter_Config {
 	}
 
 	public function setMethodCacheConfig($methodCacheConfig) {
-		$this->methodCacheConfig = is_array($methodCacheConfig) ? $methodCacheConfig : Sr::config($methodCacheConfig);
+		$this->methodCacheConfig = is_array($methodCacheConfig) ? $methodCacheConfig : Sr::config($methodCacheConfig,false);
 		return $this;
 	}
 
@@ -4295,8 +4302,9 @@ class Soter_Config {
 	}
 
 	public function setCacheConfig($cacheConfig) {
+		$this->cacheHandles=array();
 		if (is_string($cacheConfig)) {
-			$this->cacheConfig = Sr::config($cacheConfig);
+			$this->cacheConfig = Sr::config($cacheConfig,false);
 		} elseif (is_array($cacheConfig)) {
 			$this->cacheConfig = $cacheConfig;
 		} else {
@@ -4317,7 +4325,7 @@ class Soter_Config {
 		if ($sessionHandle instanceof Soter_Session) {
 			$this->sessionHandle = $sessionHandle;
 		} else {
-			$this->sessionHandle = Sr::config($sessionHandle);
+			$this->sessionHandle = Sr::config($sessionHandle,false);
 		}
 		return $this;
 	}
@@ -4339,7 +4347,7 @@ class Soter_Config {
 		if (is_array($sessionConfig)) {
 			$this->sessionConfig = $sessionConfig;
 		} else {
-			$this->sessionConfig = Sr::config($sessionConfig);
+			$this->sessionConfig = Sr::config($sessionConfig,false);
 		}
 		return $this;
 	}
@@ -4353,7 +4361,8 @@ class Soter_Config {
 	}
 
 	public function setDatabseConfig($databseConfig) {
-		$this->databseConfig = is_array($databseConfig) ? $databseConfig : Sr::config($databseConfig);
+		Sr::clearDbInstances();
+		$this->databseConfig = is_array($databseConfig) ? $databseConfig : Sr::config($databseConfig,false);
 		return $this;
 	}
 

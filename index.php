@@ -26,8 +26,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2016, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.95
- * @createdtime   2016-01-19 18:04:07
+ * @since         v1.0.96
+ * @createdtime   2016-01-20 10:26:57
  */
  
 define("IN_SOTER", true);

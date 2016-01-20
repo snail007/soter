@@ -498,7 +498,7 @@ class Soter_Config {
 	}
 
 	public function setDataCheckRules($dataCheckRules) {
-		$this->dataCheckRules = is_array($dataCheckRules) ? $dataCheckRules : Sr::config($dataCheckRules);
+		$this->dataCheckRules = is_array($dataCheckRules) ? $dataCheckRules : Sr::config($dataCheckRules,false);
 		return $this;
 	}
 
@@ -507,7 +507,7 @@ class Soter_Config {
 	}
 
 	public function setMethodCacheConfig($methodCacheConfig) {
-		$this->methodCacheConfig = is_array($methodCacheConfig) ? $methodCacheConfig : Sr::config($methodCacheConfig);
+		$this->methodCacheConfig = is_array($methodCacheConfig) ? $methodCacheConfig : Sr::config($methodCacheConfig,false);
 		return $this;
 	}
 
@@ -560,8 +560,9 @@ class Soter_Config {
 	}
 
 	public function setCacheConfig($cacheConfig) {
+		$this->cacheHandles=array();
 		if (is_string($cacheConfig)) {
-			$this->cacheConfig = Sr::config($cacheConfig);
+			$this->cacheConfig = Sr::config($cacheConfig,false);
 		} elseif (is_array($cacheConfig)) {
 			$this->cacheConfig = $cacheConfig;
 		} else {
@@ -582,7 +583,7 @@ class Soter_Config {
 		if ($sessionHandle instanceof Soter_Session) {
 			$this->sessionHandle = $sessionHandle;
 		} else {
-			$this->sessionHandle = Sr::config($sessionHandle);
+			$this->sessionHandle = Sr::config($sessionHandle,false);
 		}
 		return $this;
 	}
@@ -604,7 +605,7 @@ class Soter_Config {
 		if (is_array($sessionConfig)) {
 			$this->sessionConfig = $sessionConfig;
 		} else {
-			$this->sessionConfig = Sr::config($sessionConfig);
+			$this->sessionConfig = Sr::config($sessionConfig,false);
 		}
 		return $this;
 	}
@@ -618,7 +619,8 @@ class Soter_Config {
 	}
 
 	public function setDatabseConfig($databseConfig) {
-		$this->databseConfig = is_array($databseConfig) ? $databseConfig : Sr::config($databseConfig);
+		Sr::clearDbInstances();
+		$this->databseConfig = is_array($databseConfig) ? $databseConfig : Sr::config($databseConfig,false);
 		return $this;
 	}
 
