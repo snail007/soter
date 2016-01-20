@@ -291,7 +291,7 @@ class Soter_Router_PathInfo_Default extends Soter_Router {
 		/**
 		 * 到此，如果上面$uri被去除掉hmvc模块名称后，$uri有可能是空
 		 * 或者$uri有控制器名称或者方法-参数名称
-		 * 形如：1.Welcome/article-001.do , 2.Welcome/article-001.do , 
+		 * 形如：1.Welcome/article.do , 2.Welcome/article-001.do , 
 		 *      3.article-001.do ,4.article.do , 5.Welcome/User , 6.Welcome 
 		 */
 		if ($uri) {
