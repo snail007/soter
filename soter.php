@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2016, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.96
- * @createdtime   2016-01-20 10:26:57
+ * @since         v1.0.97
+ * @createdtime   2016-01-21 11:08:31
  */
  
 
@@ -1689,7 +1689,7 @@ class Sr {
 			if (!$str) {
 				return '';
 			}
-			$str = mcrypt_decrypt(MCRYPT_DES, $key, $str, MCRYPT_MODE_ECB);
+			$str = @mcrypt_decrypt(MCRYPT_DES, $key, $str, MCRYPT_MODE_ECB);
 			$pad = ord($str[($len = strlen($str)) - 1]);
 			return substr($str, 0, strlen($str) - $pad);
 		}
@@ -4033,7 +4033,7 @@ class Soter_Router_PathInfo_Default extends Soter_Router {
 		/**
 		 * 到此，如果上面$uri被去除掉hmvc模块名称后，$uri有可能是空
 		 * 或者$uri有控制器名称或者方法-参数名称
-		 * 形如：1.Welcome/article-001.do , 2.Welcome/article-001.do , 
+		 * 形如：1.Welcome/article.do , 2.Welcome/article-001.do , 
 		 *      3.article-001.do ,4.article.do , 5.Welcome/User , 6.Welcome 
 		 */
 		if ($uri) {

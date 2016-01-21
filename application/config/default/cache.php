@@ -54,7 +54,7 @@ return array(
 			//密码，如果没有,保持null
 			'password' => NULL,
 			//0意味着没有超时限制，单位秒
-			'timeout' => 0,
+			'timeout' => 3000,
 			//连接失败后的重试时间间隔，单位毫秒
 			'retry' => 100,
 			// 数据库序号，默认0, 参考 http://redis.io/commands/select
