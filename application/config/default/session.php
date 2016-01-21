@@ -6,19 +6,36 @@
  */
 /**
  * Memcache托管
+ * tcp写法（多个redis可以使用英文半角逗号分隔）：
+ * tcp://127.0.0.1:11211?persistent=0&timeout=3&weight=1,tcp://192.168.1.33:11211?persistent=0&timeout=3&weight=2
+ * 可以使用的参数：
+ * persistent:1|0 是否持久连接
+ * weight:1 整数，存储权重
+ * timeout:1 整数，超时时间，单位秒
+ * retry_interval:15 整数，失败重试间隔单位秒
+ * 
  */
-//return new Soter_Session_Memcache(array('path' => 'tcp://127.0.0.1:11211'));
+//return new Soter_Session_Memcache(array('path' => 'tcp://127.0.0.1:11211?persistent=0&timeout=3'));
 /**
  * Memcached托管
+ * 用法和Memcache一样，只是前面不带tcp://
  */
-//return new Soter_Session_Memcached(array('path' => '127.0.0.1:11211'));
+//return new Soter_Session_Memcached(array('path' => '127.0.0.1:11211?persistent=0&timeout=3'));
 /**
  * Redis托管
+ * 套接字写法（多个redis可以使用英文半角逗号分隔）：
+ * unix:///var/run/redis/redis.sock?weight=2&timeout=2.5
+ * tcp写法（多个redis可以使用英文半角逗号分隔）：
+ * tcp://host1:6379?weight=1&timeout=2.5,tcp://host2:6379?weight=2&timeout=2.5
+ * 可以使用的参数：
+ * persistent：1|0 是否持久连接
+ * weight：1 整数，存储权重
+ * timeout：3.0 浮点数,超时时间，单位秒
+ * prefix：PHPREDIS_SESSION session键名称的前缀 
+ * auth：字符串，认证密码，避免特殊字符影响可以需要使用urlencode()处理一下
+ * database：0 整数，数据库号
  */
-//return new Soter_Session_Redis(array('path' => 'tcp://127.0.0.1:6379'));
-//如果Redis有密码，比如：test，写法如下
-//return new Soter_Session_Redis(array('path' => 'tcp://127.0.0.1:6379?auth=test'));
-
+//return new Soter_Session_Redis(array('path' => 'tcp://127.0.0.1:6379?timeout=3&persistent=0'));
 /**
  * Mongodb托管
  */
