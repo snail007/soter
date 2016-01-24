@@ -230,16 +230,17 @@ class Soter_Router_Get_Default extends Soter_Router {
 		$controllerName = Sr::arrayGet($get, $config->getRouterUrlControllerKey(), '');
 		$methodName = Sr::arrayGet($get, $config->getRouterUrlMethodKey(), '');
 		$hmvcModuleName = '';
+                //处理hmvc模块
+		$hmvcModuleDirName = Soter::checkHmvc($hmvcModuleName, false);
 		//当前域名没有绑定hmvc模块,路由器需要处理hmvc模块
 		if (!(Sr::config()->getHmvcDomain())) {
 			$hmvcModuleName = Sr::arrayGet($get, $config->getRouterUrlModuleKey(), '');
 			//hmvc模块是domainOnly的就重置为空
 			if ($config->hmvcIsDomainOnly($hmvcModuleName)) {
 				$hmvcModuleName = '';
+                                $hmvcModuleDirName='';
 			}
 		}
-		//处理hmvc模块
-		$hmvcModuleDirName = Soter::checkHmvc($hmvcModuleName, false);
 		if ($controllerName) {
 			$controllerName = $config->getControllerDirName() . '_' . $controllerName;
 		}
@@ -271,16 +272,19 @@ class Soter_Router_PathInfo_Default extends Soter_Router {
 		//到此$uri形如：Welcome/index.do , Welcome/User , Welcome
 		$_info = explode('/', $uri);
 		$hmvcModule = current($_info);
-		//hmvc模块是domainOnly的就重置为空
-		if ($config->hmvcIsDomainOnly($hmvcModule)) {
-			$hmvcModule = '';
-		}
 		//处理hmvc模块
 		$hmvcModuleDirName = Soter::checkHmvc($hmvcModule, FALSE);
-		//当前域名没有绑定hmvc模块而且hmvc模块存在，去除hmvc模块名称，得到真正的路径
-		if (!Sr::config()->getHmvcDomain()&&$hmvcModuleDirName) {
-			$uri = ltrim(substr($uri, strlen($hmvcModule)), '/');
-		}
+                //如果是hmvc模式
+                if($hmvcModuleDirName){
+                    //当前hmvc模块绑定了当前域名而且是domainOnly的，禁止访问，$hmvcModule和$hmvcModuleDirName重置为空
+                    if ($config->hmvcIsDomainOnly($hmvcModule)) {
+			$hmvcModule = '';
+                        $hmvcModuleDirName='';
+                    }else{
+                        //当前hmvc模块没有绑定域名或是非domainOnly的，那么就去除hmvc模块名称，得到真正的路径
+                        $uri = ltrim(substr($uri, strlen($hmvcModule)), '/');
+                    }
+                }
 		//首先控制器名和方法名初始化为默认
 		$controller = $config->getDefaultController();
 		$method = $config->getDefaultMethod();
@@ -432,10 +436,9 @@ class Soter_Config {
 			return false;
 		}
 		foreach ($this->hmvcDomains['domains'] as $hvmc) {
-			if ($hmvcModuleName == $hvmc['hmvcModuleName']) {
+			if ($hmvcModuleName == $hvmc['hmvcModuleName']&&$hvmc['enable']) {
 				return $hvmc['domainOnly'];
 			}
-			return false;
 		}
 		return false;
 	}
