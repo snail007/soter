@@ -218,7 +218,6 @@ class Soter_Route {
 }
 
 class Soter_Router_Get_Default extends Soter_Router {
-
 	public function find() {
 		$config = Sr::config();
 		$query = $config->getRequest()->getQueryString();
