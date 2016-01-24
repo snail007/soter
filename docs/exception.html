@@ -145,7 +145,6 @@
 						class Logger_MyFileWriter implements Soter_Logger_Writer {
 
 							public function write(Soter_Exception $exception) {
-								$environment=$exception->getEnvironment();//当前环境								
 								$line=$exception->getErrorMessage();//错误信息
 								$code=$exception->getErrorCode();//错误码
 								$file=$exception->getErrorFile();//错误文件路径
@@ -183,7 +182,6 @@
                                         <br>示例如下:
                                         <pre class="brush:php">
                                                 ->setExceptionJsonRender(function(Exception $e) {
-							$json['environment'] = $e->getEnvironment();
                                                         $json['file'] = $e->getErrorFile();
                                                         $json['line'] = $e->getErrorLine();
                                                         $json['message'] = $e->getErrorMessage();
@@ -208,9 +206,9 @@
 					<br>1.为false时关闭Soter管理异常功能。
 					<br>2.为true时打开Soter管理异常功能。
 					<br><b class="text_strong">提示：
-						<br>当我们关闭Soter管理异常功能后，上面的提到的异常各种管理功能和显示控制都将无效。
-						<br>当我们解决了错误之后，应该打开这个功能，也就是设置参数为true，恢复Soter对异常的控制，
-						<br>这样上面的提到的异常各种管理功能和显示控制才会有效。
+					<br>当我们关闭Soter管理异常功能后，上面的提到的异常各种管理功能和显示控制都将无效。
+					<br>当我们解决了错误之后，应该打开这个功能，也就是设置参数为true，恢复Soter对异常的控制，
+					<br>这样上面的提到的异常各种管理功能和显示控制才会有效。
 					</b>
 				</li>
 			</ol>

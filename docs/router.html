@@ -332,19 +332,11 @@
 					<br>1.比如：http://127.0.0.1/soter/index.php/User
 					<br>假设我们设置的默认控制器是Welcome,默认方法是index。
 					<br>我们访问非默认控制器User，而且没有输入方法名称的时候，那么用户访问的就是User的do_index方法。
-					<br>2.比如：http://127.0.0.1/soter/index.php/list.do
-					<br>假设我们设置的默认控制器是Welcome，URL里面方法后缀是.do。
-					<br>我们直接访问方法list.do，而且没有输入控制器名称的时候，那么用户访问的就是默认控制器Welcome的do_list方法。
-					<br>3.比如：http://127.0.0.1/soter/index.php/Demo
+					<br>2.比如：http://127.0.0.1/soter/index.php/Demo
 					<br>假设我们设置的默认控制器是Welcome,默认方法是index。
 					<br>而且注册了hvmc模块Demo。
 					<br>我们直接访问Demo hmvc模块，而且没有输入控制器名称和方法名称的时候，
 					<br>那么用户访问的就是模块中的控制器Welcome的do_index方法。
-					<br>4.比如：http://127.0.0.1/soter/index.php/Demo/list.do
-					<br>假设我们设置的默认控制器是Welcome，URL里面方法后缀是.do。
-					<br>而且注册了hvmc模块Demo。
-					<br>我们没有输入控制器名称，直接访问Demo hmvc模块的方法list.do，而且没有输入控制器名称的时候
-					<br>那么用户访问的就是Demo模块中的默认控制器Welcome的do_list方法。
 				</li>
 				<li><h2 class="title_h2">伪静态</h2>
 					例如apache、nginx都可以通过虚拟机主机配置文件实现伪静态去掉url中的index.php。

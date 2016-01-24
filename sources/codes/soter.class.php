@@ -135,7 +135,7 @@ class Soter {
 		}
 		$_route = Sr::config()->getRoute();
 		//当前域名有绑定hmvc模块,需要处理hmvc模块
-		if ($hmvcModuleName = Sr::config()->getHmvcDomain()) {
+		if ($hmvcModuleName = Sr::config()->getCurrentDomainHmvcModuleNname()) {
 			if (Soter::checkHmvc($hmvcModuleName, false)) {
 				$_route->setHmvcModuleName($hmvcModuleName);
 				$_route->setFound(true);
@@ -944,7 +944,7 @@ class Sr {
 	 */
 	static function url($action = '', $getData = array()) {
 		$config = Sr::config();
-		$hmvcModuleName = $config->getHmvcDomain(); //当前域名绑定的hmvc模块名称
+		$hmvcModuleName = $config->getCurrentDomainHmvcModuleNname(); //当前域名绑定的hmvc模块名称
 		//访问的是hmvc模块且绑定了当前域名，且是DomainOnly的，就去掉开头的模块名称
 		if ($hmvcModuleName && $config->hmvcIsDomainOnly($hmvcModuleName)) {
 			$action = preg_replace('|^' . $hmvcModuleName . '/?|', '/', $action);

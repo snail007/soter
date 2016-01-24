@@ -2,329 +2,333 @@
 
 class Soter_Request_Default implements Soter_Request {
 
-	private $pathInfo, $queryString;
+    private $pathInfo, $queryString;
 
-	public function __construct() {
-		$this->pathInfo = Sr::arrayGet($_SERVER, 'PATH_INFO', Sr::arrayGet($_SERVER, 'REDIRECT_PATH_INFO'));
-		$this->queryString = Sr::arrayGet($_SERVER, 'QUERY_STRING', '');
-	}
+    public function __construct() {
+	$this->pathInfo = Sr::arrayGet($_SERVER, 'PATH_INFO', Sr::arrayGet($_SERVER, 'REDIRECT_PATH_INFO'));
+	$this->queryString = Sr::arrayGet($_SERVER, 'QUERY_STRING', '');
+    }
 
-	public function getPathInfo() {
-		return $this->pathInfo;
-	}
+    public function getPathInfo() {
+	return $this->pathInfo;
+    }
 
-	public function getQueryString() {
-		return $this->queryString;
-	}
+    public function getQueryString() {
+	return $this->queryString;
+    }
 
-	public function setPathInfo($pathInfo) {
-		$this->pathInfo = $pathInfo;
-		return $this;
-	}
+    public function setPathInfo($pathInfo) {
+	$this->pathInfo = $pathInfo;
+	return $this;
+    }
 
-	public function setQueryString($queryString) {
-		$this->queryString = $queryString;
-		return $this;
-	}
+    public function setQueryString($queryString) {
+	$this->queryString = $queryString;
+	return $this;
+    }
 
 }
 
 class Soter_View {
 
-	private static $vars = array();
+    private static $vars = array();
 
-	public function add($key, $value = array()) {
-		if (is_array($key)) {
-			foreach ($key as $k => $v) {
-				if (!Sr::arrayKeyExists($k, self::$vars)) {
-					self::$vars[$k] = $v;
-				}
-			}
-		} else {
-			if (!Sr::arrayKeyExists($key, self::$vars)) {
-				self::$vars[$key] = $value;
-			}
+    public function add($key, $value = array()) {
+	if (is_array($key)) {
+	    foreach ($key as $k => $v) {
+		if (!Sr::arrayKeyExists($k, self::$vars)) {
+		    self::$vars[$k] = $v;
 		}
-		return $this;
+	    }
+	} else {
+	    if (!Sr::arrayKeyExists($key, self::$vars)) {
+		self::$vars[$key] = $value;
+	    }
 	}
+	return $this;
+    }
 
-	public function set($key, $value = array()) {
-		if (is_array($key)) {
-			foreach ($key as $k => $v) {
-				self::$vars[$k] = $v;
-			}
-		} else {
-			self::$vars[$key] = $value;
-		}
-		return $this;
+    public function set($key, $value = array()) {
+	if (is_array($key)) {
+	    foreach ($key as $k => $v) {
+		self::$vars[$k] = $v;
+	    }
+	} else {
+	    self::$vars[$key] = $value;
 	}
+	return $this;
+    }
 
-	private function _load($path, $data = array(), $return = false) {
-		if (!file_exists($path)) {
-			throw new Soter_Exception_500('view file : [ ' . $path . ' ] not found');
-		}
-		$data = array_merge(self::$vars, $data);
-		if (!empty($data)) {
-			extract($data);
-		}
-		if ($return) {
-			@ob_start();
-			include $path;
-			$html = ob_get_contents();
-			@ob_end_clean();
-			return $html;
-		} else {
-			include $path;
-			return;
-		}
+    private function _load($path, $data = array(), $return = false) {
+	if (!file_exists($path)) {
+	    throw new Soter_Exception_500('view file : [ ' . $path . ' ] not found');
 	}
-
-	/**
-	 * 加载一个视图<br/>
-	 * @param string $viewName 视图名称
-	 * @param array  $data     视图中可以使用的数据
-	 * @param bool   $return   是否返回视图内容
-	 * @return string
-	 */
-	public function load($viewName, $data = array(), $return = false) {
-		$config = Sr::config();
-		$path = $config->getApplicationDir() . $config->getViewsDirName() . '/' . $viewName . '.php';
-		$hmvcModules = $config->getHmvcModules();
-		$hmvcDirName = Sr::arrayGet($hmvcModules, $config->getRoute()->getHmvcModuleName(), '');
-		//当load方法在主项目的视图中被调用，然后hmvc主项目load了这个视图，那么这个视图里面的load应该使用的是主项目视图。
-		//hmvc访问
-		if ($hmvcDirName) {
-			$hmvcPath = Sr::realPath($config->getPrimaryApplicationDir() . $config->getHmvcDirName() . '/' . $hmvcDirName);
-			$trace = debug_backtrace();
-			$calledIsInHmvc = false;
-			$appPath = Sr::realPath($config->getApplicationDir());
-			foreach ($trace as $t) {
-				$filepath = Sr::arrayGet($t, 'file', '');
-				if (!empty($filepath)) {
-					$filepath = Sr::realPath($filepath);
-					$checkList = array('load', 'runWeb', 'message', 'redirect');
-					$function = Sr::arrayGet($t, 'function', '');
-					if ($filepath && in_array($function, $checkList) && strpos($filepath, $appPath) === 0 && strpos($filepath, $hmvcPath) === 0) {
-						$calledIsInHmvc = true;
-						break;
-					} elseif (!in_array($function, $checkList)) {
-						break;
-					}
-				}
-			}
-			//发现load是在主项目中被调用的，使用主项目视图
-			if (!$calledIsInHmvc) {
-				$path = $config->getPrimaryApplicationDir() . $config->getViewsDirName() . '/' . $viewName . '.php';
-			}
-		}
-		return $this->_load($path, $data, $return);
+	$data = array_merge(self::$vars, $data);
+	if (!empty($data)) {
+	    extract($data);
 	}
+	if ($return) {
+	    @ob_start();
+	    include $path;
+	    $html = ob_get_contents();
+	    @ob_end_clean();
+	    return $html;
+	} else {
+	    include $path;
+	    return;
+	}
+    }
 
-	/**
-	 * 加载主项目的视图<br/>
-	 * 这个一般是在hmvc模块中使用到，用于复用主项目的视图文件，比如通用的header等。<br/>
-	 * @param string $viewName 主项目视图名称
-	 * @param array  $data     视图中可以使用的数据
-	 * @param bool   $return   是否返回视图内容
-	 * @return string
-	 */
-	public function loadParent($viewName, $data = array(), $return = false) {
-		$config = Sr::config();
+    /**
+     * 加载一个视图<br/>
+     * @param string $viewName 视图名称
+     * @param array  $data     视图中可以使用的数据
+     * @param bool   $return   是否返回视图内容
+     * @return string
+     */
+    public function load($viewName, $data = array(), $return = false) {
+	$config = Sr::config();
+	$path = $config->getApplicationDir() . $config->getViewsDirName() . '/' . $viewName . '.php';
+	$hmvcModules = $config->getHmvcModules();
+	$hmvcDirName = Sr::arrayGet($hmvcModules, $config->getRoute()->getHmvcModuleName(), '');
+	//当load方法在主项目的视图中被调用，然后hmvc主项目load了这个视图，那么这个视图里面的load应该使用的是主项目视图。
+	//hmvc访问
+	if ($hmvcDirName) {
+	    $hmvcPath = Sr::realPath($config->getPrimaryApplicationDir() . $config->getHmvcDirName() . '/' . $hmvcDirName);
+	    $trace = debug_backtrace();
+	    $calledIsInHmvc = false;
+	    $appPath = Sr::realPath($config->getApplicationDir());
+	    foreach ($trace as $t) {
+		$filepath = Sr::arrayGet($t, 'file', '');
+		if (!empty($filepath)) {
+		    $filepath = Sr::realPath($filepath);
+		    $checkList = array('load', 'runWeb', 'message', 'redirect');
+		    $function = Sr::arrayGet($t, 'function', '');
+		    if ($filepath && in_array($function, $checkList) && strpos($filepath, $appPath) === 0 && strpos($filepath, $hmvcPath) === 0) {
+			$calledIsInHmvc = true;
+			break;
+		    } elseif (!in_array($function, $checkList)) {
+			break;
+		    }
+		}
+	    }
+	    //发现load是在主项目中被调用的，使用主项目视图
+	    if (!$calledIsInHmvc) {
 		$path = $config->getPrimaryApplicationDir() . $config->getViewsDirName() . '/' . $viewName . '.php';
-		return $this->_load($path, $data, $return);
+	    }
 	}
+	return $this->_load($path, $data, $return);
+    }
+
+    /**
+     * 加载主项目的视图<br/>
+     * 这个一般是在hmvc模块中使用到，用于复用主项目的视图文件，比如通用的header等。<br/>
+     * @param string $viewName 主项目视图名称
+     * @param array  $data     视图中可以使用的数据
+     * @param bool   $return   是否返回视图内容
+     * @return string
+     */
+    public function loadParent($viewName, $data = array(), $return = false) {
+	$config = Sr::config();
+	$path = $config->getPrimaryApplicationDir() . $config->getViewsDirName() . '/' . $viewName . '.php';
+	return $this->_load($path, $data, $return);
+    }
 
 }
 
 class Soter_CliArgs {
 
-	private $args;
+    private $args;
 
-	public function __construct() {
-		$this->args = Sr::getOpt();
-	}
+    public function __construct() {
+	$this->args = Sr::getOpt();
+    }
 
-	public function get($key = null, $default = null) {
-		if (empty($key)) {
-			return $this->args;
-		}
-		return Sr::arrayGet($this->args, $key, $default);
+    public function get($key = null, $default = null) {
+	if (empty($key)) {
+	    return $this->args;
 	}
+	return Sr::arrayGet($this->args, $key, $default);
+    }
 
 }
 
 class Soter_Route {
 
-	private $found = false;
-	private $controller, $method, $args, $hmvcModuleName;
+    private $found = false;
+    private $controller, $method, $args, $hmvcModuleName;
 
-	public function getHmvcModuleName() {
-		return $this->hmvcModuleName;
-	}
+    public function getHmvcModuleName() {
+	return $this->hmvcModuleName;
+    }
 
-	public function setHmvcModuleName($hmvcModuleName) {
-		$this->hmvcModuleName = $hmvcModuleName;
-		return $this;
-	}
+    public function setHmvcModuleName($hmvcModuleName) {
+	$this->hmvcModuleName = $hmvcModuleName;
+	return $this;
+    }
 
-	public function found() {
-		return $this->found;
-	}
+    public function found() {
+	return $this->found;
+    }
 
-	public function setFound($found) {
-		$this->found = $found;
-		return $this;
-	}
+    public function setFound($found) {
+	$this->found = $found;
+	return $this;
+    }
 
-	public function getController() {
-		return $this->controller;
-	}
+    public function getController() {
+	return $this->controller;
+    }
 
-	public function getMethod() {
-		return $this->method;
-	}
+    public function getMethod() {
+	return $this->method;
+    }
 
-	public function getControllerShort() {
-		return preg_replace('/^' . Sr::config()->getControllerDirName() . '_/', '', $this->getController());
-	}
+    public function getControllerShort() {
+	return preg_replace('/^' . Sr::config()->getControllerDirName() . '_/', '', $this->getController());
+    }
 
-	public function getMethodShort() {
-		return preg_replace('/^' . Sr::config()->getMethodPrefix() . '/', '', $this->getMethod());
-	}
+    public function getMethodShort() {
+	return preg_replace('/^' . Sr::config()->getMethodPrefix() . '/', '', $this->getMethod());
+    }
 
-	public function getArgs() {
-		return $this->args;
-	}
+    public function getArgs() {
+	return $this->args;
+    }
 
-	public function __construct() {
-		$this->args = array();
-	}
+    public function __construct() {
+	$this->args = array();
+    }
 
-	public function setController($controller) {
-		$this->controller = $controller;
-		return $this;
-	}
+    public function setController($controller) {
+	$this->controller = $controller;
+	return $this;
+    }
 
-	public function setMethod($method) {
-		$this->method = $method;
-		return $this;
-	}
+    public function setMethod($method) {
+	$this->method = $method;
+	return $this;
+    }
 
-	public function setArgs(array $args) {
-		$this->args = $args;
-		return $this;
-	}
+    public function setArgs(array $args) {
+	$this->args = $args;
+	return $this;
+    }
 
 }
 
 class Soter_Router_Get_Default extends Soter_Router {
-	public function find() {
-		$config = Sr::config();
-		$query = $config->getRequest()->getQueryString();
-		//pathinfo非空说明是pathinfo路由，get路由器不再处理直接返回
-		if (!$config->getRequest()->getPathInfo() || !$query) {
-			return $this->route->setFound(FALSE);
-		}
-		parse_str($query, $get);
-		$controllerName = Sr::arrayGet($get, $config->getRouterUrlControllerKey(), '');
-		$methodName = Sr::arrayGet($get, $config->getRouterUrlMethodKey(), '');
-		$hmvcModuleName = '';
-                //处理hmvc模块
-		$hmvcModuleDirName = Soter::checkHmvc($hmvcModuleName, false);
-		//当前域名没有绑定hmvc模块,路由器需要处理hmvc模块
-		if (!(Sr::config()->getHmvcDomain())) {
-			$hmvcModuleName = Sr::arrayGet($get, $config->getRouterUrlModuleKey(), '');
-			//hmvc模块是domainOnly的就重置为空
-			if ($config->hmvcIsDomainOnly($hmvcModuleName)) {
-				$hmvcModuleName = '';
-                                $hmvcModuleDirName='';
-			}
-		}
-		if ($controllerName) {
-			$controllerName = $config->getControllerDirName() . '_' . $controllerName;
-		}
-		if ($methodName) {
-			$methodName = $config->getMethodPrefix() . $methodName;
-		}
-		return $this->route->setHmvcModuleName($hmvcModuleDirName ? $hmvcModuleName : '')
-				->setController($controllerName)
-				->setMethod($methodName)
-				->setFound($hmvcModuleDirName || $controllerName);
+
+    public function find() {
+	$config = Sr::config();
+	$query = $config->getRequest()->getQueryString();
+	//pathinfo非空说明是pathinfo路由，get路由器不再处理直接返回
+	if (!$config->getRequest()->getPathInfo() || !$query) {
+	    return $this->route->setFound(FALSE);
 	}
+	parse_str($query, $get);
+	$controllerName = Sr::arrayGet($get, $config->getRouterUrlControllerKey(), '');
+	$methodName = Sr::arrayGet($get, $config->getRouterUrlMethodKey(), '');
+	$hmvcModule = Sr::arrayGet($get, $config->getRouterUrlModuleKey(), '');
+	$_hmvcModule = $config->getCurrentDomainHmvcModuleNname();
+	if (!$_hmvcModule) {
+	    if ($config->hmvcIsDomainOnly($hmvcModule)) {
+		//当前域名没有绑定任何hmvc模块，而且当前hmvc模块是domainOnly的，禁止访问当前hmvc模块
+		$hmvcModule = '';
+	    }
+	} else{
+	    //当前域名绑定了hmvc模块，就重置$hmvcModule为绑定的hvmc模块
+	    $hmvcModule = $_hmvcModule;
+	}
+	//处理hmvc模块
+	$hmvcModuleDirName = Soter::checkHmvc($hmvcModule, false);
+	if ($controllerName) {
+	    $controllerName = $config->getControllerDirName() . '_' . $controllerName;
+	}
+	if ($methodName) {
+	    $methodName = $config->getMethodPrefix() . $methodName;
+	}
+	return $this->route->setHmvcModuleName($hmvcModuleDirName ? $hmvcModule : '')
+			->setController($controllerName)
+			->setMethod($methodName)
+			->setFound($hmvcModuleDirName || $controllerName);
+    }
 
 }
 
 class Soter_Router_PathInfo_Default extends Soter_Router {
 
-	public function find() {
-		$config = Soter::getConfig();
-		$uri = $config->getRequest()->getPathInfo();
-		$uri = trim($uri, '/');
-		if (empty($uri)) {
-			//没有找到hmvc模块名称，或者控制器名称
-			return $this->route->setFound(FALSE);
-		} else {
-			if ($uriRewriter = $config->getUriRewriter()) {
-				$uri = $uriRewriter->rewrite($uri);
-			}
-		}
-		//到此$uri形如：Welcome/index.do , Welcome/User , Welcome
-		$_info = explode('/', $uri);
-		$hmvcModule = current($_info);
-		//处理hmvc模块
-		$hmvcModuleDirName = Soter::checkHmvc($hmvcModule, FALSE);
-                //如果是hmvc模式
-                if($hmvcModuleDirName){
-                    //当前hmvc模块绑定了当前域名而且是domainOnly的，禁止访问，$hmvcModule和$hmvcModuleDirName重置为空
-                    if ($config->hmvcIsDomainOnly($hmvcModule)) {
-			$hmvcModule = '';
-                        $hmvcModuleDirName='';
-                    }else{
-                        //当前hmvc模块没有绑定域名或是非domainOnly的，那么就去除hmvc模块名称，得到真正的路径
-                        $uri = ltrim(substr($uri, strlen($hmvcModule)), '/');
-                    }
-                }
-		//首先控制器名和方法名初始化为默认
-		$controller = $config->getDefaultController();
-		$method = $config->getDefaultMethod();
-		$subfix = $config->getMethodUriSubfix();
-		/**
-		 * 到此，如果上面$uri被去除掉hmvc模块名称后，$uri有可能是空
-		 * 或者$uri有控制器名称或者方法-参数名称
-		 * 形如：1.Welcome/article.do , 2.Welcome/article-001.do , 
-		 *      3.article-001.do ,4.article.do , 5.Welcome/User , 6.Welcome 
-		 */
-		if ($uri) {
-			//解析路径
-			$methodPathArr = explode($subfix, $uri);
-			//找到了控制器名或者方法-参数名(1,2,3,4)
-			if (Sr::strEndsWith($uri, $subfix)) {
-				//找到了控制器名和方法-参数名(1,2)，覆盖上面的默认控制器名和方法-参数名
-				if (stripos($methodPathArr[0], '/') !== false) {
-					$controller = str_replace('/', '_', dirname($uri));
-					$method = basename($methodPathArr[0]);
-				} else {
-					//只找到了方法-参数名(3,4)，覆盖上面的默认方法名
-					$method = basename($methodPathArr[0]);
-				}
-			} else {
-				//只找到了控制器名(5,6)，覆盖上面的默认控制器名
-				$controller = str_replace('/', '_', $uri);
-			}
-		}
-		$controller = $config->getControllerDirName() . '_' . $controller;
-		//统一解析方法-参数名
-		$methodAndParameters = explode($config->getMethodParametersDelimiter(), $method);
-		$method = $config->getMethodPrefix() . current($methodAndParameters);
-		array_shift($methodAndParameters);
-		$parameters = $methodAndParameters;
-		return $this->route
-				->setHmvcModuleName($hmvcModuleDirName ? $hmvcModule : '')
-				->setController($controller)
-				->setMethod($method)
-				->setArgs($parameters)
-				->setFound(TRUE);
+    public function find() {
+	$config = Soter::getConfig();
+	$uri = $config->getRequest()->getPathInfo();
+	$uri = trim($uri, '/');
+	if (empty($uri)) {
+	    //没有找到hmvc模块名称，或者控制器名称
+	    return $this->route->setFound(FALSE);
+	} else {
+	    if ($uriRewriter = $config->getUriRewriter()) {
+		$uri = $uriRewriter->rewrite($uri);
+	    }
 	}
+	//到此$uri形如：Welcome/index.do , Welcome/User , Welcome
+	$_info = explode('/', $uri);
+	$hmvcModule = current($_info);
+	$_hmvcModule = $config->getCurrentDomainHmvcModuleNname();
+	if (!$_hmvcModule) {
+	    if ($config->hmvcIsDomainOnly($hmvcModule)) {
+		//当前域名没有绑定任何hmvc模块，而且当前hmvc模块是domainOnly的，禁止访问当前hmvc模块
+		$hmvcModule = '';
+	    } else {
+		//当前hmvc模块没有绑定域名或是非domainOnly的，那么就去除hmvc模块名称，得到真正的路径
+		$uri = ltrim(substr($uri, strlen($hmvcModule)), '/');
+	    }
+	} else{
+	    //当前域名绑定了hmvc模块，就重置$hmvcModule为绑定的hvmc模块
+	    $hmvcModule = $_hmvcModule;
+	}
+	//处理hmvc模块
+	$hmvcModuleDirName = Soter::checkHmvc($hmvcModule, FALSE);
+	//首先控制器名和方法名初始化为默认
+	$controller = $config->getDefaultController();
+	$method = $config->getDefaultMethod();
+	$subfix = $config->getMethodUriSubfix();
+	/**
+	 * 到此，如果上面$uri被去除掉hmvc模块名称后，$uri有可能是空
+	 * 或者$uri有控制器名称或者方法-参数名称
+	 * 形如：1.Welcome/article.do , 2.Welcome/article-001.do , 
+	 *      3.article-001.do ,4.article.do , 5.Welcome/User , 6.Welcome 
+	 */
+	if ($uri) {
+	    //解析路径
+	    $methodPathArr = explode($subfix, $uri);
+	    //找到了控制器名或者方法-参数名(1,2,3,4)
+	    if (Sr::strEndsWith($uri, $subfix)) {
+		//找到了控制器名和方法-参数名(1,2)，覆盖上面的默认控制器名和方法-参数名
+		if (stripos($methodPathArr[0], '/') !== false) {
+		    $controller = str_replace('/', '_', dirname($uri));
+		    $method = basename($methodPathArr[0]);
+		} else {
+		    //只找到了方法-参数名(3,4)，覆盖上面的默认方法名
+		    $method = basename($methodPathArr[0]);
+		}
+	    } else {
+		//只找到了控制器名(5,6)，覆盖上面的默认控制器名
+		$controller = str_replace('/', '_', $uri);
+	    }
+	}
+	$controller = $config->getControllerDirName() . '_' . $controller;
+	//统一解析方法-参数名
+	$methodAndParameters = explode($config->getMethodParametersDelimiter(), $method);
+	$method = $config->getMethodPrefix() . current($methodAndParameters);
+	array_shift($methodAndParameters);
+	$parameters = $methodAndParameters;
+	return $this->route
+			->setHmvcModuleName($hmvcModuleDirName ? $hmvcModule : '')
+			->setController($controller)
+			->setMethod($method)
+			->setArgs($parameters)
+			->setFound(TRUE);
+    }
 
 }
 
@@ -333,1640 +337,1640 @@ class Soter_Router_PathInfo_Default extends Soter_Router {
  */
 class Soter_Config {
 
-	private $applicationDir = '', //项目目录
-		$primaryApplicationDir = '', //主项目目录
-		$indexDir = '', //入口文件目录
-		$indexName = '', //入口文件名称
-		$classesDirName = 'classes',
-		$hmvcDirName = 'hmvc',
-		$libraryDirName = 'library',
-		$functionsDirName = 'functions',
-		$storageDirPath = '',
-		$viewsDirName = 'views',
-		$configDirName = 'config',
-		$configTestingDirName = 'testing',
-		$configProductionDirName = 'production',
-		$configDevelopmentDirName = 'development',
-		$controllerDirName = 'Controller',
-		$businessDirName = 'Business',
-		$daoDirName = 'Dao',
-		$beanDirName = 'Bean',
-		$modelDirName = 'Model',
-		$taskDirName = 'Task',
-		$defaultController = 'Welcome',
-		$defaultMethod = 'index',
-		$methodPrefix = 'do_',
-		$methodUriSubfix = '.do',
-		$routerUrlModuleKey = 'm',
-		$routerUrlControllerKey = 'c',
-		$routerUrlMethodKey = 'a',
-		$methodParametersDelimiter = '-',
-		$logsSubDirNameFormat = 'Y-m-d/H',
-		$cookiePrefix = '',
-		$backendServerIpWhitelist = array(),
-		$isRewrite = FALSE,
-		$request, $showError = true,
-		$routersContainer = array(),
-		$packageMasterContainer = array(),
-		$packageContainer = array(),
-		$loggerWriterContainer = array(),
-		$uriRewriter,
-		$exceptionHandle, $route, $environment = Sr::ENV_DEVELOPMENT,
-		$serverEnvironmentTestingValue = 'testing',
-		$serverEnvironmentDevelopmentValue = 'development',
-		$serverEnvironmentProductionValue = 'production',
-		$hmvcModules = array(),
-		$isMaintainMode = false,
-		$maintainIpWhitelist = array(),
-		$maintainModeHandle,
-		$databseConfig,
-		$cacheHandles = array(),
-		$cacheConfig,
-		$sessionConfig,
-		$sessionHandle,
-		$methodCacheConfig,
-		$dataCheckRules,
-		$outputJsonRender,
-		$exceptionJsonRender,
-		$srMethods = array(),
-		$encryptKey,
-		$hmvcDomains = array()
-
-	;
-
-	public function setExceptionControl($isExceptionControl) {
-		if ($isExceptionControl && !Sr::isPluginMode()) {
-			//注册错误处理
-			Soter_Logger_Writer_Dispatcher::initialize();
-		}
-		return $this;
-	}
-
-	public function getStorageDirPath() {
-		return empty($this->storageDirPath) ? $this->getPrimaryApplicationDir() . 'storage/' : $this->storageDirPath;
-	}
-
-	public function setStorageDirPath($storageDirPath) {
-		$this->storageDirPath = Sr::realPath($storageDirPath, true);
-		return $this;
-	}
-
-	public function getHmvcDomain() {
-		if (!$this->hmvcDomains['enable']) {
-			return false;
-		}
-		$_domain = Sr::server('http_host');
-		$domain = explode('.', $_domain);
-		$length = count($domain);
-		if ($length <= 2) {
-			return false;
-		}
-		$topDomain = $domain[$length - 2] . '.' . $domain[$length - 1];
-		foreach ($this->hmvcDomains['domains'] as $prefix => $hvmc) {
-			if ($prefix . '.' . $topDomain == $_domain) {
-				return $hvmc['enable'] ? $hvmc['hmvcModuleName'] : false;
-			}
-		}
-		return '';
-	}
-
-	public function hmvcIsDomainOnly($hmvcModuleName) {
-		if (!$hmvcModuleName || !$this->hmvcDomains['enable']) {
-			return false;
-		}
-		foreach ($this->hmvcDomains['domains'] as $hvmc) {
-			if ($hmvcModuleName == $hvmc['hmvcModuleName']&&$hvmc['enable']) {
-				return $hvmc['domainOnly'];
-			}
-		}
-		return false;
-	}
-
-	public function setHmvcDomains(Array $hmvcDomains) {
-		$this->hmvcDomains = $hmvcDomains;
-		return $this;
-	}
-
-	public function getEncryptKey() {
-		$key = $this->getEnvironment();
-		return isset($this->encryptKey[$key]) ? $this->encryptKey[$key] : '';
-	}
-
-	public function setEncryptKey($encryptKey) {
-		if (is_array($encryptKey)) {
-			$this->encryptKey = $encryptKey;
-		} else {
-			$this->encryptKey = array(
-			    Sr::ENV_DEVELOPMENT => $encryptKey,
-			    Sr::ENV_TESTING => $encryptKey,
-			    Sr::ENV_PRODUCTION => $encryptKey
-			);
-		}
-		return $this;
-	}
-
-	public function getSrMethods() {
-		return $this->srMethods;
-	}
-
-	public function setSrMethods(array $srMethods) {
-		$this->srMethods = $srMethods;
-		return $this;
-	}
-
-	public function getExceptionJsonRender() {
-		return $this->exceptionJsonRender;
-	}
-
-	public function setExceptionJsonRender($exceptionJsonRender) {
-		$this->exceptionJsonRender = $exceptionJsonRender;
-		return $this;
-	}
-
-	public function getOutputJsonRender() {
-		return $this->outputJsonRender;
-	}
-
-	public function setOutputJsonRender($outputJsonHandle) {
-		$this->outputJsonRender = $outputJsonHandle;
-		return $this;
-	}
-
-	public function getDataCheckRules() {
-		return $this->dataCheckRules;
-	}
-
-	public function setDataCheckRules($dataCheckRules) {
-		$this->dataCheckRules = is_array($dataCheckRules) ? $dataCheckRules : Sr::config($dataCheckRules, false);
-		return $this;
-	}
-
-	public function getMethodCacheConfig() {
-		return $this->methodCacheConfig;
-	}
-
-	public function setMethodCacheConfig($methodCacheConfig) {
-		$this->methodCacheConfig = is_array($methodCacheConfig) ? $methodCacheConfig : Sr::config($methodCacheConfig, false);
-		return $this;
-	}
-
-	public function getViewsDirName() {
-		return $this->viewsDirName;
-	}
-
-	public function setViewsDirName($viewsDirName) {
-		$this->viewsDirName = $viewsDirName;
-		return $this;
-	}
-
-	/**
-	 * 
-	 * @return Soter_Cache
-	 */
-	public function getCacheHandle($key = '') {
-		if (empty($this->cacheConfig)) {
-			$this->cacheConfig = array(
-			    'default_type' => 'file',
-			    'drivers' => array(
-				'file' => array(
-				    'class' => 'Soter_Cache_File',
-				    //缓存文件保存路径
-				    'config' => Sr::config()->getStorageDirPath() . 'cache/'
-				),
-			    )
-			);
-		}
-		if (is_array($key)) {
-			$className = $key['class'];
-			$config = $key['config'];
-			return is_null($config) ? new $className() : new $className($config);
-		} else {
-			$key = $key ? $key : $this->cacheConfig['default_type'];
-			if (!Sr::arrayKeyExists("drivers.$key", $this->cacheConfig)) {
-				throw new Soter_Exception_500('unknown cache type [ ' . $key . ' ]');
-			}
-			$config = $this->cacheConfig['drivers'][$key]['config'];
-			$className = $this->cacheConfig['drivers'][$key]['class'];
-			if (!Sr::arrayKeyExists($key, $this->cacheHandles)) {
-				$this->cacheHandles[$key] = is_null($config) ? new $className() : new $className($config);
-			}
-			return $this->cacheHandles[$key];
-		}
-	}
-
-	public function getCacheConfig() {
-		return $this->cacheConfig;
-	}
-
-	public function setCacheConfig($cacheConfig) {
-		$this->cacheHandles = array();
-		if (is_string($cacheConfig)) {
-			$this->cacheConfig = Sr::config($cacheConfig, false);
-		} elseif (is_array($cacheConfig)) {
-			$this->cacheConfig = $cacheConfig;
-		} else {
-			throw new Soter_Exception_500('unknown type of cache configure , it should be a string or an array .');
-		}
-		return $this;
-	}
-
-	/**
-	 * 
-	 * @return Soter_Session
-	 */
-	public function getSessionHandle() {
-		return $this->sessionHandle;
-	}
-
-	public function setSessionHandle($sessionHandle) {
-		if ($sessionHandle instanceof Soter_Session) {
-			$this->sessionHandle = $sessionHandle;
-		} else {
-			$this->sessionHandle = Sr::config($sessionHandle, false);
-		}
-		return $this;
-	}
-
-	public function getSessionConfig() {
-		if (empty($this->sessionConfig)) {
-			$this->sessionConfig = array(
-			    'autostart' => false,
-			    'cookie_path' => '/',
-			    'cookie_domain' => Sr::server('HTTP_HOST'),
-			    'session_name' => 'SOTER',
-			    'lifetime' => 3600,
-			);
-		}
-		return $this->sessionConfig;
-	}
-
-	public function setSessionConfig($sessionConfig) {
-		if (is_array($sessionConfig)) {
-			$this->sessionConfig = $sessionConfig;
-		} else {
-			$this->sessionConfig = Sr::config($sessionConfig, false);
-		}
-		return $this;
-	}
-
-	public function getDatabseConfig($group = null) {
-		if (empty($group)) {
-			return $this->databseConfig;
-		} else {
-			return Sr::arrayKeyExists($group, $this->databseConfig) ? $this->databseConfig[$group] : array();
-		}
-	}
-
-	public function setDatabseConfig($databseConfig) {
-		Sr::clearDbInstances();
-		$this->databseConfig = is_array($databseConfig) ? $databseConfig : Sr::config($databseConfig, false);
-		return $this;
-	}
-
-	public function getIsMaintainMode() {
-		return $this->isMaintainMode;
-	}
-
-	public function getMaintainModeHandle() {
-		return $this->maintainModeHandle;
-	}
-
-	public function setIsMaintainMode($isMaintainMode) {
-		$this->isMaintainMode = $isMaintainMode;
-		return $this;
-	}
-
-	public function setMaintainModeHandle(Soter_Maintain_Handle $maintainModeHandle) {
-		$this->maintainModeHandle = $maintainModeHandle;
-		return $this;
-	}
-
-	public function getMaintainIpWhitelist() {
-		return $this->maintainIpWhitelist;
-	}
-
-	public function setMaintainIpWhitelist($maintainIpWhitelist) {
-		$this->maintainIpWhitelist = $maintainIpWhitelist;
-		return $this;
-	}
-
-	public function getMethodParametersDelimiter() {
-		return $this->methodParametersDelimiter;
-	}
-
-	public function setMethodParametersDelimiter($methodParametersDelimiter) {
-		$this->methodParametersDelimiter = $methodParametersDelimiter;
-		return $this;
-	}
-
-	public function getRouterUrlModuleKey() {
-		return $this->routerUrlModuleKey;
-	}
-
-	public function getRouterUrlControllerKey() {
-		return $this->routerUrlControllerKey;
-	}
-
-	public function getRouterUrlMethodKey() {
-		return $this->routerUrlMethodKey;
-	}
-
-	public function setRouterUrlModuleKey($routerUrlModuleKey) {
-		$this->routerUrlModuleKey = $routerUrlModuleKey;
-		return $this;
-	}
-
-	public function setRouterUrlControllerKey($routerUrlControllerKey) {
-		$this->routerUrlControllerKey = $routerUrlControllerKey;
-		return $this;
-	}
-
-	public function setRouterUrlMethodKey($routerUrlMethodKey) {
-		$this->routerUrlMethodKey = $routerUrlMethodKey;
-		return $this;
-	}
-
-	/**
-	 * 
-	 * @return Soter_Uri_Rewriter
-	 */
-	public function getUriRewriter() {
-		return $this->uriRewriter;
-	}
-
-	public function setUriRewriter(Soter_Uri_Rewriter $uriRewriter) {
-		$this->uriRewriter = $uriRewriter;
-		return $this;
-	}
-
-	public function getPrimaryApplicationDir() {
-		return $this->primaryApplicationDir;
-	}
-
-	public function setPrimaryApplicationDir($primaryApplicationDir) {
-		$this->primaryApplicationDir = Sr::realPath($primaryApplicationDir) . '/';
-		return $this;
-	}
-
-	public function getBackendServerIpWhitelist() {
-		return $this->backendServerIpWhitelist;
-	}
-
-	/**
-	 * 如果服务器是ngix之类代理转发请求到后端apache运行的PHP<br>
-	 * 那么这里应该设置信任的nginx所在服务器的ip<br>
-	 * nginx里面应该设置 X_FORWARDED_FOR server变量来表示真实的客户端IP<br>
-	 * 不然通过Sr::clientIp()是获取不到真实的客户端IP的<br>
-	 * @param type $backendServerIpWhitelist
-	 * @return \Soter_Config
-	 */
-	public function setBackendServerIpWhitelist(Array $backendServerIpWhitelist) {
-		$this->backendServerIpWhitelist = $backendServerIpWhitelist;
-		return $this;
-	}
-
-	public function getCookiePrefix() {
-		return $this->cookiePrefix;
-	}
-
-	public function setCookiePrefix($cookiePrefix) {
-		$this->cookiePrefix = $cookiePrefix;
-		return $this;
-	}
-
-	public function getLogsSubDirNameFormat() {
-		return $this->logsSubDirNameFormat;
-	}
-
-	/**
-	 * 设置日志子目录格式，参数就是date()函数的第一个参数,默认是 Y-m-d/H
-	 * @param type $logsSubDirNameFormat
-	 * @return \Soter_Config
-	 */
-	public function setLogsSubDirNameFormat($logsSubDirNameFormat) {
-		$this->logsSubDirNameFormat = $logsSubDirNameFormat;
-		return $this;
-	}
-
-	public function addAutoloadFunctions(Array $funciontsFileNameArray) {
-		foreach ($funciontsFileNameArray as $functionsFileName) {
-			Sr::functions($functionsFileName);
-		}
-		return $this;
-	}
-
-	public function getFunctionsDirName() {
-		return $this->functionsDirName;
-	}
-
-	public function setFunctionsDirName($functionsDirName) {
-		$this->functionsDirName = $functionsDirName;
-		return $this;
-	}
-
-	public function getModelDirName() {
-		return $this->modelDirName;
-	}
-
-	public function setModelDirName($modelDirName) {
-		$this->modelDirName = $modelDirName;
-		return $this;
-	}
-
-	public function getBeanDirName() {
-		return $this->beanDirName;
-	}
-
-	public function setBeanDirName($beanDirName) {
-		$this->beanDirName = $beanDirName;
-		return $this;
-	}
-
-	public function getBusinessDirName() {
-		return $this->businessDirName;
-	}
-
-	public function getDaoDirName() {
-		return $this->daoDirName;
-	}
-
-	public function getTaskDirName() {
-		return $this->taskDirName;
-	}
-
-	public function setBusinessDirName($businessDirName) {
-		$this->businessDirName = $businessDirName;
-		return $this;
-	}
-
-	public function setDaoDirName($daoDirName) {
-		$this->daoDirName = $daoDirName;
-		return $this;
-	}
-
-	public function setTaskDirName($taskDirName) {
-		$this->taskDirName = $taskDirName;
-		return $this;
-	}
-
-	public function getServerEnvironment($environment) {
-		switch (strtoupper($environment)) {
-			case strtoupper($this->getServerEnvironmentDevelopmentValue()):
-				return Sr::ENV_DEVELOPMENT;
-			case strtoupper($this->getServerEnvironmentProductionValue()):
-				return Sr::ENV_PRODUCTION;
-			case strtoupper($this->getServerEnvironmentTestingValue()):
-				return Sr::ENV_TESTING;
-			default:
-				throw new Soter_Exception_500('wrong parameter value[' . $environment . '] of getServerEnvironment(), '
-				. 'should be one of [' . $this->getServerEnvironmentDevelopmentValue() . ',' .
-				$this->getServerEnvironmentTestingValue() . ',' .
-				$this->getServerEnvironmentProductionValue() . ']');
-		}
-	}
-
-	public function getServerEnvironmentTestingValue() {
-		return $this->serverEnvironmentTestingValue;
-	}
-
-	public function getServerEnvironmentProductionValue() {
-		return $this->serverEnvironmentProductionValue;
-	}
-
-	public function getServerEnvironmentDevelopmentValue() {
-		return $this->serverEnvironmentDevelopmentValue;
-	}
-
-	public function setServerEnvironmentDevelopmentValue($serverEnvironmentDevelopmentValue) {
-		$this->serverEnvironmentDevelopmentValue = $serverEnvironmentDevelopmentValue;
-		return $this;
-	}
-
-	public function setServerEnvironmentTestingValue($serverEnvironmentTestingValue) {
-		$this->serverEnvironmentTestingValue = $serverEnvironmentTestingValue;
-		return $this;
-	}
-
-	public function setServerEnvironmentProductionValue($serverEnvironmentProductionValue) {
-		$this->serverEnvironmentProductionValue = $serverEnvironmentProductionValue;
-		return $this;
-	}
-
-	/**
-	 * 获取当前运行环境下，配置文件目录路径
-	 * @return type
-	 */
-	public function getConfigCurrentDirName() {
+    private $applicationDir = '', //项目目录
+	    $primaryApplicationDir = '', //主项目目录
+	    $indexDir = '', //入口文件目录
+	    $indexName = '', //入口文件名称
+	    $classesDirName = 'classes',
+	    $hmvcDirName = 'hmvc',
+	    $libraryDirName = 'library',
+	    $functionsDirName = 'functions',
+	    $storageDirPath = '',
+	    $viewsDirName = 'views',
+	    $configDirName = 'config',
+	    $configTestingDirName = 'testing',
+	    $configProductionDirName = 'production',
+	    $configDevelopmentDirName = 'development',
+	    $controllerDirName = 'Controller',
+	    $businessDirName = 'Business',
+	    $daoDirName = 'Dao',
+	    $beanDirName = 'Bean',
+	    $modelDirName = 'Model',
+	    $taskDirName = 'Task',
+	    $defaultController = 'Welcome',
+	    $defaultMethod = 'index',
+	    $methodPrefix = 'do_',
+	    $methodUriSubfix = '.do',
+	    $routerUrlModuleKey = 'm',
+	    $routerUrlControllerKey = 'c',
+	    $routerUrlMethodKey = 'a',
+	    $methodParametersDelimiter = '-',
+	    $logsSubDirNameFormat = 'Y-m-d/H',
+	    $cookiePrefix = '',
+	    $backendServerIpWhitelist = array(),
+	    $isRewrite = FALSE,
+	    $request, $showError = true,
+	    $routersContainer = array(),
+	    $packageMasterContainer = array(),
+	    $packageContainer = array(),
+	    $loggerWriterContainer = array(),
+	    $uriRewriter,
+	    $exceptionHandle, $route, $environment = Sr::ENV_DEVELOPMENT,
+	    $serverEnvironmentTestingValue = 'testing',
+	    $serverEnvironmentDevelopmentValue = 'development',
+	    $serverEnvironmentProductionValue = 'production',
+	    $hmvcModules = array(),
+	    $isMaintainMode = false,
+	    $maintainIpWhitelist = array(),
+	    $maintainModeHandle,
+	    $databseConfig,
+	    $cacheHandles = array(),
+	    $cacheConfig,
+	    $sessionConfig,
+	    $sessionHandle,
+	    $methodCacheConfig,
+	    $dataCheckRules,
+	    $outputJsonRender,
+	    $exceptionJsonRender,
+	    $srMethods = array(),
+	    $encryptKey,
+	    $hmvcDomains = array()
+
+    ;
+
+    public function setExceptionControl($isExceptionControl) {
+	if ($isExceptionControl && !Sr::isPluginMode()) {
+	    //注册错误处理
+	    Soter_Logger_Writer_Dispatcher::initialize();
+	}
+	return $this;
+    }
+
+    public function getStorageDirPath() {
+	return empty($this->storageDirPath) ? $this->getPrimaryApplicationDir() . 'storage/' : $this->storageDirPath;
+    }
+
+    public function setStorageDirPath($storageDirPath) {
+	$this->storageDirPath = Sr::realPath($storageDirPath, true);
+	return $this;
+    }
+
+    public function getCurrentDomainHmvcModuleNname() {
+	if (!$this->hmvcDomains['enable']) {
+	    return false;
+	}
+	$_domain = Sr::server('http_host');
+	$domain = explode('.', $_domain);
+	$length = count($domain);
+	if ($length <= 2) {
+	    return false;
+	}
+	$topDomain = $domain[$length - 2] . '.' . $domain[$length - 1];
+	foreach ($this->hmvcDomains['domains'] as $prefix => $hvmc) {
+	    if ($prefix . '.' . $topDomain == $_domain) {
+		return $hvmc['enable'] ? $hvmc['hmvcModuleName'] : false;
+	    }
+	}
+	return '';
+    }
+
+    public function hmvcIsDomainOnly($hmvcModuleName) {
+	if (!$hmvcModuleName || !$this->hmvcDomains['enable']) {
+	    return false;
+	}
+	foreach ($this->hmvcDomains['domains'] as $hvmc) {
+	    if ($hmvcModuleName == $hvmc['hmvcModuleName'] && $hvmc['enable']) {
+		return $hvmc['domainOnly'];
+	    }
+	}
+	return false;
+    }
+
+    public function setHmvcDomains(Array $hmvcDomains) {
+	$this->hmvcDomains = $hmvcDomains;
+	return $this;
+    }
+
+    public function getEncryptKey() {
+	$key = $this->getEnvironment();
+	return isset($this->encryptKey[$key]) ? $this->encryptKey[$key] : '';
+    }
+
+    public function setEncryptKey($encryptKey) {
+	if (is_array($encryptKey)) {
+	    $this->encryptKey = $encryptKey;
+	} else {
+	    $this->encryptKey = array(
+		Sr::ENV_DEVELOPMENT => $encryptKey,
+		Sr::ENV_TESTING => $encryptKey,
+		Sr::ENV_PRODUCTION => $encryptKey
+	    );
+	}
+	return $this;
+    }
+
+    public function getSrMethods() {
+	return $this->srMethods;
+    }
+
+    public function setSrMethods(array $srMethods) {
+	$this->srMethods = $srMethods;
+	return $this;
+    }
+
+    public function getExceptionJsonRender() {
+	return $this->exceptionJsonRender;
+    }
+
+    public function setExceptionJsonRender($exceptionJsonRender) {
+	$this->exceptionJsonRender = $exceptionJsonRender;
+	return $this;
+    }
+
+    public function getOutputJsonRender() {
+	return $this->outputJsonRender;
+    }
+
+    public function setOutputJsonRender($outputJsonHandle) {
+	$this->outputJsonRender = $outputJsonHandle;
+	return $this;
+    }
+
+    public function getDataCheckRules() {
+	return $this->dataCheckRules;
+    }
+
+    public function setDataCheckRules($dataCheckRules) {
+	$this->dataCheckRules = is_array($dataCheckRules) ? $dataCheckRules : Sr::config($dataCheckRules, false);
+	return $this;
+    }
+
+    public function getMethodCacheConfig() {
+	return $this->methodCacheConfig;
+    }
+
+    public function setMethodCacheConfig($methodCacheConfig) {
+	$this->methodCacheConfig = is_array($methodCacheConfig) ? $methodCacheConfig : Sr::config($methodCacheConfig, false);
+	return $this;
+    }
+
+    public function getViewsDirName() {
+	return $this->viewsDirName;
+    }
+
+    public function setViewsDirName($viewsDirName) {
+	$this->viewsDirName = $viewsDirName;
+	return $this;
+    }
+
+    /**
+     * 
+     * @return Soter_Cache
+     */
+    public function getCacheHandle($key = '') {
+	if (empty($this->cacheConfig)) {
+	    $this->cacheConfig = array(
+		'default_type' => 'file',
+		'drivers' => array(
+		    'file' => array(
+			'class' => 'Soter_Cache_File',
+			//缓存文件保存路径
+			'config' => Sr::config()->getStorageDirPath() . 'cache/'
+		    ),
+		)
+	    );
+	}
+	if (is_array($key)) {
+	    $className = $key['class'];
+	    $config = $key['config'];
+	    return is_null($config) ? new $className() : new $className($config);
+	} else {
+	    $key = $key ? $key : $this->cacheConfig['default_type'];
+	    if (!Sr::arrayKeyExists("drivers.$key", $this->cacheConfig)) {
+		throw new Soter_Exception_500('unknown cache type [ ' . $key . ' ]');
+	    }
+	    $config = $this->cacheConfig['drivers'][$key]['config'];
+	    $className = $this->cacheConfig['drivers'][$key]['class'];
+	    if (!Sr::arrayKeyExists($key, $this->cacheHandles)) {
+		$this->cacheHandles[$key] = is_null($config) ? new $className() : new $className($config);
+	    }
+	    return $this->cacheHandles[$key];
+	}
+    }
+
+    public function getCacheConfig() {
+	return $this->cacheConfig;
+    }
+
+    public function setCacheConfig($cacheConfig) {
+	$this->cacheHandles = array();
+	if (is_string($cacheConfig)) {
+	    $this->cacheConfig = Sr::config($cacheConfig, false);
+	} elseif (is_array($cacheConfig)) {
+	    $this->cacheConfig = $cacheConfig;
+	} else {
+	    throw new Soter_Exception_500('unknown type of cache configure , it should be a string or an array .');
+	}
+	return $this;
+    }
+
+    /**
+     * 
+     * @return Soter_Session
+     */
+    public function getSessionHandle() {
+	return $this->sessionHandle;
+    }
+
+    public function setSessionHandle($sessionHandle) {
+	if ($sessionHandle instanceof Soter_Session) {
+	    $this->sessionHandle = $sessionHandle;
+	} else {
+	    $this->sessionHandle = Sr::config($sessionHandle, false);
+	}
+	return $this;
+    }
+
+    public function getSessionConfig() {
+	if (empty($this->sessionConfig)) {
+	    $this->sessionConfig = array(
+		'autostart' => false,
+		'cookie_path' => '/',
+		'cookie_domain' => Sr::server('HTTP_HOST'),
+		'session_name' => 'SOTER',
+		'lifetime' => 3600,
+	    );
+	}
+	return $this->sessionConfig;
+    }
+
+    public function setSessionConfig($sessionConfig) {
+	if (is_array($sessionConfig)) {
+	    $this->sessionConfig = $sessionConfig;
+	} else {
+	    $this->sessionConfig = Sr::config($sessionConfig, false);
+	}
+	return $this;
+    }
+
+    public function getDatabseConfig($group = null) {
+	if (empty($group)) {
+	    return $this->databseConfig;
+	} else {
+	    return Sr::arrayKeyExists($group, $this->databseConfig) ? $this->databseConfig[$group] : array();
+	}
+    }
+
+    public function setDatabseConfig($databseConfig) {
+	Sr::clearDbInstances();
+	$this->databseConfig = is_array($databseConfig) ? $databseConfig : Sr::config($databseConfig, false);
+	return $this;
+    }
+
+    public function getIsMaintainMode() {
+	return $this->isMaintainMode;
+    }
+
+    public function getMaintainModeHandle() {
+	return $this->maintainModeHandle;
+    }
+
+    public function setIsMaintainMode($isMaintainMode) {
+	$this->isMaintainMode = $isMaintainMode;
+	return $this;
+    }
+
+    public function setMaintainModeHandle(Soter_Maintain_Handle $maintainModeHandle) {
+	$this->maintainModeHandle = $maintainModeHandle;
+	return $this;
+    }
+
+    public function getMaintainIpWhitelist() {
+	return $this->maintainIpWhitelist;
+    }
+
+    public function setMaintainIpWhitelist($maintainIpWhitelist) {
+	$this->maintainIpWhitelist = $maintainIpWhitelist;
+	return $this;
+    }
+
+    public function getMethodParametersDelimiter() {
+	return $this->methodParametersDelimiter;
+    }
+
+    public function setMethodParametersDelimiter($methodParametersDelimiter) {
+	$this->methodParametersDelimiter = $methodParametersDelimiter;
+	return $this;
+    }
+
+    public function getRouterUrlModuleKey() {
+	return $this->routerUrlModuleKey;
+    }
+
+    public function getRouterUrlControllerKey() {
+	return $this->routerUrlControllerKey;
+    }
+
+    public function getRouterUrlMethodKey() {
+	return $this->routerUrlMethodKey;
+    }
+
+    public function setRouterUrlModuleKey($routerUrlModuleKey) {
+	$this->routerUrlModuleKey = $routerUrlModuleKey;
+	return $this;
+    }
+
+    public function setRouterUrlControllerKey($routerUrlControllerKey) {
+	$this->routerUrlControllerKey = $routerUrlControllerKey;
+	return $this;
+    }
+
+    public function setRouterUrlMethodKey($routerUrlMethodKey) {
+	$this->routerUrlMethodKey = $routerUrlMethodKey;
+	return $this;
+    }
+
+    /**
+     * 
+     * @return Soter_Uri_Rewriter
+     */
+    public function getUriRewriter() {
+	return $this->uriRewriter;
+    }
+
+    public function setUriRewriter(Soter_Uri_Rewriter $uriRewriter) {
+	$this->uriRewriter = $uriRewriter;
+	return $this;
+    }
+
+    public function getPrimaryApplicationDir() {
+	return $this->primaryApplicationDir;
+    }
+
+    public function setPrimaryApplicationDir($primaryApplicationDir) {
+	$this->primaryApplicationDir = Sr::realPath($primaryApplicationDir) . '/';
+	return $this;
+    }
+
+    public function getBackendServerIpWhitelist() {
+	return $this->backendServerIpWhitelist;
+    }
+
+    /**
+     * 如果服务器是ngix之类代理转发请求到后端apache运行的PHP<br>
+     * 那么这里应该设置信任的nginx所在服务器的ip<br>
+     * nginx里面应该设置 X_FORWARDED_FOR server变量来表示真实的客户端IP<br>
+     * 不然通过Sr::clientIp()是获取不到真实的客户端IP的<br>
+     * @param type $backendServerIpWhitelist
+     * @return \Soter_Config
+     */
+    public function setBackendServerIpWhitelist(Array $backendServerIpWhitelist) {
+	$this->backendServerIpWhitelist = $backendServerIpWhitelist;
+	return $this;
+    }
+
+    public function getCookiePrefix() {
+	return $this->cookiePrefix;
+    }
+
+    public function setCookiePrefix($cookiePrefix) {
+	$this->cookiePrefix = $cookiePrefix;
+	return $this;
+    }
+
+    public function getLogsSubDirNameFormat() {
+	return $this->logsSubDirNameFormat;
+    }
+
+    /**
+     * 设置日志子目录格式，参数就是date()函数的第一个参数,默认是 Y-m-d/H
+     * @param type $logsSubDirNameFormat
+     * @return \Soter_Config
+     */
+    public function setLogsSubDirNameFormat($logsSubDirNameFormat) {
+	$this->logsSubDirNameFormat = $logsSubDirNameFormat;
+	return $this;
+    }
+
+    public function addAutoloadFunctions(Array $funciontsFileNameArray) {
+	foreach ($funciontsFileNameArray as $functionsFileName) {
+	    Sr::functions($functionsFileName);
+	}
+	return $this;
+    }
+
+    public function getFunctionsDirName() {
+	return $this->functionsDirName;
+    }
+
+    public function setFunctionsDirName($functionsDirName) {
+	$this->functionsDirName = $functionsDirName;
+	return $this;
+    }
+
+    public function getModelDirName() {
+	return $this->modelDirName;
+    }
+
+    public function setModelDirName($modelDirName) {
+	$this->modelDirName = $modelDirName;
+	return $this;
+    }
+
+    public function getBeanDirName() {
+	return $this->beanDirName;
+    }
+
+    public function setBeanDirName($beanDirName) {
+	$this->beanDirName = $beanDirName;
+	return $this;
+    }
+
+    public function getBusinessDirName() {
+	return $this->businessDirName;
+    }
+
+    public function getDaoDirName() {
+	return $this->daoDirName;
+    }
+
+    public function getTaskDirName() {
+	return $this->taskDirName;
+    }
+
+    public function setBusinessDirName($businessDirName) {
+	$this->businessDirName = $businessDirName;
+	return $this;
+    }
+
+    public function setDaoDirName($daoDirName) {
+	$this->daoDirName = $daoDirName;
+	return $this;
+    }
+
+    public function setTaskDirName($taskDirName) {
+	$this->taskDirName = $taskDirName;
+	return $this;
+    }
+
+    public function getServerEnvironment($environment) {
+	switch (strtoupper($environment)) {
+	    case strtoupper($this->getServerEnvironmentDevelopmentValue()):
+		return Sr::ENV_DEVELOPMENT;
+	    case strtoupper($this->getServerEnvironmentProductionValue()):
+		return Sr::ENV_PRODUCTION;
+	    case strtoupper($this->getServerEnvironmentTestingValue()):
+		return Sr::ENV_TESTING;
+	    default:
+		throw new Soter_Exception_500('wrong parameter value[' . $environment . '] of getServerEnvironment(), '
+		. 'should be one of [' . $this->getServerEnvironmentDevelopmentValue() . ',' .
+		$this->getServerEnvironmentTestingValue() . ',' .
+		$this->getServerEnvironmentProductionValue() . ']');
+	}
+    }
+
+    public function getServerEnvironmentTestingValue() {
+	return $this->serverEnvironmentTestingValue;
+    }
+
+    public function getServerEnvironmentProductionValue() {
+	return $this->serverEnvironmentProductionValue;
+    }
+
+    public function getServerEnvironmentDevelopmentValue() {
+	return $this->serverEnvironmentDevelopmentValue;
+    }
+
+    public function setServerEnvironmentDevelopmentValue($serverEnvironmentDevelopmentValue) {
+	$this->serverEnvironmentDevelopmentValue = $serverEnvironmentDevelopmentValue;
+	return $this;
+    }
+
+    public function setServerEnvironmentTestingValue($serverEnvironmentTestingValue) {
+	$this->serverEnvironmentTestingValue = $serverEnvironmentTestingValue;
+	return $this;
+    }
+
+    public function setServerEnvironmentProductionValue($serverEnvironmentProductionValue) {
+	$this->serverEnvironmentProductionValue = $serverEnvironmentProductionValue;
+	return $this;
+    }
+
+    /**
+     * 获取当前运行环境下，配置文件目录路径
+     * @return type
+     */
+    public function getConfigCurrentDirName() {
+	$name = $this->getConfigDevelopmentDirName();
+	switch ($this->environment) {
+	    case Sr::ENV_DEVELOPMENT :
 		$name = $this->getConfigDevelopmentDirName();
-		switch ($this->environment) {
-			case Sr::ENV_DEVELOPMENT :
-				$name = $this->getConfigDevelopmentDirName();
-				break;
-			case Sr::ENV_TESTING :
-				$name = $this->getConfigTestingDirName();
-				break;
-			case Sr::ENV_PRODUCTION :
-				$name = $this->getConfigProductionDirName();
-				break;
-		}
-		return $name;
+		break;
+	    case Sr::ENV_TESTING :
+		$name = $this->getConfigTestingDirName();
+		break;
+	    case Sr::ENV_PRODUCTION :
+		$name = $this->getConfigProductionDirName();
+		break;
 	}
+	return $name;
+    }
 
-	public function getEnvironment() {
-		return $this->environment;
-	}
+    public function getEnvironment() {
+	return $this->environment;
+    }
 
-	public function setEnvironment($environment) {
-		if (!in_array($environment, array(Sr::ENV_DEVELOPMENT, Sr::ENV_PRODUCTION, Sr::ENV_TESTING))) {
-			throw new Soter_Exception_500('wrong parameter value[' . $environment . '] of setEnvironment(), should be one of [Sr::ENV_DEVELOPMENT,Sr::ENV_PRODUCTION,Sr::ENV_TESTING]');
-		}
-		$this->environment = $environment;
-		return $this;
+    public function setEnvironment($environment) {
+	if (!in_array($environment, array(Sr::ENV_DEVELOPMENT, Sr::ENV_PRODUCTION, Sr::ENV_TESTING))) {
+	    throw new Soter_Exception_500('wrong parameter value[' . $environment . '] of setEnvironment(), should be one of [Sr::ENV_DEVELOPMENT,Sr::ENV_PRODUCTION,Sr::ENV_TESTING]');
 	}
+	$this->environment = $environment;
+	return $this;
+    }
 
-	public function getConfigDirName() {
-		return $this->configDirName;
-	}
+    public function getConfigDirName() {
+	return $this->configDirName;
+    }
 
-	public function getConfigTestingDirName() {
-		return $this->configTestingDirName;
-	}
+    public function getConfigTestingDirName() {
+	return $this->configTestingDirName;
+    }
 
-	public function getConfigProductionDirName() {
-		return $this->configProductionDirName;
-	}
+    public function getConfigProductionDirName() {
+	return $this->configProductionDirName;
+    }
 
-	public function getConfigDevelopmentDirName() {
-		return $this->configDevelopmentDirName;
-	}
+    public function getConfigDevelopmentDirName() {
+	return $this->configDevelopmentDirName;
+    }
 
-	public function setConfigDirName($configDirName) {
-		$this->configDirName = $configDirName;
-		return $this;
-	}
+    public function setConfigDirName($configDirName) {
+	$this->configDirName = $configDirName;
+	return $this;
+    }
 
-	public function setConfigTestingDirName($configTestingDirName) {
-		$this->configTestingDirName = $configTestingDirName;
-		return $this;
-	}
+    public function setConfigTestingDirName($configTestingDirName) {
+	$this->configTestingDirName = $configTestingDirName;
+	return $this;
+    }
 
-	public function setConfigProductionDirName($configProductionDirName) {
-		$this->configProductionDirName = $configProductionDirName;
-		return $this;
-	}
+    public function setConfigProductionDirName($configProductionDirName) {
+	$this->configProductionDirName = $configProductionDirName;
+	return $this;
+    }
 
-	public function setConfigDevelopmentDirName($configDevelopmentDirName) {
-		$this->configDevelopmentDirName = $configDevelopmentDirName;
-		return $this;
-	}
+    public function setConfigDevelopmentDirName($configDevelopmentDirName) {
+	$this->configDevelopmentDirName = $configDevelopmentDirName;
+	return $this;
+    }
 
-	/**
-	 * 
-	 * @return Soter_Route
-	 */
-	public function getRoute() {
-		return empty($this->route) ? new Soter_Route() : $this->route;
-	}
+    /**
+     * 
+     * @return Soter_Route
+     */
+    public function getRoute() {
+	return empty($this->route) ? new Soter_Route() : $this->route;
+    }
 
-	public function setRoute($route) {
-		$this->route = $route;
-		return $this;
-	}
+    public function setRoute($route) {
+	$this->route = $route;
+	return $this;
+    }
 
-	public function getLibraryDirName() {
-		return $this->libraryDirName;
-	}
+    public function getLibraryDirName() {
+	return $this->libraryDirName;
+    }
 
-	public function setLibraryDirName($libraryDirName) {
-		$this->libraryDirName = $libraryDirName;
-		return $this;
-	}
+    public function setLibraryDirName($libraryDirName) {
+	$this->libraryDirName = $libraryDirName;
+	return $this;
+    }
 
-	public function getHmvcDirName() {
-		return $this->hmvcDirName;
-	}
+    public function getHmvcDirName() {
+	return $this->hmvcDirName;
+    }
 
-	public function setHmvcDirName($hmvcDirName) {
-		$this->hmvcDirName = $hmvcDirName;
-		return $this;
-	}
+    public function setHmvcDirName($hmvcDirName) {
+	$this->hmvcDirName = $hmvcDirName;
+	return $this;
+    }
 
-	public function getHmvcModules() {
-		return $this->hmvcModules;
-	}
+    public function getHmvcModules() {
+	return $this->hmvcModules;
+    }
 
-	public function setHmvcModules($hmvcModules) {
-		$this->hmvcModules = $hmvcModules;
-		return $this;
-	}
+    public function setHmvcModules($hmvcModules) {
+	$this->hmvcModules = $hmvcModules;
+	return $this;
+    }
 
-	public function getControllerDirName() {
-		return $this->controllerDirName;
-	}
+    public function getControllerDirName() {
+	return $this->controllerDirName;
+    }
 
-	public function setControllerDirName($controllerDirName) {
-		$this->controllerDirName = $controllerDirName;
-		return $this;
-	}
+    public function setControllerDirName($controllerDirName) {
+	$this->controllerDirName = $controllerDirName;
+	return $this;
+    }
 
-	public function getExceptionHandle() {
-		return $this->exceptionHandle;
-	}
+    public function getExceptionHandle() {
+	return $this->exceptionHandle;
+    }
 
-	public function setExceptionHandle($exceptionHandle) {
-		$this->exceptionHandle = $exceptionHandle;
-		return $this;
-	}
+    public function setExceptionHandle($exceptionHandle) {
+	$this->exceptionHandle = $exceptionHandle;
+	return $this;
+    }
 
-	public function getApplicationDir() {
-		return $this->applicationDir;
-	}
+    public function getApplicationDir() {
+	return $this->applicationDir;
+    }
 
-	public function getIndexDir() {
-		return $this->indexDir;
-	}
+    public function getIndexDir() {
+	return $this->indexDir;
+    }
 
-	public function getIndexName() {
-		return $this->indexName;
-	}
+    public function getIndexName() {
+	return $this->indexName;
+    }
 
-	public function getLoggerWriterContainer() {
-		return $this->loggerWriterContainer;
-	}
+    public function getLoggerWriterContainer() {
+	return $this->loggerWriterContainer;
+    }
 
-	public function setApplicationDir($applicationDir) {
-		$this->applicationDir = Sr::realPath($applicationDir) . '/';
-		if (empty($this->primaryApplicationDir)) {
-			$this->primaryApplicationDir = $this->applicationDir;
-		}
-		return $this;
+    public function setApplicationDir($applicationDir) {
+	$this->applicationDir = Sr::realPath($applicationDir) . '/';
+	if (empty($this->primaryApplicationDir)) {
+	    $this->primaryApplicationDir = $this->applicationDir;
 	}
+	return $this;
+    }
 
-	public function setIndexDir($indexDir) {
-		$this->indexDir = Sr::realPath($indexDir) . '/';
-		return $this;
-	}
+    public function setIndexDir($indexDir) {
+	$this->indexDir = Sr::realPath($indexDir) . '/';
+	return $this;
+    }
 
-	public function setIndexName($indexName) {
-		$this->indexName = $indexName;
-		return $this;
-	}
+    public function setIndexName($indexName) {
+	$this->indexName = $indexName;
+	return $this;
+    }
 
-	public function setLoggerWriterContainer(Soter_Logger_Writer $loggerWriterContainer) {
-		$this->loggerWriterContainer = $loggerWriterContainer;
-		return $this;
-	}
+    public function setLoggerWriterContainer(Soter_Logger_Writer $loggerWriterContainer) {
+	$this->loggerWriterContainer = $loggerWriterContainer;
+	return $this;
+    }
 
-	public function getMethodPrefix() {
-		return $this->methodPrefix;
-	}
+    public function getMethodPrefix() {
+	return $this->methodPrefix;
+    }
 
-	public function getMethodUriSubfix() {
-		return $this->methodUriSubfix;
-	}
+    public function getMethodUriSubfix() {
+	return $this->methodUriSubfix;
+    }
 
-	public function setMethodPrefix($methodPrefix) {
-		$this->methodPrefix = $methodPrefix;
-		return $this;
-	}
+    public function setMethodPrefix($methodPrefix) {
+	$this->methodPrefix = $methodPrefix;
+	return $this;
+    }
 
-	public function setMethodUriSubfix($methodUriSubfix) {
-		if (!$methodUriSubfix) {
-			throw new Soter_Exception_500('"Method Uri Subfix" can not be empty.');
-		}
-		$this->methodUriSubfix = $methodUriSubfix;
-		return $this;
+    public function setMethodUriSubfix($methodUriSubfix) {
+	if (!$methodUriSubfix) {
+	    throw new Soter_Exception_500('"Method Uri Subfix" can not be empty.');
 	}
+	$this->methodUriSubfix = $methodUriSubfix;
+	return $this;
+    }
 
-	public function getDefaultController() {
-		return $this->defaultController;
-	}
+    public function getDefaultController() {
+	return $this->defaultController;
+    }
 
-	public function getDefaultMethod() {
-		return $this->defaultMethod;
-	}
+    public function getDefaultMethod() {
+	return $this->defaultMethod;
+    }
 
-	public function setDefaultController($defaultController) {
-		$this->defaultController = $defaultController;
-		return $this;
-	}
+    public function setDefaultController($defaultController) {
+	$this->defaultController = $defaultController;
+	return $this;
+    }
 
-	public function setDefaultMethod($defaultMethod) {
-		$this->defaultMethod = $defaultMethod;
-		return $this;
-	}
+    public function setDefaultMethod($defaultMethod) {
+	$this->defaultMethod = $defaultMethod;
+	return $this;
+    }
 
-	public function getClassesDirName() {
-		return $this->classesDirName;
-	}
+    public function getClassesDirName() {
+	return $this->classesDirName;
+    }
 
-	public function setClassesDirName($classesDirName) {
-		$this->classesDirName = $classesDirName;
-		return $this;
-	}
+    public function setClassesDirName($classesDirName) {
+	$this->classesDirName = $classesDirName;
+	return $this;
+    }
 
-	public function getPackages() {
-		return array_merge($this->packageMasterContainer, $this->packageContainer);
-	}
+    public function getPackages() {
+	return array_merge($this->packageMasterContainer, $this->packageContainer);
+    }
 
-	public function addMasterPackages(Array $packagesPath) {
-		foreach ($packagesPath as $packagePath) {
-			$this->addMasterPackage($packagePath);
-		}
-		return $this;
+    public function addMasterPackages(Array $packagesPath) {
+	foreach ($packagesPath as $packagePath) {
+	    $this->addMasterPackage($packagePath);
 	}
+	return $this;
+    }
 
-	public function addMasterPackage($packagePath) {
-		$packagePath = Sr::realPath($packagePath) . '/';
-		if (!in_array($packagePath, $this->packageMasterContainer)) {
-			//注册“包”到主包容器中
-			array_push($this->packageMasterContainer, $packagePath);
-			if (file_exists($library = $packagePath . $this->getLibraryDirName() . '/')) {
-				array_push($this->packageMasterContainer, $library);
-			}
-		}
-		return $this;
+    public function addMasterPackage($packagePath) {
+	$packagePath = Sr::realPath($packagePath) . '/';
+	if (!in_array($packagePath, $this->packageMasterContainer)) {
+	    //注册“包”到主包容器中
+	    array_push($this->packageMasterContainer, $packagePath);
+	    if (file_exists($library = $packagePath . $this->getLibraryDirName() . '/')) {
+		array_push($this->packageMasterContainer, $library);
+	    }
 	}
+	return $this;
+    }
 
-	public function addPackages(Array $packagesPath) {
-		foreach ($packagesPath as $packagePath) {
-			$this->addPackage($packagePath);
-		}
-		return $this;
+    public function addPackages(Array $packagesPath) {
+	foreach ($packagesPath as $packagePath) {
+	    $this->addPackage($packagePath);
 	}
+	return $this;
+    }
 
-	public function addPackage($packagePath) {
-		$packagePath = Sr::realPath($packagePath) . '/';
-		if (!in_array($packagePath, $this->packageContainer)) {
-			//注册“包”到包容器中
-			array_push($this->packageContainer, $packagePath);
-			if (file_exists($library = $packagePath . $this->getLibraryDirName() . '/')) {
-				array_push($this->packageContainer, $library);
-			}
-		}
-		return $this;
+    public function addPackage($packagePath) {
+	$packagePath = Sr::realPath($packagePath) . '/';
+	if (!in_array($packagePath, $this->packageContainer)) {
+	    //注册“包”到包容器中
+	    array_push($this->packageContainer, $packagePath);
+	    if (file_exists($library = $packagePath . $this->getLibraryDirName() . '/')) {
+		array_push($this->packageContainer, $library);
+	    }
 	}
+	return $this;
+    }
 
-	/**
-	 * 加载项目目录下的bootstrap.php配置
-	 */
-	public function bootstrap() {
-		//引入“bootstrap”配置
-		if (file_exists($bootstrap = $this->getApplicationDir() . 'bootstrap.php')) {
-			Sr::includeOnce($bootstrap);
-		}
+    /**
+     * 加载项目目录下的bootstrap.php配置
+     */
+    public function bootstrap() {
+	//引入“bootstrap”配置
+	if (file_exists($bootstrap = $this->getApplicationDir() . 'bootstrap.php')) {
+	    Sr::includeOnce($bootstrap);
 	}
+    }
 
-	public function getShowError() {
-		return $this->showError;
-	}
+    public function getShowError() {
+	return $this->showError;
+    }
 
-	public function getRoutersContainer() {
-		return $this->routersContainer;
-	}
+    public function getRoutersContainer() {
+	return $this->routersContainer;
+    }
 
-	public function setShowError($showError) {
-		$this->showError = $showError;
-		return $this;
-	}
+    public function setShowError($showError) {
+	$this->showError = $showError;
+	return $this;
+    }
 
-	/**
-	 * 
-	 * @return Soter_Request
-	 */
-	public function getRequest() {
-		return $this->request;
-	}
+    /**
+     * 
+     * @return Soter_Request
+     */
+    public function getRequest() {
+	return $this->request;
+    }
 
-	public function setRequest(Soter_Request $request) {
-		$this->request = $request;
-		return $this;
-	}
+    public function setRequest(Soter_Request $request) {
+	$this->request = $request;
+	return $this;
+    }
 
-	public function addRouter(Soter_Router $router) {
-		array_unshift($this->routersContainer, $router);
-		return $this;
-	}
+    public function addRouter(Soter_Router $router) {
+	array_unshift($this->routersContainer, $router);
+	return $this;
+    }
 
-	public function getRouters() {
-		return $this->routersContainer;
-	}
+    public function getRouters() {
+	return $this->routersContainer;
+    }
 
-	public function addLoggerWriter(Soter_Logger_Writer $loggerWriter) {
-		$this->loggerWriterContainer[] = $loggerWriter;
-		return $this;
-	}
+    public function addLoggerWriter(Soter_Logger_Writer $loggerWriter) {
+	$this->loggerWriterContainer[] = $loggerWriter;
+	return $this;
+    }
 
-	public function getLoggerWriters() {
-		return $this->loggerWriterContainer;
-	}
+    public function getLoggerWriters() {
+	return $this->loggerWriterContainer;
+    }
 
-	public function getIsRewrite() {
-		return $this->isRewrite;
-	}
+    public function getIsRewrite() {
+	return $this->isRewrite;
+    }
 
-	public function setTimeZone($timeZone) {
-		date_default_timezone_set($timeZone);
-		return $this;
-	}
+    public function setTimeZone($timeZone) {
+	date_default_timezone_set($timeZone);
+	return $this;
+    }
 
-	public function setIsRewrite($isRewrite) {
-		$this->isRewrite = $isRewrite;
-		return $this;
-	}
+    public function setIsRewrite($isRewrite) {
+	$this->isRewrite = $isRewrite;
+	return $this;
+    }
 
 }
 
 class Soter_Logger_Writer_Dispatcher {
 
-	private static $instance;
+    private static $instance;
 
-	public static function initialize() {
-		if (empty(self::$instance)) {
-			self::$instance = new self();
-			error_reporting(E_ALL);
-			//插件模式打开错误显示，web和命令行模式关闭错误显示
-			Sr::isPluginMode() ? ini_set('display_errors', TRUE) : ini_set('display_errors', FALSE);
-			set_exception_handler(array(self::$instance, 'handleException'));
-			set_error_handler(array(self::$instance, 'handleError'));
-			register_shutdown_function(array(self::$instance, 'handleFatal'));
-		}
+    public static function initialize() {
+	if (empty(self::$instance)) {
+	    self::$instance = new self();
+	    error_reporting(E_ALL);
+	    //插件模式打开错误显示，web和命令行模式关闭错误显示
+	    Sr::isPluginMode() ? ini_set('display_errors', TRUE) : ini_set('display_errors', FALSE);
+	    set_exception_handler(array(self::$instance, 'handleException'));
+	    set_error_handler(array(self::$instance, 'handleError'));
+	    register_shutdown_function(array(self::$instance, 'handleFatal'));
 	}
+    }
 
-	final public function handleException($exception) {
+    final public function handleException($exception) {
 
-		if (is_subclass_of($exception, 'Soter_Exception')) {
-			$this->dispatch($exception);
-		} else {
-			$this->dispatch(new Soter_Exception_500($exception->getMessage(), $exception->getCode(), get_class($exception), $exception->getFile(), $exception->getLine()));
-		}
+	if (is_subclass_of($exception, 'Soter_Exception')) {
+	    $this->dispatch($exception);
+	} else {
+	    $this->dispatch(new Soter_Exception_500($exception->getMessage(), $exception->getCode(), get_class($exception), $exception->getFile(), $exception->getLine()));
 	}
+    }
 
-	final public function handleError($code, $message, $file, $line) {
-		if (0 == error_reporting()) {
-			return;
-		}
-		$this->dispatch(new Soter_Exception_500($message, $code, 'General Error', $file, $line));
+    final public function handleError($code, $message, $file, $line) {
+	if (0 == error_reporting()) {
+	    return;
 	}
+	$this->dispatch(new Soter_Exception_500($message, $code, 'General Error', $file, $line));
+    }
 
-	final public function handleFatal() {
-		if (0 == error_reporting()) {
-			return;
-		}
-		$lastError = error_get_last();
-		$fatalError = array(1, 256, 64, 16, 4, 4096);
-		if (!Sr::arrayKeyExists("type", $lastError) || !in_array($lastError["type"], $fatalError)) {
-			return;
-		}
-		$this->dispatch(new Soter_Exception_500($lastError['message'], $lastError['type'], 'Fatal Error', $lastError['file'], $lastError['line']));
+    final public function handleFatal() {
+	if (0 == error_reporting()) {
+	    return;
 	}
+	$lastError = error_get_last();
+	$fatalError = array(1, 256, 64, 16, 4, 4096);
+	if (!Sr::arrayKeyExists("type", $lastError) || !in_array($lastError["type"], $fatalError)) {
+	    return;
+	}
+	$this->dispatch(new Soter_Exception_500($lastError['message'], $lastError['type'], 'Fatal Error', $lastError['file'], $lastError['line']));
+    }
 
-	final public function dispatch(Soter_Exception $exception) {
-		$config = Sr::config();
-		ini_set('display_errors', TRUE);
-		$loggerWriters = $config->getLoggerWriters();
-		foreach ($loggerWriters as $loggerWriter) {
-			$loggerWriter->write($exception);
-		}
-		if ($config->getShowError()) {
-			$handle = $config->getExceptionHandle();
-			if ($handle instanceof Soter_Exception_Handle) {
-				$handle->handle($exception);
-			} else {
-				$exception->render();
-			}
-		} elseif (Sr::isCli()) {
-			$exception->render();
-		}
-		exit();
+    final public function dispatch(Soter_Exception $exception) {
+	$config = Sr::config();
+	ini_set('display_errors', TRUE);
+	$loggerWriters = $config->getLoggerWriters();
+	foreach ($loggerWriters as $loggerWriter) {
+	    $loggerWriter->write($exception);
 	}
+	if ($config->getShowError()) {
+	    $handle = $config->getExceptionHandle();
+	    if ($handle instanceof Soter_Exception_Handle) {
+		$handle->handle($exception);
+	    } else {
+		$exception->render();
+	    }
+	} elseif (Sr::isCli()) {
+	    $exception->render();
+	}
+	exit();
+    }
 
 }
 
 class Soter_Logger_FileWriter implements Soter_Logger_Writer {
 
-	private $logsDirPath, $log404;
+    private $logsDirPath, $log404;
 
-	public function __construct($logsDirPath, $log404 = true) {
-		$this->log404 = $log404;
-		$this->logsDirPath = Sr::realPath($logsDirPath) . '/' . date(Sr::config()->getLogsSubDirNameFormat()) . '/';
-	}
+    public function __construct($logsDirPath, $log404 = true) {
+	$this->log404 = $log404;
+	$this->logsDirPath = Sr::realPath($logsDirPath) . '/' . date(Sr::config()->getLogsSubDirNameFormat()) . '/';
+    }
 
-	public function write(Soter_Exception $exception) {
-		if (!$this->log404 && ($exception instanceof Soter_Exception_404)) {
-			return;
-		}
-		$content = 'Domain : ' . Sr::server('http_host') . "\n"
-			. 'ClientIP : ' . Sr::server('SERVER_ADDR') . "\n"
-			. 'ServerIP : ' . Sr::serverIp() . "\n"
-			. 'ServerHostname : ' . Sr::hostname() . "\n"
-			. (!Sr::isCli() ? 'Request Uri : ' . Sr::server('request_uri') : '') . "\n"
-			. (!Sr::isCli() ? 'Get Data : ' . json_encode(Sr::get()) : '') . "\n"
-			. (!Sr::isCli() ? 'Post Data : ' . json_encode(Sr::post()) : '') . "\n"
-			. (!Sr::isCli() ? 'Cookie Data : ' . json_encode(Sr::cookie()) : '') . "\n"
-			. (!Sr::isCli() ? 'Server Data : ' . json_encode(Sr::server()) : '') . "\n"
-			. $exception->renderCli() . "\n";
-		if (!is_dir($this->logsDirPath)) {
-			mkdir($this->logsDirPath, 0700, true);
-		}
-		if (!file_exists($logsFilePath = $this->logsDirPath . 'logs.php')) {
-			$content = '<?php defined("IN_SOTER") or exit();?>' . "\n" . $content;
-		}
-		file_put_contents($logsFilePath, $content, LOCK_EX | FILE_APPEND);
+    public function write(Soter_Exception $exception) {
+	if (!$this->log404 && ($exception instanceof Soter_Exception_404)) {
+	    return;
 	}
+	$content = 'Domain : ' . Sr::server('http_host') . "\n"
+		. 'ClientIP : ' . Sr::server('SERVER_ADDR') . "\n"
+		. 'ServerIP : ' . Sr::serverIp() . "\n"
+		. 'ServerHostname : ' . Sr::hostname() . "\n"
+		. (!Sr::isCli() ? 'Request Uri : ' . Sr::server('request_uri') : '') . "\n"
+		. (!Sr::isCli() ? 'Get Data : ' . json_encode(Sr::get()) : '') . "\n"
+		. (!Sr::isCli() ? 'Post Data : ' . json_encode(Sr::post()) : '') . "\n"
+		. (!Sr::isCli() ? 'Cookie Data : ' . json_encode(Sr::cookie()) : '') . "\n"
+		. (!Sr::isCli() ? 'Server Data : ' . json_encode(Sr::server()) : '') . "\n"
+		. $exception->renderCli() . "\n";
+	if (!is_dir($this->logsDirPath)) {
+	    mkdir($this->logsDirPath, 0700, true);
+	}
+	if (!file_exists($logsFilePath = $this->logsDirPath . 'logs.php')) {
+	    $content = '<?php defined("IN_SOTER") or exit();?>' . "\n" . $content;
+	}
+	file_put_contents($logsFilePath, $content, LOCK_EX | FILE_APPEND);
+    }
 
 }
 
 class Soter_Maintain_Handle_Default implements Soter_Maintain_Handle {
 
-	public function handle() {
-		if (!Sr::isCli()) {
-			header('Content-type: text/html;charset=utf-8');
-		}
-		echo '<center><h2>server is under maintenance</h2><h3>服务器维护中</h3>' . date('Y/m/d H:i:s e') . '</center>';
+    public function handle() {
+	if (!Sr::isCli()) {
+	    header('Content-type: text/html;charset=utf-8');
 	}
+	echo '<center><h2>server is under maintenance</h2><h3>服务器维护中</h3>' . date('Y/m/d H:i:s e') . '</center>';
+    }
 
 }
 
 class Soter_Uri_Rewriter_Default implements Soter_Uri_Rewriter {
 
-	public function rewrite($uri) {
-		return $uri;
-	}
+    public function rewrite($uri) {
+	return $uri;
+    }
 
 }
 
 class Soter_Exception_Handle_Default implements Soter_Exception_Handle {
 
-	public function handle(Soter_Exception $exception) {
-		$exception->render();
-	}
+    public function handle(Soter_Exception $exception) {
+	$exception->render();
+    }
 
 }
 
 class Soter_Database_SlowQuery_Handle_Default implements Soter_Database_SlowQuery_Handle {
 
-	public function handle($sql, $explainString, $time) {
-		$dir = Sr::config()->getStorageDirPath() . 'slow-query-debug/';
-		$file = $dir . 'slow-query-debug.php';
-		if (!is_dir($dir)) {
-			mkdir($dir, 0700, true);
-		}
-		$content = "\nSQL : " . $sql
-			. "\nExplain : " . $explainString
-			. "\nUsingTime : " . $time . " ms"
-			. "\nTime : " . date('Y-m-d H:i:s') . "\n";
-		if (!file_exists($file)) {
-			$content = '<?php defined("IN_SOTER") or exit();?>' . "\n" . $content;
-		}
-		file_put_contents($file, $content, LOCK_EX | FILE_APPEND);
+    public function handle($sql, $explainString, $time) {
+	$dir = Sr::config()->getStorageDirPath() . 'slow-query-debug/';
+	$file = $dir . 'slow-query-debug.php';
+	if (!is_dir($dir)) {
+	    mkdir($dir, 0700, true);
 	}
+	$content = "\nSQL : " . $sql
+		. "\nExplain : " . $explainString
+		. "\nUsingTime : " . $time . " ms"
+		. "\nTime : " . date('Y-m-d H:i:s') . "\n";
+	if (!file_exists($file)) {
+	    $content = '<?php defined("IN_SOTER") or exit();?>' . "\n" . $content;
+	}
+	file_put_contents($file, $content, LOCK_EX | FILE_APPEND);
+    }
 
 }
 
 class Soter_Database_Index_Handle_Default implements Soter_Database_Index_Handle {
 
-	public function handle($sql, $explainString, $time) {
-		$dir = Sr::config()->getStorageDirPath() . 'index-debug/';
-		$file = $dir . 'index-debug.php';
-		if (!is_dir($dir)) {
-			mkdir($dir, 0700, true);
-		}
-		$content = "\nSQL : " . $sql
-			. "\nExplain : " . $explainString
-			. "\nUsingTime : " . $time . " ms"
-			. "\nTime : " . date('Y-m-d H:i:s') . "\n";
-		if (!file_exists($file)) {
-			$content = '<?php defined("IN_SOTER") or exit();?>' . "\n" . $content;
-		}
-		file_put_contents($file, $content, LOCK_EX | FILE_APPEND);
+    public function handle($sql, $explainString, $time) {
+	$dir = Sr::config()->getStorageDirPath() . 'index-debug/';
+	$file = $dir . 'index-debug.php';
+	if (!is_dir($dir)) {
+	    mkdir($dir, 0700, true);
 	}
+	$content = "\nSQL : " . $sql
+		. "\nExplain : " . $explainString
+		. "\nUsingTime : " . $time . " ms"
+		. "\nTime : " . date('Y-m-d H:i:s') . "\n";
+	if (!file_exists($file)) {
+	    $content = '<?php defined("IN_SOTER") or exit();?>' . "\n" . $content;
+	}
+	file_put_contents($file, $content, LOCK_EX | FILE_APPEND);
+    }
 
 }
 
 class Soter_Cache_File implements Soter_Cache {
 
-	private $_cacheDirPath;
+    private $_cacheDirPath;
 
-	public function __construct($cacheDirPath = '') {
-		$cacheDirPath = empty($cacheDirPath) ? Sr::config()->getStorageDirPath() . 'cache/' : $cacheDirPath;
-		$this->_cacheDirPath = Sr::realPath($cacheDirPath) . '/';
-		if (!is_dir($this->_cacheDirPath)) {
-			mkdir($this->_cacheDirPath, 0700, true);
-		}
-		if (!is_writable($this->_cacheDirPath)) {
-			throw new Soter_Exception_500('cache dir [ ' . Sr::safePath($this->_cacheDirPath) . ' ] not writable');
-		}
+    public function __construct($cacheDirPath = '') {
+	$cacheDirPath = empty($cacheDirPath) ? Sr::config()->getStorageDirPath() . 'cache/' : $cacheDirPath;
+	$this->_cacheDirPath = Sr::realPath($cacheDirPath) . '/';
+	if (!is_dir($this->_cacheDirPath)) {
+	    mkdir($this->_cacheDirPath, 0700, true);
 	}
+	if (!is_writable($this->_cacheDirPath)) {
+	    throw new Soter_Exception_500('cache dir [ ' . Sr::safePath($this->_cacheDirPath) . ' ] not writable');
+	}
+    }
 
-	private function _hashKey($key) {
-		return md5($key);
-	}
+    private function _hashKey($key) {
+	return md5($key);
+    }
 
-	private function _hashKeyPath($key) {
-		$key = md5($key);
-		$len = strlen($key);
-		return $this->_cacheDirPath . $key{$len - 1} . '/' . $key{$len - 2} . '/' . $key{$len - 3} . '/';
-	}
+    private function _hashKeyPath($key) {
+	$key = md5($key);
+	$len = strlen($key);
+	return $this->_cacheDirPath . $key{$len - 1} . '/' . $key{$len - 2} . '/' . $key{$len - 3} . '/';
+    }
 
-	private function pack($userData, $cacheTime) {
-		$cacheTime = (int) $cacheTime;
-		return @serialize(array(
-			    'userData' => $userData,
-			    'expireTime' => ($cacheTime == 0 ? 0 : time() + $cacheTime)
-		));
-	}
+    private function pack($userData, $cacheTime) {
+	$cacheTime = (int) $cacheTime;
+	return @serialize(array(
+		    'userData' => $userData,
+		    'expireTime' => ($cacheTime == 0 ? 0 : time() + $cacheTime)
+	));
+    }
 
-	private function unpack($cacheData) {
-		$cacheData = @unserialize($cacheData);
-		if (is_array($cacheData) && Sr::arrayKeyExists('userData', $cacheData) && Sr::arrayKeyExists('expireTime', $cacheData)) {
-			if ($cacheData['expireTime'] == 0) {
-				return $cacheData['userData'];
-			}
-			return $cacheData['expireTime'] > time() ? $cacheData['userData'] : NULL;
-		} else {
-			return NULL;
-		}
+    private function unpack($cacheData) {
+	$cacheData = @unserialize($cacheData);
+	if (is_array($cacheData) && Sr::arrayKeyExists('userData', $cacheData) && Sr::arrayKeyExists('expireTime', $cacheData)) {
+	    if ($cacheData['expireTime'] == 0) {
+		return $cacheData['userData'];
+	    }
+	    return $cacheData['expireTime'] > time() ? $cacheData['userData'] : NULL;
+	} else {
+	    return NULL;
 	}
+    }
 
-	public function clean() {
-		return Sr::rmdir($this->_cacheDirPath, false);
-	}
+    public function clean() {
+	return Sr::rmdir($this->_cacheDirPath, false);
+    }
 
-	public function delete($key) {
-		if (empty($key)) {
-			return false;
-		}
-		$key = $this->_hashKey($key);
-		$filePath = $this->_hashKeyPath($key) . $key;
-		if (file_exists($filePath)) {
-			return @unlink($filePath);
-		}
-		return true;
+    public function delete($key) {
+	if (empty($key)) {
+	    return false;
 	}
+	$key = $this->_hashKey($key);
+	$filePath = $this->_hashKeyPath($key) . $key;
+	if (file_exists($filePath)) {
+	    return @unlink($filePath);
+	}
+	return true;
+    }
 
-	public function get($key) {
-		if (empty($key)) {
-			return null;
-		}
-		$key = $this->_hashKey($key);
-		$filePath = $this->_hashKeyPath($key) . $key;
-		if (file_exists($filePath)) {
-			$cacheData = file_get_contents($filePath);
-			$userData = $this->unpack($cacheData);
-			return is_null($userData) ? null : $userData;
-		}
-		return NULL;
+    public function get($key) {
+	if (empty($key)) {
+	    return null;
 	}
+	$key = $this->_hashKey($key);
+	$filePath = $this->_hashKeyPath($key) . $key;
+	if (file_exists($filePath)) {
+	    $cacheData = file_get_contents($filePath);
+	    $userData = $this->unpack($cacheData);
+	    return is_null($userData) ? null : $userData;
+	}
+	return NULL;
+    }
 
-	public function set($key, $value, $cacheTime = 0) {
-		if (empty($key)) {
-			return false;
-		}
-		$key = $this->_hashKey($key);
-		$cacheDir = $this->_hashKeyPath($key);
-		$filePath = $cacheDir . $key;
-		if (!is_dir($cacheDir)) {
-			mkdir($cacheDir, 0700, true);
-		}
-		$cacheData = $this->pack($value, $cacheTime);
-		if (empty($cacheData)) {
-			return false;
-		}
-		return file_put_contents($filePath, $cacheData, LOCK_EX);
+    public function set($key, $value, $cacheTime = 0) {
+	if (empty($key)) {
+	    return false;
 	}
+	$key = $this->_hashKey($key);
+	$cacheDir = $this->_hashKeyPath($key);
+	$filePath = $cacheDir . $key;
+	if (!is_dir($cacheDir)) {
+	    mkdir($cacheDir, 0700, true);
+	}
+	$cacheData = $this->pack($value, $cacheTime);
+	if (empty($cacheData)) {
+	    return false;
+	}
+	return file_put_contents($filePath, $cacheData, LOCK_EX);
+    }
 
 }
 
 class Soter_Cache_Memcached implements Soter_Cache {
 
-	private $config, $handle;
+    private $config, $handle;
 
-	public function __construct($config) {
-		$this->config = $config;
-	}
+    public function __construct($config) {
+	$this->config = $config;
+    }
 
-	private function _init() {
-		if (empty($this->handle)) {
-			$this->handle = new Memcached();
-			foreach ($this->config as $server) {
-				if ($server[2] > 0) {
-					$this->handle->addServer($server[0], $server[1], $server[2]);
-				} else {
-					$this->handle->addServer($server[0], $server[1]);
-				}
-			}
+    private function _init() {
+	if (empty($this->handle)) {
+	    $this->handle = new Memcached();
+	    foreach ($this->config as $server) {
+		if ($server[2] > 0) {
+		    $this->handle->addServer($server[0], $server[1], $server[2]);
+		} else {
+		    $this->handle->addServer($server[0], $server[1]);
 		}
+	    }
 	}
+    }
 
-	public function clean() {
-		$this->_init();
-		return $this->handle->flush();
-	}
+    public function clean() {
+	$this->_init();
+	return $this->handle->flush();
+    }
 
-	public function delete($key) {
-		$this->_init();
-		return $this->handle->delete($key);
-	}
+    public function delete($key) {
+	$this->_init();
+	return $this->handle->delete($key);
+    }
 
-	public function get($key) {
-		$this->_init();
-		return ($data = $this->handle->get($key)) ? $data : null;
-	}
+    public function get($key) {
+	$this->_init();
+	return ($data = $this->handle->get($key)) ? $data : null;
+    }
 
-	public function set($key, $value, $cacheTime = 0) {
-		$this->_init();
-		return $this->handle->set($key, $value, $cacheTime > 0 ? (time() + $cacheTime) : 0);
-	}
+    public function set($key, $value, $cacheTime = 0) {
+	$this->_init();
+	return $this->handle->set($key, $value, $cacheTime > 0 ? (time() + $cacheTime) : 0);
+    }
 
 }
 
 class Soter_Cache_Memcache implements Soter_Cache {
 
-	private $config, $handle;
+    private $config, $handle;
 
-	public function __construct($config) {
-		$this->config = $config;
-	}
+    public function __construct($config) {
+	$this->config = $config;
+    }
 
-	private function _init() {
-		if (empty($this->handle)) {
-			$this->handle = new Memcache();
-			foreach ($this->config as $server) {
-				$this->handle->addserver($server[0], $server[1]);
-			}
-		}
+    private function _init() {
+	if (empty($this->handle)) {
+	    $this->handle = new Memcache();
+	    foreach ($this->config as $server) {
+		$this->handle->addserver($server[0], $server[1]);
+	    }
 	}
+    }
 
-	public function clean() {
-		$this->_init();
-		return $this->handle->flush();
-	}
+    public function clean() {
+	$this->_init();
+	return $this->handle->flush();
+    }
 
-	public function delete($key) {
-		$this->_init();
-		return $this->handle->delete($key);
-	}
+    public function delete($key) {
+	$this->_init();
+	return $this->handle->delete($key);
+    }
 
-	public function get($key) {
-		$this->_init();
-		return ($data = $this->handle->get($key)) ? $data : null;
-	}
+    public function get($key) {
+	$this->_init();
+	return ($data = $this->handle->get($key)) ? $data : null;
+    }
 
-	public function set($key, $value, $cacheTime = 0) {
-		$this->_init();
-		return $this->handle->set($key, $value, false, $cacheTime);
-	}
+    public function set($key, $value, $cacheTime = 0) {
+	$this->_init();
+	return $this->handle->set($key, $value, false, $cacheTime);
+    }
 
 }
 
 class Soter_Cache_Apc implements Soter_Cache {
 
-	public function clean() {
-		@apc_clear_cache();
-		@apc_clear_cache("user");
-		return true;
-	}
+    public function clean() {
+	@apc_clear_cache();
+	@apc_clear_cache("user");
+	return true;
+    }
 
-	public function delete($key) {
-		return apc_delete($key);
-	}
+    public function delete($key) {
+	return apc_delete($key);
+    }
 
-	public function get($key) {
-		$data = apc_fetch($key, $bo);
-		if ($bo === false) {
-			return null;
-		}
-		return $data;
+    public function get($key) {
+	$data = apc_fetch($key, $bo);
+	if ($bo === false) {
+	    return null;
 	}
+	return $data;
+    }
 
-	public function set($key, $value, $cacheTime = 0) {
-		return apc_store($key, $value, $cacheTime);
-	}
+    public function set($key, $value, $cacheTime = 0) {
+	return apc_store($key, $value, $cacheTime);
+    }
 
 }
 
 class Soter_Cache_Redis implements Soter_Cache {
 
-	private $config, $handle;
+    private $config, $handle;
 
-	private function _initMaters() {
-		if (empty($this->handle['masters'])) {
-			$this->handle['masters'] = array();
-			//array('masters', 'slaves')
-			foreach ($this->config['masters'] as $k => $config) {
-				$this->handle['masters'][$k] = new Redis();
-				if ($config['type'] == 'sock') {
-					$this->handle['masters'][$k]->connect($config['sock']);
-				} else {
-					$this->handle['masters'][$k]->connect($config['host'], $config['port'], $config['timeout'], $config['retry']);
-				}
-				if (!is_null($config['password'])) {
-					$this->handle['masters'][$k]->auth($config['password']);
-				}
-				if (!is_null($config['prefix'])) {
-					if ($config['prefix']{strlen($config['prefix']) - 1} != ':') {
-						$config['prefix'].=':';
-					}
-					$this->handle['masters'][$k]->setOption(Redis::OPT_PREFIX, $config['prefix']);
-				}
-				$this->handle['masters'][$k]->select($config['db']);
-			}
-		}
-	}
-
-	private function _initSlave() {
-		if (empty($this->handle['slave'])) {
-			//随机选取一个从redis配置，然后连接
-			$config = $this->config['slaves'][array_rand($this->config['slaves'])];
-			$this->handle['slave'] = new Redis();
-			if ($config['type'] == 'sock') {
-				$this->handle['slave']->connect($config['sock']);
-			} else {
-				$this->handle['slave']->connect($config['host'], $config['port'], $config['timeout'], $config['retry']);
-			}
-			if (!is_null($config['password'])) {
-				$this->handle['slave']->auth($config['password']);
-			}
-			if (!is_null($config['prefix'])) {
-				if ($config['prefix']{strlen($config['prefix']) - 1} != ':') {
-					$config['prefix'].=':';
-				}
-				$this->handle['slave']->setOption(Redis::OPT_PREFIX, $config['prefix']);
-			}
-			$this->handle['slave']->select($config['db']);
-		}
-	}
-
-	public function __construct($config) {
-		if (empty($config['slaves']) && !empty($config['masters'])) {
-			$config['slaves'][] = current($config['masters']);
-		}
-		$this->config = $config;
-	}
-
-	public function clean() {
-		$this->_initMaters();
-		$status = true;
-		foreach ($this->handle['masters'] as $k => $handle) {
-			$status = $status & $this->handle['masters'][$k]->flushDB();
-		}
-		return $status;
-	}
-
-	public function delete($key) {
-		$this->_initMaters();
-		$status = true;
-		foreach ($this->handle['masters'] as $k => $v) {
-			$status = $status & $this->handle['masters'][$k]->delete($key);
-		}
-		return $status;
-	}
-
-	public function get($key) {
-		$this->_initSlave();
-		if ($data = $this->handle['slave']->get($key)) {
-			return @unserialize($data);
+    private function _initMaters() {
+	if (empty($this->handle['masters'])) {
+	    $this->handle['masters'] = array();
+	    //array('masters', 'slaves')
+	    foreach ($this->config['masters'] as $k => $config) {
+		$this->handle['masters'][$k] = new Redis();
+		if ($config['type'] == 'sock') {
+		    $this->handle['masters'][$k]->connect($config['sock']);
 		} else {
-			return null;
+		    $this->handle['masters'][$k]->connect($config['host'], $config['port'], $config['timeout'], $config['retry']);
 		}
+		if (!is_null($config['password'])) {
+		    $this->handle['masters'][$k]->auth($config['password']);
+		}
+		if (!is_null($config['prefix'])) {
+		    if ($config['prefix']{strlen($config['prefix']) - 1} != ':') {
+			$config['prefix'].=':';
+		    }
+		    $this->handle['masters'][$k]->setOption(Redis::OPT_PREFIX, $config['prefix']);
+		}
+		$this->handle['masters'][$k]->select($config['db']);
+	    }
 	}
+    }
 
-	public function set($key, $value, $cacheTime = 0) {
-		$this->_initMaters();
-		$value = serialize($value);
-		foreach ($this->handle['masters'] as $k => $v) {
-			if ($cacheTime) {
-				return $this->handle['masters'][$k]->setex($key, $cacheTime, $value);
-			} else {
-				return $this->handle['masters'][$k]->set($key, $value);
-			}
+    private function _initSlave() {
+	if (empty($this->handle['slave'])) {
+	    //随机选取一个从redis配置，然后连接
+	    $config = $this->config['slaves'][array_rand($this->config['slaves'])];
+	    $this->handle['slave'] = new Redis();
+	    if ($config['type'] == 'sock') {
+		$this->handle['slave']->connect($config['sock']);
+	    } else {
+		$this->handle['slave']->connect($config['host'], $config['port'], $config['timeout'], $config['retry']);
+	    }
+	    if (!is_null($config['password'])) {
+		$this->handle['slave']->auth($config['password']);
+	    }
+	    if (!is_null($config['prefix'])) {
+		if ($config['prefix']{strlen($config['prefix']) - 1} != ':') {
+		    $config['prefix'].=':';
 		}
+		$this->handle['slave']->setOption(Redis::OPT_PREFIX, $config['prefix']);
+	    }
+	    $this->handle['slave']->select($config['db']);
 	}
+    }
+
+    public function __construct($config) {
+	if (empty($config['slaves']) && !empty($config['masters'])) {
+	    $config['slaves'][] = current($config['masters']);
+	}
+	$this->config = $config;
+    }
+
+    public function clean() {
+	$this->_initMaters();
+	$status = true;
+	foreach ($this->handle['masters'] as $k => $handle) {
+	    $status = $status & $this->handle['masters'][$k]->flushDB();
+	}
+	return $status;
+    }
+
+    public function delete($key) {
+	$this->_initMaters();
+	$status = true;
+	foreach ($this->handle['masters'] as $k => $v) {
+	    $status = $status & $this->handle['masters'][$k]->delete($key);
+	}
+	return $status;
+    }
+
+    public function get($key) {
+	$this->_initSlave();
+	if ($data = $this->handle['slave']->get($key)) {
+	    return @unserialize($data);
+	} else {
+	    return null;
+	}
+    }
+
+    public function set($key, $value, $cacheTime = 0) {
+	$this->_initMaters();
+	$value = serialize($value);
+	foreach ($this->handle['masters'] as $k => $v) {
+	    if ($cacheTime) {
+		return $this->handle['masters'][$k]->setex($key, $cacheTime, $value);
+	    } else {
+		return $this->handle['masters'][$k]->set($key, $value);
+	    }
+	}
+    }
 
 }
 
 class Soter_Generator extends Soter_Task {
 
-	public function execute(Soter_CliArgs $args) {
-		$config = Sr::config();
-		$name = $args->get('name');
-		$type = $args->get('type');
-		$force = $args->get('overwrite');
-		if (empty($name)) {
-			exit('name required , please use : --name=<Name>');
-		}
-		if (empty($type)) {
-			exit('type required , please use : --type=<Type>');
-		}
-		$classesDir = $config->getPrimaryApplicationDir() . $config->getClassesDirName() . '/';
-		$info = array(
-		    'controller' => array(
-			'dir' => $config->getControllerDirName(),
-			'parentClass' => 'Soter_Controller',
-			'methodName' => Sr::config()->getMethodPrefix() . 'index()',
-			'nameTip' => 'Controller'
-		    ),
-		    'business' => array(
-			'dir' => $config->getBusinessDirName(),
-			'parentClass' => 'Soter_Business',
-			'methodName' => 'business()',
-			'nameTip' => 'Business'
-		    ),
-		    'model' => array(
-			'dir' => $config->getModelDirName(),
-			'parentClass' => 'Soter_Model',
-			'methodName' => 'model()',
-			'nameTip' => 'Model'
-		    ),
-		    'task' => array(
-			'dir' => $config->getTaskDirName(),
-			'parentClass' => 'Soter_Task',
-			'methodName' => 'execute(Soter_CliArgs $args)',
-			'nameTip' => 'Task'
-		    )
-		);
-		if (!Sr::arrayKeyExists($type, $info)) {
-			exit('[ Error ]' . "\n" . 'Type : [ ' . $type . ' ]');
-		}
-		$classname = $info[$type]['dir'] . '_' . $name;
-		$file = $classesDir . str_replace('_', '/', $classname) . '.php';
-		$method = $info[$type]['methodName'];
-		$parentClass = $info[$type]['parentClass'];
-		$tip = $info[$type]['nameTip'];
-		if (file_exists($file)) {
-			if ($force) {
-				$this->writeFile($classname, $method, $parentClass, $file, $tip);
-			} else {
-				exit('[ Error ]' . "\n" . $tip . ' [ ' . $classname . ' ] already exists , ' . "{$file}\n" . 'you can use --overwrite to overwrite the file.');
-			}
-		} else {
-			$this->writeFile($classname, $method, $parentClass, $file, $tip);
-		}
+    public function execute(Soter_CliArgs $args) {
+	$config = Sr::config();
+	$name = $args->get('name');
+	$type = $args->get('type');
+	$force = $args->get('overwrite');
+	if (empty($name)) {
+	    exit('name required , please use : --name=<Name>');
 	}
+	if (empty($type)) {
+	    exit('type required , please use : --type=<Type>');
+	}
+	$classesDir = $config->getPrimaryApplicationDir() . $config->getClassesDirName() . '/';
+	$info = array(
+	    'controller' => array(
+		'dir' => $config->getControllerDirName(),
+		'parentClass' => 'Soter_Controller',
+		'methodName' => Sr::config()->getMethodPrefix() . 'index()',
+		'nameTip' => 'Controller'
+	    ),
+	    'business' => array(
+		'dir' => $config->getBusinessDirName(),
+		'parentClass' => 'Soter_Business',
+		'methodName' => 'business()',
+		'nameTip' => 'Business'
+	    ),
+	    'model' => array(
+		'dir' => $config->getModelDirName(),
+		'parentClass' => 'Soter_Model',
+		'methodName' => 'model()',
+		'nameTip' => 'Model'
+	    ),
+	    'task' => array(
+		'dir' => $config->getTaskDirName(),
+		'parentClass' => 'Soter_Task',
+		'methodName' => 'execute(Soter_CliArgs $args)',
+		'nameTip' => 'Task'
+	    )
+	);
+	if (!Sr::arrayKeyExists($type, $info)) {
+	    exit('[ Error ]' . "\n" . 'Type : [ ' . $type . ' ]');
+	}
+	$classname = $info[$type]['dir'] . '_' . $name;
+	$file = $classesDir . str_replace('_', '/', $classname) . '.php';
+	$method = $info[$type]['methodName'];
+	$parentClass = $info[$type]['parentClass'];
+	$tip = $info[$type]['nameTip'];
+	if (file_exists($file)) {
+	    if ($force) {
+		$this->writeFile($classname, $method, $parentClass, $file, $tip);
+	    } else {
+		exit('[ Error ]' . "\n" . $tip . ' [ ' . $classname . ' ] already exists , ' . "{$file}\n" . 'you can use --overwrite to overwrite the file.');
+	    }
+	} else {
+	    $this->writeFile($classname, $method, $parentClass, $file, $tip);
+	}
+    }
 
-	private function writeFile($classname, $method, $parentClass, $file, $tip) {
-		$dir = dirname($file);
-		if (!is_dir($dir)) {
-			mkdir($dir, 0755, true);
-		}
-		$code = "<?php\nclass  {$classname} extends {$parentClass} {\n	public function {$method} {\n		\n	}\n}";
-		if (file_put_contents($file, $code)) {
-			echo "[ Successfull ]\n{$tip} [ $classname ] created successfully \n" . $file;
-		}
+    private function writeFile($classname, $method, $parentClass, $file, $tip) {
+	$dir = dirname($file);
+	if (!is_dir($dir)) {
+	    mkdir($dir, 0755, true);
 	}
+	$code = "<?php\nclass  {$classname} extends {$parentClass} {\n	public function {$method} {\n		\n	}\n}";
+	if (file_put_contents($file, $code)) {
+	    echo "[ Successfull ]\n{$tip} [ $classname ] created successfully \n" . $file;
+	}
+    }
 
 }
 
 class Soter_Generator_Mysql extends Soter_Task {
 
-	public function execute(Soter_CliArgs $args) {
-		$config = Sr::config();
-		$name = $args->get('name');
-		$type = $args->get('type');
-		$force = $args->get('overwrite');
-		$table = $args->get('table');
-		$dbGroup = $args->get('db');
-		if (empty($name)) {
-			exit('name required , please use : --name=<Name>');
-		}
-		if (empty($table)) {
-			exit('table name required , please use : --table=<Table Name>');
-		}
-		if (empty($type)) {
-			exit('type required , please use : --type=<Type>');
-		}
-		$columns = self::getTableFieldsInfo($table, $dbGroup);
-		$primaryKey = '';
+    public function execute(Soter_CliArgs $args) {
+	$config = Sr::config();
+	$name = $args->get('name');
+	$type = $args->get('type');
+	$force = $args->get('overwrite');
+	$table = $args->get('table');
+	$dbGroup = $args->get('db');
+	if (empty($name)) {
+	    exit('name required , please use : --name=<Name>');
+	}
+	if (empty($table)) {
+	    exit('table name required , please use : --table=<Table Name>');
+	}
+	if (empty($type)) {
+	    exit('type required , please use : --type=<Type>');
+	}
+	$columns = self::getTableFieldsInfo($table, $dbGroup);
+	$primaryKey = '';
 
-		$classesDir = $config->getPrimaryApplicationDir() . $config->getClassesDirName() . '/';
-		$info = array(
-		    'bean' => array(
-			'dir' => $config->getBeanDirName(),
-			'parentClass' => 'Soter_Bean',
-			'nameTip' => 'Bean'
-		    ),
-		    'dao' => array(
-			'dir' => $config->getDaoDirName(),
-			'parentClass' => 'Soter_Dao',
-			'nameTip' => 'Dao'
-		    ),
+	$classesDir = $config->getPrimaryApplicationDir() . $config->getClassesDirName() . '/';
+	$info = array(
+	    'bean' => array(
+		'dir' => $config->getBeanDirName(),
+		'parentClass' => 'Soter_Bean',
+		'nameTip' => 'Bean'
+	    ),
+	    'dao' => array(
+		'dir' => $config->getDaoDirName(),
+		'parentClass' => 'Soter_Dao',
+		'nameTip' => 'Dao'
+	    ),
+	);
+	if (!Sr::arrayKeyExists($type, $info)) {
+	    exit('[ Error ]' . "\n" . 'Type : [ ' . $type . ' ]');
+	}
+	$classname = $info[$type]['dir'] . '_' . $name;
+	$file = $classesDir . str_replace('_', '/', $classname) . '.php';
+	$parentClass = $info[$type]['parentClass'];
+	$tip = $info[$type]['nameTip'];
+	$dir = dirname($file);
+	if (!is_dir($dir)) {
+	    mkdir($dir, 0755, true);
+	}
+	if ($type == 'bean') {
+	    $methods = array();
+	    $fields = array();
+	    $fieldTemplate = "	//{comment}\n	private \${column0};";
+	    $methodTemplate = "	public function get{column}() {\n		return \$this->{column0};\n	}\n\n	public function set{column}(\${column1}) {\n		\$this->{column0} = \${column1};\n		return \$this;\n	}";
+	    foreach ($columns as $value) {
+		$column = str_replace(' ', '', ucwords(str_replace('_', ' ', $value['name'])));
+		$column0 = $value['name'];
+		$column1 = lcfirst($column);
+		$fields[] = str_replace(array('{column0}', '{comment}'), array($column0, $value['comment']), $fieldTemplate);
+		$methods[] = str_replace(array('{column}', '{column0}', '{column1}'), array($column, $column0, $column1), $methodTemplate);
+	    }
+	    $code = "<?php\n\nclass {$classname} extends {$parentClass} {\n\n{fields}\n\n{methods}\n\n}";
+	    $code = str_replace(array('{fields}', '{methods}'), array(implode("\n\n", $fields), implode("\n\n", $methods)), $code);
+	} else {
+	    $columnsString = '';
+	    $_columns = array();
+	    foreach ($columns as $value) {
+		if ($value['primary']) {
+		    $primaryKey = $value['name'];
+		}
+		$_columns[] = '\'' . $value['name'] . "'//" . $value['comment'] . "\n				";
+	    }
+	    $columnsString = "array(\n				" . implode(',', $_columns) . ')';
+	    $code = "<?php\n\nclass {$classname} extends {$parentClass} {\n\n	public function getColumns() {\n		return {columns};\n	}\n\n	public function getPrimaryKey() {\n		return '{primaryKey}';\n	}\n\n	public function getTable() {\n		return '{table}';\n	}\n\n}\n";
+	    $code = str_replace(array('{columns}', '{primaryKey}', '{table}'), array($columnsString, $primaryKey, $table), $code);
+	}
+	if (file_exists($file)) {
+	    if ($force) {
+		if (file_put_contents($file, $code)) {
+		    echo "[ Successfull ]\n{$tip} [ $classname ] created successfully \n" . $file;
+		}
+	    } else {
+		exit('[ Error ]' . "\n" . $tip . ' [ ' . $classname . ' ] already exists , ' . "{$file}\n" . 'you can use --overwrite to overwrite the file.');
+	    }
+	} else {
+	    if (file_put_contents($file, $code)) {
+		echo "[ Successfull ]\n{$tip} [ $classname ] created successfully \n" . $file;
+	    }
+	}
+    }
+
+    private static function getTableFieldsInfo($tableName, $db) {
+	if (!is_object($db)) {
+	    $db = Sr::db($db);
+	}
+	if (strtolower($db->getDriverType()) != 'mysql') {
+	    throw new Soter_Exception_500('getTableFieldsInfo() only for mysql database');
+	}
+	$info = array();
+	$result = $db->execute('SHOW FULL COLUMNS FROM ' . $db->getTablePrefix() . $tableName)->rows();
+	if ($result) {
+	    foreach ($result as $val) {
+		$info[$val['Field']] = array(
+		    'name' => $val['Field'],
+		    'type' => $val['Type'],
+		    'comment' => $val['Comment'] ? $val['Comment'] : $val['Field'],
+		    'notnull' => $val['Null'] == 'NO' ? 1 : 0,
+		    'default' => $val['Default'],
+		    'primary' => (strtolower($val['Key']) == 'pri'),
+		    'autoinc' => (strtolower($val['Extra']) == 'auto_increment'),
 		);
-		if (!Sr::arrayKeyExists($type, $info)) {
-			exit('[ Error ]' . "\n" . 'Type : [ ' . $type . ' ]');
-		}
-		$classname = $info[$type]['dir'] . '_' . $name;
-		$file = $classesDir . str_replace('_', '/', $classname) . '.php';
-		$parentClass = $info[$type]['parentClass'];
-		$tip = $info[$type]['nameTip'];
-		$dir = dirname($file);
-		if (!is_dir($dir)) {
-			mkdir($dir, 0755, true);
-		}
-		if ($type == 'bean') {
-			$methods = array();
-			$fields = array();
-			$fieldTemplate = "	//{comment}\n	private \${column0};";
-			$methodTemplate = "	public function get{column}() {\n		return \$this->{column0};\n	}\n\n	public function set{column}(\${column1}) {\n		\$this->{column0} = \${column1};\n		return \$this;\n	}";
-			foreach ($columns as $value) {
-				$column = str_replace(' ', '', ucwords(str_replace('_', ' ', $value['name'])));
-				$column0 = $value['name'];
-				$column1 = lcfirst($column);
-				$fields[] = str_replace(array('{column0}', '{comment}'), array($column0, $value['comment']), $fieldTemplate);
-				$methods[] = str_replace(array('{column}', '{column0}', '{column1}'), array($column, $column0, $column1), $methodTemplate);
-			}
-			$code = "<?php\n\nclass {$classname} extends {$parentClass} {\n\n{fields}\n\n{methods}\n\n}";
-			$code = str_replace(array('{fields}', '{methods}'), array(implode("\n\n", $fields), implode("\n\n", $methods)), $code);
-		} else {
-			$columnsString = '';
-			$_columns = array();
-			foreach ($columns as $value) {
-				if ($value['primary']) {
-					$primaryKey = $value['name'];
-				}
-				$_columns[] = '\'' . $value['name'] . "'//" . $value['comment'] . "\n				";
-			}
-			$columnsString = "array(\n				" . implode(',', $_columns) . ')';
-			$code = "<?php\n\nclass {$classname} extends {$parentClass} {\n\n	public function getColumns() {\n		return {columns};\n	}\n\n	public function getPrimaryKey() {\n		return '{primaryKey}';\n	}\n\n	public function getTable() {\n		return '{table}';\n	}\n\n}\n";
-			$code = str_replace(array('{columns}', '{primaryKey}', '{table}'), array($columnsString, $primaryKey, $table), $code);
-		}
-		if (file_exists($file)) {
-			if ($force) {
-				if (file_put_contents($file, $code)) {
-					echo "[ Successfull ]\n{$tip} [ $classname ] created successfully \n" . $file;
-				}
-			} else {
-				exit('[ Error ]' . "\n" . $tip . ' [ ' . $classname . ' ] already exists , ' . "{$file}\n" . 'you can use --overwrite to overwrite the file.');
-			}
-		} else {
-			if (file_put_contents($file, $code)) {
-				echo "[ Successfull ]\n{$tip} [ $classname ] created successfully \n" . $file;
-			}
-		}
+	    }
 	}
-
-	private static function getTableFieldsInfo($tableName, $db) {
-		if (!is_object($db)) {
-			$db = Sr::db($db);
-		}
-		if (strtolower($db->getDriverType()) != 'mysql') {
-			throw new Soter_Exception_500('getTableFieldsInfo() only for mysql database');
-		}
-		$info = array();
-		$result = $db->execute('SHOW FULL COLUMNS FROM ' . $db->getTablePrefix() . $tableName)->rows();
-		if ($result) {
-			foreach ($result as $val) {
-				$info[$val['Field']] = array(
-				    'name' => $val['Field'],
-				    'type' => $val['Type'],
-				    'comment' => $val['Comment'] ? $val['Comment'] : $val['Field'],
-				    'notnull' => $val['Null'] == 'NO' ? 1 : 0,
-				    'default' => $val['Default'],
-				    'primary' => (strtolower($val['Key']) == 'pri'),
-				    'autoinc' => (strtolower($val['Extra']) == 'auto_increment'),
-				);
-			}
-		}
-		return $info;
-	}
+	return $info;
+    }
 
 }
 
 class Soter_Session_Redis extends Soter_Session {
 
-	public function init() {
-		ini_set('session.save_handler', 'redis');
-		ini_set('session.save_path', $this->config['path']);
-	}
+    public function init() {
+	ini_set('session.save_handler', 'redis');
+	ini_set('session.save_path', $this->config['path']);
+    }
 
 }
 
 class Soter_Session_Memcached extends Soter_Session {
 
-	public function init() {
-		ini_set('session.save_handler', 'memcached');
-		ini_set('session.save_path', $this->config['path']);
-	}
+    public function init() {
+	ini_set('session.save_handler', 'memcached');
+	ini_set('session.save_path', $this->config['path']);
+    }
 
 }
 
 class Soter_Session_Memcache extends Soter_Session {
 
-	public function init() {
-		ini_set('session.save_handler', 'memcache');
-		ini_set('session.save_path', $this->config['path']);
-	}
+    public function init() {
+	ini_set('session.save_handler', 'memcache');
+	ini_set('session.save_path', $this->config['path']);
+    }
 
 }
 
 class Soter_Session_Mongodb extends Soter_Session {
 
-	private $__mongo_collection = NULL;
-	private $__current_session = NULL;
-	private $__mongo_conn = NULL;
+    private $__mongo_collection = NULL;
+    private $__current_session = NULL;
+    private $__mongo_conn = NULL;
 
-	public function __construct($configFileName) {
-		parent::__construct($configFileName);
-		$cfg = Sr::config()->getSessionConfig();
-		$this->config['lifetime'] = $cfg['lifetime'];
-	}
+    public function __construct($configFileName) {
+	parent::__construct($configFileName);
+	$cfg = Sr::config()->getSessionConfig();
+	$this->config['lifetime'] = $cfg['lifetime'];
+    }
 
-	public function connect() {
-		if (is_object($this->__mongo_collection)) {
-			return;
-		}
-		$connection_string = sprintf('mongodb://%s:%s', $this->config['host'], $this->config['port']);
-		if ($this->config['user'] != null && $this->config['password'] != null) {
-			$connection_string = sprintf('mongodb://%s:%s@%s:%s/%s', $this->config['user'], $this->config['password'], $this->config['host'], $this->config['port'], $this->config['database']);
-		}
-		$opts = array('connect' => true);
-		if ($this->config['persistent'] && !empty($this->config['persistentId'])) {
-			$opts['persist'] = $this->config['persistentId'];
-		}
-		if ($this->config['replicaSet']) {
-			$opts['replicaSet'] = $this->config['replicaSet'];
-		}
-		$class = 'MongoClient';
-		if (!class_exists($class)) {
-			$class = 'Mongo';
-		}
-		$this->__mongo_conn = $object_conn = new $class($connection_string, $opts);
-		$object_mongo = $object_conn->{$this->config['database']};
-		$this->__mongo_collection = $object_mongo->{$this->config['collection']};
-		if ($this->__mongo_collection == NULL) {
-			throw new Soter_Exception_500('can not connect to mongodb server');
-		}
+    public function connect() {
+	if (is_object($this->__mongo_collection)) {
+	    return;
 	}
+	$connection_string = sprintf('mongodb://%s:%s', $this->config['host'], $this->config['port']);
+	if ($this->config['user'] != null && $this->config['password'] != null) {
+	    $connection_string = sprintf('mongodb://%s:%s@%s:%s/%s', $this->config['user'], $this->config['password'], $this->config['host'], $this->config['port'], $this->config['database']);
+	}
+	$opts = array('connect' => true);
+	if ($this->config['persistent'] && !empty($this->config['persistentId'])) {
+	    $opts['persist'] = $this->config['persistentId'];
+	}
+	if ($this->config['replicaSet']) {
+	    $opts['replicaSet'] = $this->config['replicaSet'];
+	}
+	$class = 'MongoClient';
+	if (!class_exists($class)) {
+	    $class = 'Mongo';
+	}
+	$this->__mongo_conn = $object_conn = new $class($connection_string, $opts);
+	$object_mongo = $object_conn->{$this->config['database']};
+	$this->__mongo_collection = $object_mongo->{$this->config['collection']};
+	if ($this->__mongo_collection == NULL) {
+	    throw new Soter_Exception_500('can not connect to mongodb server');
+	}
+    }
 
-	public function init() {
-		session_set_save_handler(array(&$this, 'open'), array(&$this, 'close'), array(&$this, 'read'), array(&$this, 'write'), array(&$this, 'destroy'), array(&$this, 'gc'));
-	}
+    public function init() {
+	session_set_save_handler(array(&$this, 'open'), array(&$this, 'close'), array(&$this, 'read'), array(&$this, 'write'), array(&$this, 'destroy'), array(&$this, 'gc'));
+    }
 
-	public function open($session_path, $session_name) {
-		$this->connect();
-		return true;
-	}
+    public function open($session_path, $session_name) {
+	$this->connect();
+	return true;
+    }
 
-	public function close() {
-		$this->__mongo_conn->close();
-		return true;
-	}
+    public function close() {
+	$this->__mongo_conn->close();
+	return true;
+    }
 
-	public function read($session_id) {
-		$result = NULL;
-		$ret = '';
-		$expiry = time();
-		$query['_id'] = $session_id;
-		$query['expiry'] = array('$gte' => $expiry);
-		$result = $this->__mongo_collection->findone($query);
-		if ($result) {
-			$this->__current_session = $result;
-			$result['expiry'] = time() + $this->config['lifetime'];
-			$this->__mongo_collection->update(array("_id" => $session_id), $result);
-			$ret = $result['data'];
-		}
-		return $ret;
+    public function read($session_id) {
+	$result = NULL;
+	$ret = '';
+	$expiry = time();
+	$query['_id'] = $session_id;
+	$query['expiry'] = array('$gte' => $expiry);
+	$result = $this->__mongo_collection->findone($query);
+	if ($result) {
+	    $this->__current_session = $result;
+	    $result['expiry'] = time() + $this->config['lifetime'];
+	    $this->__mongo_collection->update(array("_id" => $session_id), $result);
+	    $ret = $result['data'];
 	}
+	return $ret;
+    }
 
-	public function write($session_id, $data) {
-		$result = true;
-		$expiry = time() + $this->config['lifetime'];
-		$session_data = array();
-		if (empty($this->__current_session)) {
-			$session_id = $session_id;
-			$session_data['_id'] = $session_id;
-			$session_data['data'] = $data;
-			$session_data['expiry'] = $expiry;
-		} else {
-			$session_data = (array) $this->__current_session;
-			$session_data['data'] = $data;
-			$session_data['expiry'] = $expiry;
-		}
-		$query['_id'] = $session_id;
-		$record = $this->__mongo_collection->findOne($query);
-		if ($record == null) {
-			$this->__mongo_collection->insert($session_data);
-		} else {
-			$record['data'] = $data;
-			$record['expiry'] = $expiry;
-			$this->__mongo_collection->save($record);
-		}
-		return true;
+    public function write($session_id, $data) {
+	$result = true;
+	$expiry = time() + $this->config['lifetime'];
+	$session_data = array();
+	if (empty($this->__current_session)) {
+	    $session_id = $session_id;
+	    $session_data['_id'] = $session_id;
+	    $session_data['data'] = $data;
+	    $session_data['expiry'] = $expiry;
+	} else {
+	    $session_data = (array) $this->__current_session;
+	    $session_data['data'] = $data;
+	    $session_data['expiry'] = $expiry;
 	}
+	$query['_id'] = $session_id;
+	$record = $this->__mongo_collection->findOne($query);
+	if ($record == null) {
+	    $this->__mongo_collection->insert($session_data);
+	} else {
+	    $record['data'] = $data;
+	    $record['expiry'] = $expiry;
+	    $this->__mongo_collection->save($record);
+	}
+	return true;
+    }
 
-	public function destroy($session_id) {
-		unset($_SESSION);
-		$query['_id'] = $session_id;
-		$this->__mongo_collection->remove($query);
-		return true;
-	}
+    public function destroy($session_id) {
+	unset($_SESSION);
+	$query['_id'] = $session_id;
+	$this->__mongo_collection->remove($query);
+	return true;
+    }
 
-	public function gc($max = 0) {
-		$query = array();
-		$query['expiry'] = array(':lt' => time());
-		$this->__mongo_collection->remove($query, array('justOne' => false));
-		return true;
-	}
+    public function gc($max = 0) {
+	$query = array();
+	$query['expiry'] = array(':lt' => time());
+	$this->__mongo_collection->remove($query, array('justOne' => false));
+	return true;
+    }
 
 }
 
@@ -1975,79 +1979,79 @@ class Soter_Session_Mongodb extends Soter_Session {
  */
 class Soter_Session_Mysql extends Soter_Session {
 
-	protected $dbConnection;
-	protected $dbTable;
+    protected $dbConnection;
+    protected $dbTable;
 
-	public function __construct($configFileName) {
-		parent::__construct($configFileName);
-		$cfg = Sr::config()->getSessionConfig();
-		$this->config['lifetime'] = $cfg['lifetime'];
+    public function __construct($configFileName) {
+	parent::__construct($configFileName);
+	$cfg = Sr::config()->getSessionConfig();
+	$this->config['lifetime'] = $cfg['lifetime'];
+    }
+
+    public function init() {
+	session_set_save_handler(array($this, 'open'), array($this, 'close'), array($this, 'read'), array($this, 'write'), array($this, 'destroy'), array($this, 'gc'));
+    }
+
+    public function connect() {
+	$this->dbTable = $this->config['table'];
+	if ($this->config['group']) {
+	    $this->dbConnection = Sr::db($this->config['group']);
+	} else {
+	    $dbConfig = Soter_Database::getDefaultConfig();
+	    $dbConfig['database'] = $this->config['database'];
+	    $dbConfig['tablePrefix'] = $this->config['table_prefix'];
+	    $dbConfig['masters']['master01']['hostname'] = $this->config['hostname'];
+	    $dbConfig['masters']['master01']['port'] = $this->config['port'];
+	    $dbConfig['masters']['master01']['username'] = $this->config['username'];
+	    $dbConfig['masters']['master01']['password'] = $this->config['password'];
+	    $this->dbConnection = Sr::db($dbConfig);
+	}
+    }
+
+    public function open($save_path, $session_name) {
+	if (!is_object($this->dbConnection)) {
+	    $this->connect();
 	}
 
-	public function init() {
-		session_set_save_handler(array($this, 'open'), array($this, 'close'), array($this, 'read'), array($this, 'write'), array($this, 'destroy'), array($this, 'gc'));
+	return TRUE;
+    }
+
+    public function close() {
+	$this->dbConnection->close();
+	return true;
+    }
+
+    public function read($id) {
+
+	$result = $this->dbConnection->from($this->dbTable)->where(array('id' => $id))->execute();
+	if ($result->total()) {
+	    $record = $result->row();
+	    $where['id'] = $id;
+	    $data['timestamp'] = time() + intval($this->config['lifetime']);
+	    $this->dbConnection->update($this->dbTable, $data, $where)->execute();
+	    return $record['data'];
+	} else {
+	    return false;
 	}
+	return true;
+    }
 
-	public function connect() {
-		$this->dbTable = $this->config['table'];
-		if ($this->config['group']) {
-			$this->dbConnection = Sr::db($this->config['group']);
-		} else {
-			$dbConfig = Soter_Database::getDefaultConfig();
-			$dbConfig['database'] = $this->config['database'];
-			$dbConfig['tablePrefix'] = $this->config['table_prefix'];
-			$dbConfig['masters']['master01']['hostname'] = $this->config['hostname'];
-			$dbConfig['masters']['master01']['port'] = $this->config['port'];
-			$dbConfig['masters']['master01']['username'] = $this->config['username'];
-			$dbConfig['masters']['master01']['password'] = $this->config['password'];
-			$this->dbConnection = Sr::db($dbConfig);
-		}
-	}
+    public function write($id, $sessionData) {
 
-	public function open($save_path, $session_name) {
-		if (!is_object($this->dbConnection)) {
-			$this->connect();
-		}
+	$data['id'] = $id;
+	$data['data'] = $sessionData;
+	$data['timestamp'] = time() + intval($this->config['lifetime']);
+	$this->dbConnection->replace($this->dbTable, $data);
+	return $this->dbConnection->execute() > 0;
+    }
 
-		return TRUE;
-	}
+    public function destroy($id) {
+	unset($_SESSION);
+	return $this->dbConnection->delete($this->dbTable, array('id' => $id))->execute() > 0;
+    }
 
-	public function close() {
-		$this->dbConnection->close();
-		return true;
-	}
-
-	public function read($id) {
-
-		$result = $this->dbConnection->from($this->dbTable)->where(array('id' => $id))->execute();
-		if ($result->total()) {
-			$record = $result->row();
-			$where['id'] = $id;
-			$data['timestamp'] = time() + intval($this->config['lifetime']);
-			$this->dbConnection->update($this->dbTable, $data, $where)->execute();
-			return $record['data'];
-		} else {
-			return false;
-		}
-		return true;
-	}
-
-	public function write($id, $sessionData) {
-
-		$data['id'] = $id;
-		$data['data'] = $sessionData;
-		$data['timestamp'] = time() + intval($this->config['lifetime']);
-		$this->dbConnection->replace($this->dbTable, $data);
-		return $this->dbConnection->execute() > 0;
-	}
-
-	public function destroy($id) {
-		unset($_SESSION);
-		return $this->dbConnection->delete($this->dbTable, array('id' => $id))->execute() > 0;
-	}
-
-	public function gc($max = 0) {
-		return $this->dbConnection->delete($this->dbTable, array('timestamp <' => time()))->execute() > 0;
-	}
+    public function gc($max = 0) {
+	return $this->dbConnection->delete($this->dbTable, array('timestamp <' => time()))->execute() > 0;
+    }
 
 }
