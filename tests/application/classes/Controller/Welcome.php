@@ -87,7 +87,7 @@ html;
 	}
 
 	public function do_index() {
-		Sr::business('TestBusiness')->dbError();
+		//Sr::business('TestBusiness')->dbError();
 		echo 'xxx';
 	}
 
