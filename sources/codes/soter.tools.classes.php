@@ -94,11 +94,24 @@ class Soter_View {
 		//当load方法在主项目的视图中被调用，然后hmvc主项目load了这个视图，那么这个视图里面的load应该使用的是主项目视图。
 		//hmvc访问
 		if ($hmvcDirName) {
+			$hmvcPath = Sr::realPath($config->getPrimaryApplicationDir() . $config->getHmvcDirName() . '/' . $hmvcDirName);
 			$trace = debug_backtrace();
-			$calledFilePath = array_shift($trace);
-			$calledFilePath = Sr::realPath(Sr::arrayGet($calledFilePath, 'file'));
-			$hmvcPath = $config->getPrimaryApplicationDir() . $config->getHmvcDirName() . '/' . $hmvcDirName;
-			$calledIsInHmvc = $calledFilePath && $hmvcDirName && (strpos($calledFilePath, $hmvcPath) === 0);
+			$calledIsInHmvc = false;
+			$appPath = Sr::realPath($config->getApplicationDir());
+			foreach ($trace as $t) {
+				$filepath = Sr::arrayGet($t, 'file', '');
+				if (!empty($filepath)) {
+					$filepath = Sr::realPath($filepath);
+					$checkList = array('load', 'runWeb', 'message', 'redirect');
+					$function = Sr::arrayGet($t, 'function', '');
+					if ($filepath && in_array($function, $checkList) && strpos($filepath, $appPath) === 0 && strpos($filepath, $hmvcPath) === 0) {
+						$calledIsInHmvc = true;
+						break;
+					} elseif (!in_array($function, $checkList)) {
+						break;
+					}
+				}
+			}
 			//发现load是在主项目中被调用的，使用主项目视图
 			if (!$calledIsInHmvc) {
 				$path = $config->getPrimaryApplicationDir() . $config->getViewsDirName() . '/' . $viewName . '.php';
@@ -246,6 +259,7 @@ class Soter_Router_PathInfo_Default extends Soter_Router {
 	public function find() {
 		$config = Soter::getConfig();
 		$uri = $config->getRequest()->getPathInfo();
+		$uri = trim($uri, '/');
 		if (empty($uri)) {
 			//没有找到hmvc模块名称，或者控制器名称
 			return $this->route->setFound(FALSE);
@@ -254,7 +268,6 @@ class Soter_Router_PathInfo_Default extends Soter_Router {
 				$uri = $uriRewriter->rewrite($uri);
 			}
 		}
-		$uri = trim($uri, '/');
 		//到此$uri形如：Welcome/index.do , Welcome/User , Welcome
 		$_info = explode('/', $uri);
 		$hmvcModule = current($_info);
@@ -262,14 +275,11 @@ class Soter_Router_PathInfo_Default extends Soter_Router {
 		if ($config->hmvcIsDomainOnly($hmvcModule)) {
 			$hmvcModule = '';
 		}
-		$hmvcModuleDirName = '';
-		//当前域名没有绑定hmvc模块,路由器需要处理hmvc模块
-		if (!Sr::config()->getHmvcDomain()) {
-			//处理hmvc模块
-			if ($hmvcModuleDirName = Soter::checkHmvc($hmvcModule, FALSE)) {
-				//找到hmvc模块,去除hmvc模块名称，得到真正的路径
-				$uri = ltrim(substr($uri, strlen($hmvcModule)), '/');
-			}
+		//处理hmvc模块
+		$hmvcModuleDirName = Soter::checkHmvc($hmvcModule, FALSE);
+		//当前域名没有绑定hmvc模块而且hmvc模块存在，去除hmvc模块名称，得到真正的路径
+		if (!Sr::config()->getHmvcDomain()&&$hmvcModuleDirName) {
+			$uri = ltrim(substr($uri, strlen($hmvcModule)), '/');
 		}
 		//首先控制器名和方法名初始化为默认
 		$controller = $config->getDefaultController();
@@ -278,7 +288,7 @@ class Soter_Router_PathInfo_Default extends Soter_Router {
 		/**
 		 * 到此，如果上面$uri被去除掉hmvc模块名称后，$uri有可能是空
 		 * 或者$uri有控制器名称或者方法-参数名称
-		 * 形如：1.Welcome/article-001.do , 2.Welcome/article-001.do , 
+		 * 形如：1.Welcome/article.do , 2.Welcome/article-001.do , 
 		 *      3.article-001.do ,4.article.do , 5.Welcome/User , 6.Welcome 
 		 */
 		if ($uri) {
@@ -485,7 +495,7 @@ class Soter_Config {
 	}
 
 	public function setDataCheckRules($dataCheckRules) {
-		$this->dataCheckRules = is_array($dataCheckRules) ? $dataCheckRules : Sr::config($dataCheckRules);
+		$this->dataCheckRules = is_array($dataCheckRules) ? $dataCheckRules : Sr::config($dataCheckRules, false);
 		return $this;
 	}
 
@@ -494,7 +504,7 @@ class Soter_Config {
 	}
 
 	public function setMethodCacheConfig($methodCacheConfig) {
-		$this->methodCacheConfig = is_array($methodCacheConfig) ? $methodCacheConfig : Sr::config($methodCacheConfig);
+		$this->methodCacheConfig = is_array($methodCacheConfig) ? $methodCacheConfig : Sr::config($methodCacheConfig, false);
 		return $this;
 	}
 
@@ -547,8 +557,9 @@ class Soter_Config {
 	}
 
 	public function setCacheConfig($cacheConfig) {
+		$this->cacheHandles = array();
 		if (is_string($cacheConfig)) {
-			$this->cacheConfig = Sr::config($cacheConfig);
+			$this->cacheConfig = Sr::config($cacheConfig, false);
 		} elseif (is_array($cacheConfig)) {
 			$this->cacheConfig = $cacheConfig;
 		} else {
@@ -569,7 +580,7 @@ class Soter_Config {
 		if ($sessionHandle instanceof Soter_Session) {
 			$this->sessionHandle = $sessionHandle;
 		} else {
-			$this->sessionHandle = Sr::config($sessionHandle);
+			$this->sessionHandle = Sr::config($sessionHandle, false);
 		}
 		return $this;
 	}
@@ -591,7 +602,7 @@ class Soter_Config {
 		if (is_array($sessionConfig)) {
 			$this->sessionConfig = $sessionConfig;
 		} else {
-			$this->sessionConfig = Sr::config($sessionConfig);
+			$this->sessionConfig = Sr::config($sessionConfig, false);
 		}
 		return $this;
 	}
@@ -605,7 +616,8 @@ class Soter_Config {
 	}
 
 	public function setDatabseConfig($databseConfig) {
-		$this->databseConfig = is_array($databseConfig) ? $databseConfig : Sr::config($databseConfig);
+		Sr::clearDbInstances();
+		$this->databseConfig = is_array($databseConfig) ? $databseConfig : Sr::config($databseConfig, false);
 		return $this;
 	}
 
@@ -1556,6 +1568,7 @@ class Soter_Cache_Redis implements Soter_Cache {
 					}
 					$this->handle['masters'][$k]->setOption(Redis::OPT_PREFIX, $config['prefix']);
 				}
+				$this->handle['masters'][$k]->select($config['db']);
 			}
 		}
 	}
@@ -1579,6 +1592,7 @@ class Soter_Cache_Redis implements Soter_Cache {
 				}
 				$this->handle['slave']->setOption(Redis::OPT_PREFIX, $config['prefix']);
 			}
+			$this->handle['slave']->select($config['db']);
 		}
 	}
 
@@ -1592,7 +1606,7 @@ class Soter_Cache_Redis implements Soter_Cache {
 	public function clean() {
 		$this->_initMaters();
 		$status = true;
-		foreach ($this->handle['masters'] as $k=>$handle) {
+		foreach ($this->handle['masters'] as $k => $handle) {
 			$status = $status & $this->handle['masters'][$k]->flushDB();
 		}
 		return $status;
@@ -1601,7 +1615,7 @@ class Soter_Cache_Redis implements Soter_Cache {
 	public function delete($key) {
 		$this->_initMaters();
 		$status = true;
-		foreach ($this->handle['masters'] as $k=>$v) {
+		foreach ($this->handle['masters'] as $k => $v) {
 			$status = $status & $this->handle['masters'][$k]->delete($key);
 		}
 		return $status;
@@ -1619,7 +1633,7 @@ class Soter_Cache_Redis implements Soter_Cache {
 	public function set($key, $value, $cacheTime = 0) {
 		$this->_initMaters();
 		$value = serialize($value);
-		foreach ($this->handle['masters'] as $k=>$v) {
+		foreach ($this->handle['masters'] as $k => $v) {
 			if ($cacheTime) {
 				return $this->handle['masters'][$k]->setex($key, $cacheTime, $value);
 			} else {
@@ -1992,7 +2006,7 @@ class Soter_Session_Mysql extends Soter_Session {
 		if (!is_object($this->dbConnection)) {
 			$this->connect();
 		}
-		
+
 		return TRUE;
 	}
 
@@ -2002,13 +2016,13 @@ class Soter_Session_Mysql extends Soter_Session {
 	}
 
 	public function read($id) {
-		
+
 		$result = $this->dbConnection->from($this->dbTable)->where(array('id' => $id))->execute();
 		if ($result->total()) {
 			$record = $result->row();
 			$where['id'] = $id;
 			$data['timestamp'] = time() + intval($this->config['lifetime']);
-			$this->dbConnection->update($this->dbTable, $data,$where)->execute();
+			$this->dbConnection->update($this->dbTable, $data, $where)->execute();
 			return $record['data'];
 		} else {
 			return false;
@@ -2016,22 +2030,22 @@ class Soter_Session_Mysql extends Soter_Session {
 		return true;
 	}
 
-	public function write($id, $sessionData) { 
-		
+	public function write($id, $sessionData) {
+
 		$data['id'] = $id;
 		$data['data'] = $sessionData;
 		$data['timestamp'] = time() + intval($this->config['lifetime']);
 		$this->dbConnection->replace($this->dbTable, $data);
-		return $this->dbConnection->execute()>0;
+		return $this->dbConnection->execute() > 0;
 	}
 
 	public function destroy($id) {
 		unset($_SESSION);
-		return $this->dbConnection->delete($this->dbTable, array('id' => $id))->execute()>0;
+		return $this->dbConnection->delete($this->dbTable, array('id' => $id))->execute() > 0;
 	}
 
 	public function gc($max = 0) {
-		return $this->dbConnection->delete($this->dbTable, array('timestamp <' => time()))->execute()>0;
+		return $this->dbConnection->delete($this->dbTable, array('timestamp <' => time()))->execute() > 0;
 	}
 
 }

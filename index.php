@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright 2015 Soter(狂奔的蜗牛 672308444@163.com)
+ * Copyright 2016 Soter(狂奔的蜗牛 672308444@163.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,10 @@
  * @package       Soter
  * @author        狂奔的蜗牛
  * @email         672308444@163.com
- * @copyright     Copyright (c) 2015 - 2015, 狂奔的蜗牛, Inc.
+ * @copyright     Copyright (c) 2015 - 2016, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.0.87
- * @createdtime   2015-12-14 13:55:08
+ * @since         v1.0.98
+ * @createdtime   2016-01-23 22:23:03
  */
  
 define("IN_SOTER", true);
@@ -193,6 +193,7 @@ Soter::initialize()
 	})
 	/* 设置发生异常的时候，调用异常对象的renderJson()方法输出json的回调函数，这里可以自定义json输出格式 */
 	->setExceptionJsonRender(function(Exception $e) {
+		$json['environment'] = $e->getEnvironment();
 		$json['file'] = $e->getErrorFile();
 		$json['line'] = $e->getErrorLine();
 		$json['message'] = $e->getErrorMessage();

@@ -450,7 +450,7 @@ class Sr {
 	 * @param type $configName
 	 * @return Soter_Config|mixed
 	 */
-	static function &config($configName = null) {
+	static function &config($configName = null, $caching = true) {
 		if (empty($configName)) {
 			return Soter::getConfig();
 		}
@@ -458,7 +458,7 @@ class Sr {
 		$configFileName = current($_info);
 		static $loadedConfig = array();
 		$cfg = null;
-		if (Sr::arrayKeyExists($configFileName, $loadedConfig)) {
+		if ($caching && Sr::arrayKeyExists($configFileName, $loadedConfig)) {
 			$cfg = $loadedConfig[$configFileName];
 		} else {
 			$config = Soter::getConfig();
@@ -801,28 +801,38 @@ class Sr {
 	 * @return \Soter_Database_ActiveRecord
 	 * @throws Soter_Exception_Database
 	 */
+	private static $dbInstances = array();
+
+	static function clearDbInstances($key = null) {
+		if (!is_null($key)) {
+			unset(self::$dbInstances[$key]);
+		} else {
+			self::$dbInstances = array();
+		}
+	}
+
 	static function &db($group = '', $isNewInstance = false) {
-		static $instances = array();
+
 		if (is_array($group)) {
 			ksort($group);
 			$key = md5(var_export($group, true));
-			if (!Sr::arrayKeyExists($key, $instances) || $isNewInstance) {
-				$instances[$key] = new Soter_Database_ActiveRecord($group);
+			if (!Sr::arrayKeyExists($key, self::$dbInstances) || $isNewInstance) {
+				self::$dbInstances[$key] = new Soter_Database_ActiveRecord($group);
 			}
-			return $instances[$key];
+			return self::$dbInstances[$key];
 		} else {
 			if (empty($group)) {
 				$config = self::config()->getDatabseConfig();
 				$group = $config['default_group'];
 			}
-			if (!Sr::arrayKeyExists($group, $instances) || $isNewInstance) {
+			if (!Sr::arrayKeyExists($group, self::$dbInstances) || $isNewInstance) {
 				$config = self::config()->getDatabseConfig($group);
 				if (empty($config)) {
 					throw new Soter_Exception_Database('unknown database config group [ ' . $group . ' ]');
 				}
-				$instances[$group] = new Soter_Database_ActiveRecord($config);
+				self::$dbInstances[$group] = new Soter_Database_ActiveRecord($config);
 			}
-			return $instances[$group];
+			return self::$dbInstances[$group];
 		}
 	}
 
@@ -933,6 +943,12 @@ class Sr {
 	 * @return string
 	 */
 	static function url($action = '', $getData = array()) {
+		$config = Sr::config();
+		$hmvcModuleName = $config->getHmvcDomain(); //当前域名绑定的hmvc模块名称
+		//访问的是hmvc模块且绑定了当前域名，且是DomainOnly的，就去掉开头的模块名称
+		if ($hmvcModuleName && $config->hmvcIsDomainOnly($hmvcModuleName)) {
+			$action = preg_replace('|^' . $hmvcModuleName . '/?|', '/', $action);
+		}
 		$index = self::config()->getIsRewrite() ? '' : self::config()->getIndexName() . '/';
 		$url = self::urlPath($index . $action);
 		$url = rtrim($url, '/');
@@ -1730,7 +1746,7 @@ class Sr {
 			if (!$str) {
 				return '';
 			}
-			$str = mcrypt_decrypt(MCRYPT_DES, $key, $str, MCRYPT_MODE_ECB);
+			$str = @mcrypt_decrypt(MCRYPT_DES, $key, $str, MCRYPT_MODE_ECB);
 			$pad = ord($str[($len = strlen($str)) - 1]);
 			return substr($str, 0, strlen($str) - $pad);
 		}
