@@ -223,7 +223,7 @@ class Soter_Router_Get_Default extends Soter_Router {
 	$config = Sr::config();
 	$query = $config->getRequest()->getQueryString();
 	//pathinfo非空说明是pathinfo路由，get路由器不再处理直接返回
-	if (!$config->getRequest()->getPathInfo() || !$query) {
+	if ($config->getRequest()->getPathInfo() || !$query) {
 	    return $this->route->setFound(FALSE);
 	}
 	parse_str($query, $get);
