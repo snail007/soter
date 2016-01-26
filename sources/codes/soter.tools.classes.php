@@ -994,10 +994,6 @@ class Soter_Config {
 	return $this->indexName;
     }
 
-    public function getLoggerWriterContainer() {
-	return $this->loggerWriterContainer;
-    }
-
     public function setApplicationDir($applicationDir) {
 	$this->applicationDir = Sr::realPath($applicationDir) . '/';
 	if (empty($this->primaryApplicationDir)) {
