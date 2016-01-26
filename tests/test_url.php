@@ -18,6 +18,12 @@ class TestUrl extends UnitTestCase {
 		$this->assertEqual($browser->getContent(), '/soter/tests/indexfortest.php/Welcome/index.do');
 	}
 
+	public function testSubFolder() {
+		$browser = new SimpleBrowser();
+		$browser->get(testUrl('sub/Test/mm.do'));
+		$this->assertEqual($browser->getContent(), 'okay');
+	}
+
 	public function testUrlArgs() {
 		$browser = new SimpleBrowser();
 		$browser->get(testUrl('Welcome/urlArgs.do'));
