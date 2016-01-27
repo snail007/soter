@@ -1101,7 +1101,7 @@ class Sr {
 				    } else {
 					    $where = array($col => $value);
 				    }
-				    return !$db->where($where)->from($table)->execute()->total();
+				    return !$db->where($where)->from($table)->limit(0,1)->execute()->total();
 			    }, 'exists' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #比如exists[user.name] , exists[user.name,type:1], exists[user.name,type:1,sex:#sex]
 				    if (!Sr::arrayKeyExists($key, $data) || !$value || !count($args)) {
@@ -1126,7 +1126,7 @@ class Sr {
 						    $where[$id_col] = $id;
 					    }
 				    }
-				    return $db->where($where)->from($table)->execute()->total();
+				    return $db->where($where)->from($table)->limit(0,1)->execute()->total();
 			    }, 'min_len' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return false;

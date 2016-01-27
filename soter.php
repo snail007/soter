@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2016, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.1.2
- * @createdtime   2016-01-26 16:24:37
+ * @since         v1.1.3
+ * @createdtime   2016-01-27 12:00:30
  */
  
 
@@ -1132,7 +1132,7 @@ class Sr {
 				    } else {
 					    $where = array($col => $value);
 				    }
-				    return !$db->where($where)->from($table)->execute()->total();
+				    return !$db->where($where)->from($table)->limit(0,1)->execute()->total();
 			    }, 'exists' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #比如exists[user.name] , exists[user.name,type:1], exists[user.name,type:1,sex:#sex]
 				    if (!Sr::arrayKeyExists($key, $data) || !$value || !count($args)) {
@@ -1157,7 +1157,7 @@ class Sr {
 						    $where[$id_col] = $id;
 					    }
 				    }
-				    return $db->where($where)->from($table)->execute()->total();
+				    return $db->where($where)->from($table)->limit(0,1)->execute()->total();
 			    }, 'min_len' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return false;
