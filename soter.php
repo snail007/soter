@@ -26,7 +26,7 @@
  * @copyright     Copyright (c) 2015 - 2016, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         v1.1.3
- * @createdtime   2016-01-27 12:00:30
+ * @createdtime   2016-02-23 14:17:11
  */
  
 
@@ -852,12 +852,14 @@ class Sr {
 			}
 			return self::$dbInstances[$key];
 		} else {
+			$config = self::config()->getDatabseConfig();
+			if (empty($config)) {
+				throw new Soter_Exception_Database('database configuration is empty , did you forget to use "->setDatabseConfig()" in index.php ?');
+			}
 			if (empty($group)) {
-				$config = self::config()->getDatabseConfig();
 				$group = $config['default_group'];
 			}
 			if (!Sr::arrayKeyExists($group, self::$dbInstances) || $isNewInstance) {
-				$config = self::config()->getDatabseConfig($group);
 				if (empty($config)) {
 					throw new Soter_Exception_Database('unknown database config group [ ' . $group . ' ]');
 				}
@@ -1132,7 +1134,7 @@ class Sr {
 				    } else {
 					    $where = array($col => $value);
 				    }
-				    return !$db->where($where)->from($table)->limit(0,1)->execute()->total();
+				    return !$db->where($where)->from($table)->limit(0, 1)->execute()->total();
 			    }, 'exists' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #比如exists[user.name] , exists[user.name,type:1], exists[user.name,type:1,sex:#sex]
 				    if (!Sr::arrayKeyExists($key, $data) || !$value || !count($args)) {
@@ -1157,7 +1159,7 @@ class Sr {
 						    $where[$id_col] = $id;
 					    }
 				    }
-				    return $db->where($where)->from($table)->limit(0,1)->execute()->total();
+				    return $db->where($where)->from($table)->limit(0, 1)->execute()->total();
 			    }, 'min_len' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    if (!Sr::arrayKeyExists($key, $data)) {
 					    return false;

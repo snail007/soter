@@ -732,12 +732,12 @@
 					<pre class="brush:php">
 						//缓存查询结果60秒
 						$rows= Sr::db()->cache(60)->select('count('.Sr::db()->wrap('id').') as total,id')->from('c')
-								->limit(0,1')
+								->limit(0,1)
 								->execute()
 								->rows();
 						//缓存查询结果60秒,并指定缓存key是top_user
 						$rows= Sr::db()->cache(60,'top_user')->select('count('.Sr::db()->wrap('id').') as total,id')->from('c')
-								->limit(0,1')
+								->limit(0,1)
 								->execute()
 								->rows();
 					</pre>
