@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2016, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.1.3
- * @createdtime   2016-02-23 14:17:11
+ * @since         v1.1.4
+ * @createdtime   2016-02-23 15:52:10
  */
  
 
@@ -843,7 +843,6 @@ class Sr {
 	}
 
 	static function &db($group = '', $isNewInstance = false) {
-
 		if (is_array($group)) {
 			ksort($group);
 			$key = md5(var_export($group, true));
@@ -860,6 +859,7 @@ class Sr {
 				$group = $config['default_group'];
 			}
 			if (!Sr::arrayKeyExists($group, self::$dbInstances) || $isNewInstance) {
+				$config = self::config()->getDatabseConfig($group);
 				if (empty($config)) {
 					throw new Soter_Exception_Database('unknown database config group [ ' . $group . ' ]');
 				}

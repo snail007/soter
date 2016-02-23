@@ -812,7 +812,6 @@ class Sr {
 	}
 
 	static function &db($group = '', $isNewInstance = false) {
-
 		if (is_array($group)) {
 			ksort($group);
 			$key = md5(var_export($group, true));
@@ -829,6 +828,7 @@ class Sr {
 				$group = $config['default_group'];
 			}
 			if (!Sr::arrayKeyExists($group, self::$dbInstances) || $isNewInstance) {
+				$config = self::config()->getDatabseConfig($group);
 				if (empty($config)) {
 					throw new Soter_Exception_Database('unknown database config group [ ' . $group . ' ]');
 				}

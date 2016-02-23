@@ -28,9 +28,9 @@
 					<br>--task=TestTask指定了执行的任务是TestTask。
 				</li>
 				<li><h2 class="title_h2">创建Task</h2>
-					Task类文件都在application/Task/目录下面，每个Task类都必须继承抽象类Soter_Task，实现抽象方法execute。
+					Task类文件都在application/classes/Task/目录下面，每个Task类都必须继承抽象类Soter_Task，实现抽象方法execute。
 					<br>下面我们创建一个Task
-					<br><b>1.新建文件：application/Task/My/FirstTask.php</b>
+					<br><b>1.新建文件：application/classes/Task/My/FirstTask.php</b>
 					<br>内容如下：
 					<pre class="brush:php">
 						class  Task_My_FirstTask extends Soter_Task {
@@ -62,9 +62,9 @@
 					<br><b>但是如果我们的需求是：同一时间只能存在一个相同任务被执行，如果上一次的任务没有执行完毕后面启动的任务应该不执行，并自动退出。</b>
 					<br>后面这种“<b class="text_strong">同一时间只能存在一个相同任务被执行的任务</b>”在Soter里面称为“单例Task”。
 					<h3 class="title_h3">2.创建单例Task</h3>
-					单例Task类文件同样都在application/Task/目录下面，每个单例Task类都必须继承抽象类Soter_Task_Single，实现抽象方法execute。
+					单例Task类文件同样都在application/classes/Task/目录下面，每个单例Task类都必须继承抽象类Soter_Task_Single，实现抽象方法execute。
 					<br>下面我们创建一个单例Task
-					<br><b>1.新建文件：application/Task/My/SingleTask.php</b>
+					<br><b>1.新建文件：application/classes/Task/My/SingleTask.php</b>
 					<br>内容如下：
 					<pre class="brush:php">
 						class  Task_My_SingleTask extends Soter_Task_Single {
