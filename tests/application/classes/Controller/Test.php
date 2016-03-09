@@ -134,8 +134,9 @@ class Controller_Test extends Soter_Controller {
     }
 
     public function do_temp() {
-	echo Sr::db()->select('count('.Sr::db()->wrap('user.id').') as total,id')->from('c')
-								->limit(0,1);
+	echo Sr::db()->select('count(' . Sr::db()->wrap('user.id') . ') as total,id')
+		->from('c')
+		->limit(0, 1);
     }
 
 }
