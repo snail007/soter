@@ -1192,6 +1192,9 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 	}
 
 	private function _checkPrefix($str) {
+            if (stripos($str, '(') ||stripos($str, ')') ||  trim($str) == '*') {
+			return $str;
+		}
 		$prefix = $this->getTablePrefix();
 		if ($prefix && strpos($str, $prefix) === FALSE) {
 			if (!Sr::arrayKeyExists($str, $this->_asTable)) {
@@ -1202,7 +1205,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 	}
 
 	private function _protectIdentifier($str) {
-		if (stripos($str, '(') || trim($str) == '*') {
+		if (stripos($str, '(') ||stripos($str, ')') ||  trim($str) == '*') {
 			return $str;
 		}
 		$_str = explode(' ', $str);
