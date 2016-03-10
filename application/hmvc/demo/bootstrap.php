@@ -41,6 +41,7 @@ Soter::getConfig()
 	//    'cookie_domain' => Sr::server('HTTP_HOST'),
 	//    'session_name' => 'SOTER',
 	//    'lifetime' => 3600,
+	//    'session_save_path'=>null,//Sr::config()->getStorageDirPath().'/sessions'
 	//))
 	//->setCookiePrefix('')
 	//->setEncryptKey(array(

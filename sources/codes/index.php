@@ -108,6 +108,7 @@ Soter::initialize()
 	    'cookie_domain' => Sr::server('HTTP_HOST'),
 	    'session_name' => 'SOTER',
 	    'lifetime' => 3600,
+	    'session_save_path'=>null,//Sr::config()->getStorageDirPath().'/sessions'
 	))
 	/* 设置cookie key前缀，当我们使用Sr::setCookie()的时候，
 	 * 参数里面的key自动加上这里设置的前缀 */
