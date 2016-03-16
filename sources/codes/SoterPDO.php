@@ -1120,7 +1120,6 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 				$op = $op ? $op : 'IS';
 				$op = strtoupper($op);
 				$_where[] = $key . ' ' . $op . ' NULL ';
-				array_push($this->_values, $value);
 			} else {
 				$op = $op ? $op : '=';
 				$op = strtoupper($op);

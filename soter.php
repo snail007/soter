@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2016, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.1.6
- * @createdtime   2016-03-10 10:43:30
+ * @since         v1.1.7
+ * @createdtime   2016-03-16 12:20:51
  */
  
 
@@ -2753,7 +2753,6 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 				$op = $op ? $op : 'IS';
 				$op = strtoupper($op);
 				$_where[] = $key . ' ' . $op . ' NULL ';
-				array_push($this->_values, $value);
 			} else {
 				$op = $op ? $op : '=';
 				$op = strtoupper($op);
