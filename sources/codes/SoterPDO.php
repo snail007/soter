@@ -378,7 +378,7 @@ abstract class Soter_Database {
 							$connections[$key]->exec('SET NAMES ' . $this->getCharset());
 						} elseif ($this->_isSqlite()) {
 							if (!file_exists($this->getDatabase())) {
-								$this->_displayError('sqlite3 database file [' . Sr::realPath($this->getDatabase()) . '] not found');
+								throw new Soter_Exception_Database('sqlite3 database file [' . Sr::realPath($this->getDatabase()) . '] not found');
 							}
 							$connections[$key] = new Soter_PDO('sqlite:' . $this->getDatabase(), null, null, $options);
 						} else {
@@ -452,7 +452,7 @@ abstract class Soter_Database {
 
 		//读查询缓存
 		$cacheHandle = null;
-		$cacheKey='';
+		$cacheKey = '';
 		if ($this->_cacheTime) {
 			$cacheKey = empty($this->_cacheKey) ? md5($sql . var_export($values, true)) : $this->_cacheKey;
 			$cacheHandle = Sr::config()->getCacheHandle();
@@ -613,6 +613,7 @@ abstract class Soter_Database {
 
 	protected function _displayError($message, $code = 0) {
 		$sql = $this->_lastSql ? ' , ' . "\n" . 'with query : ' . $this->_lastSql : '';
+		$group = "Database Group : [ " . $this->group . " ] , error : ";
 		if ($message instanceof Exception) {
 			$this->_errorMsg = $message->getMessage() . $sql;
 		} else {
@@ -620,10 +621,10 @@ abstract class Soter_Database {
 		}
 		if ($this->getDebug() || $this->_isInTransaction) {
 			if ($message instanceof Exception) {
-				throw new Soter_Exception_Database($this->_errorMsg, 500, 'Soter_Exception_Database', $message->getFile(), $message->getLine());
+				throw new Soter_Exception_Database($group . $this->_errorMsg, 500, 'Soter_Exception_Database', $message->getFile(), $message->getLine());
 			} else {
 
-				throw new Soter_Exception_Database($message . $sql, $code);
+				throw new Soter_Exception_Database($group . $message . $sql, $code);
 			}
 		}
 	}
@@ -1191,7 +1192,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 	}
 
 	private function _checkPrefix($str) {
-            if (stripos($str, '(') ||stripos($str, ')') ||  trim($str) == '*') {
+		if (stripos($str, '(') || stripos($str, ')') || trim($str) == '*') {
 			return $str;
 		}
 		$prefix = $this->getTablePrefix();
@@ -1204,7 +1205,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 	}
 
 	private function _protectIdentifier($str) {
-		if (stripos($str, '(') ||stripos($str, ')') ||  trim($str) == '*') {
+		if (stripos($str, '(') || stripos($str, ')') || trim($str) == '*') {
 			return $str;
 		}
 		$_str = explode(' ', $str);

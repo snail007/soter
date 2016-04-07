@@ -1,29 +1,35 @@
 <?php
 
 class Controller_Welcome extends Soter_Controller {
-	public function do_session(){
-		$value=  rand(0, 10000);
+
+	public function do_session() {
+		$value = rand(0, 10000);
 		Sr::sessionSet('test', $value);
 //		Sr::dump(Sr::db()->from('session_handler_table')->execute()->rows());
 	}
-	public function before($method,$args){
-		if($method=='testBefore'){
-			echo 'before'.$args[0];
+
+	public function before($method, $args) {
+		if ($method == 'testBefore') {
+			echo 'before' . $args[0];
 		}
 	}
-	public function after($method,$args,$contents){
-		if($method=='testAfter'){
-			echo 'after'.$args[0].$contents;
-		}else{
+
+	public function after($method, $args, $contents) {
+		if ($method == 'testAfter') {
+			echo 'after' . $args[0] . $contents;
+		} else {
 			echo $contents;
 		}
 	}
-	public function do_testBefore($a){
-		echo 'x'.$a;
+
+	public function do_testBefore($a) {
+		echo 'x' . $a;
 	}
-	public function do_testAfter(){
-		echo  'test';
+
+	public function do_testAfter() {
+		echo 'test';
 	}
+
 	public function do_show() {
 		echo <<<html
 		<form action="check.do">
