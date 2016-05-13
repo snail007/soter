@@ -165,13 +165,13 @@ class Soter {
 		if (!($controllerObject instanceof Soter_Controller)) {
 			throw new Soter_Exception_404('[ ' . $class . ' ] not a valid Soter_Controller');
 		}
-		if (!method_exists($controllerObject, $method)) {
-			throw new Soter_Exception_404('Method [ ' . $class . '->' . $method . '() ] not found');
-		}
-
 		//前置方法检查执行
 		if (method_exists($controllerObject, 'before')) {
 			$controllerObject->before(str_replace($config->getMethodPrefix(), '', $method), $route->getArgs());
+		}
+		//方法检测
+		if (!method_exists($controllerObject, $method)) {
+			throw new Soter_Exception_404('Method [ ' . $class . '->' . $method . '() ] not found');
 		}
 		//方法缓存检测
 		$cacheClassName = preg_replace('/^' . Sr::config()->getControllerDirName() . '_/', '', $class);

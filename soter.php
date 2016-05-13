@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2016, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.1.9
- * @createdtime   2016-04-07 09:32:42
+ * @since         v1.1.10
+ * @createdtime   2016-05-13 10:17:34
  */
  
 
@@ -188,12 +188,13 @@ class Soter {
 		if (!($controllerObject instanceof Soter_Controller)) {
 			throw new Soter_Exception_404('[ ' . $class . ' ] not a valid Soter_Controller');
 		}
-		if (!method_exists($controllerObject, $method)) {
-			throw new Soter_Exception_404('Method [ ' . $class . '->' . $method . '() ] not found');
-		}
 		//前置方法检查执行
 		if (method_exists($controllerObject, 'before')) {
 			$controllerObject->before(str_replace($config->getMethodPrefix(), '', $method), $route->getArgs());
+		}
+		//方法检测
+		if (!method_exists($controllerObject, $method)) {
+			throw new Soter_Exception_404('Method [ ' . $class . '->' . $method . '() ] not found');
 		}
 		//方法缓存检测
 		$cacheClassName = preg_replace('/^' . Sr::config()->getControllerDirName() . '_/', '', $class);
