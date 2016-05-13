@@ -63,7 +63,7 @@ return
 		'tablePrefixSqlIdentifier' => '_tablePrefix_',
 		'database' => 'test.sqlite3', //sqlite3数据库路径
 		//是否开启慢查询记录
-		'slowQueryDebug' => true,
+		'slowQueryDebug' => false,
 		'slowQueryTime' => 3000, //单位毫秒，1秒=1000毫秒
 		'slowQueryHandle' => new Soter_Database_SlowQuery_Handle_Default()
 	    )
