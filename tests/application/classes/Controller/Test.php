@@ -125,12 +125,11 @@ class Controller_Test extends Soter_Controller {
 	}
 
 	public function do_test() {
-		echo Sr::db()->select('rrr.*,r.*,rr,*')
-			->from('admin_resource', 'r')
-			->join(array('admin_role_resource_relation' => 'rrr'), 'rrr.admin_resource_id=r.id')
-			->join(array('admin_role_relation' => 'rr'), 'rr.admin_role_id=rrr.admin_role_id')
-			->where(array('rr.admin_id' => 0))
-			->orderBy('r.sort', 'asc');
+		
+		$a =array();
+		for(;;){
+			$a[]=  str_repeat("xxxx", 1000);
+		}
 	}
 
 	public function do_temp() {

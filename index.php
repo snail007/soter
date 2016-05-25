@@ -26,8 +26,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2016, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.1.10
- * @createdtime   2016-05-13 12:01:55
+ * @since         v1.1.11
+ * @createdtime   2016-05-25 17:10:23
  */
  
 define("IN_SOTER", true);
@@ -39,6 +39,8 @@ define('SOTER_APP_PATH', Sr::realPath(dirname(__FILE__) . '/application') . '/')
 define('SOTER_PACKAGES_PATH', SOTER_APP_PATH . 'packages/');
 /* 初始化系统配置 */
 Soter::initialize()
+	/* 设置Soter异常管理程序保留的内存大小，单位byte */
+	->setExceptionMemoryReserveSize(512000)
 	/* 设置Soter管理异常错误 */
 	->setExceptionControl(true)
 	/* 时区设置 */
@@ -137,7 +139,7 @@ Soter::initialize()
 	    'cookie_domain' => Sr::server('HTTP_HOST'),
 	    'session_name' => 'SOTER',
 	    'lifetime' => 3600,
-	    'session_save_path'=>null,//Sr::config()->getStorageDirPath().'/sessions'
+	    'session_save_path' => null, //Sr::config()->getStorageDirPath().'/sessions'
 	))
 	/* 设置cookie key前缀，当我们使用Sr::setCookie()的时候，
 	 * 参数里面的key自动加上这里设置的前缀 */

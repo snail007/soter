@@ -397,9 +397,19 @@ class Soter_Config {
 		$exceptionJsonRender,
 		$srMethods = array(),
 		$encryptKey,
-		$hmvcDomains = array()
+		$hmvcDomains = array(),
+		$errorMemoryReserveSize = 512000
 
 	;
+
+	public function getExceptionMemoryReserveSize() {
+		return $this->errorMemoryReserveSize;
+	}
+
+	public function setExceptionMemoryReserveSize($exceptionMemoryReserveSize) {
+		$this->errorMemoryReserveSize = $exceptionMemoryReserveSize;
+		return $this;
+	}
 
 	public function setExceptionControl($isExceptionControl) {
 		if ($isExceptionControl && !Sr::isPluginMode()) {
@@ -1183,9 +1193,12 @@ class Soter_Config {
 class Soter_Logger_Writer_Dispatcher {
 
 	private static $instance;
+	private static $memReverse;
 
 	public static function initialize() {
 		if (empty(self::$instance)) {
+			//保留内存
+			self::$memReverse = str_repeat("x", Soter::getConfig()->getExceptionMemoryReserveSize());
 			self::$instance = new self();
 			error_reporting(E_ALL);
 			//插件模式打开错误显示，web和命令行模式关闭错误显示
@@ -1221,6 +1234,8 @@ class Soter_Logger_Writer_Dispatcher {
 		if (!Sr::arrayKeyExists("type", $lastError) || !in_array($lastError["type"], $fatalError)) {
 			return;
 		}
+		//当发生致命错误的时候，释放保留的内存，提供给下面的处理代码使用
+		self::$memReverse = null;
 		$this->dispatch(new Soter_Exception_500($lastError['message'], $lastError['type'], 'Fatal Error', $lastError['file'], $lastError['line']));
 	}
 
