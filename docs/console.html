@@ -43,7 +43,7 @@
 					<br>通过这个对象我们可以获取命令行传递过来的参数，比如上面传递的--test=hello，
 					<br>我们就可以通过$args->get('test')获取hello。
 					<b class="text_strong"><br>提示：
-						<br>因为Soter在执行完execute方法之后还有一些工作要做，所以不要在execute方法里面执行退出脚本的操作比如exit、die。</b>
+						<br>因为Soter在执行完execute方法之后还有一些工作要做，所以不要在execute方法里面执行退出脚本的操作比如exit、die，可以使用return替代。</b>
 					<br><b>2.命令行执行这个Task任务</b>
 					<br>比如执行下面的命令：
 					<pre class="brush:php">
@@ -51,8 +51,26 @@
 					</pre>
 					我们会看到输出了:hello
 					<br><b class="text_strong">提示：
-						<br>我们可以通过参数 --env指定环境，这里环境就是我们<a href="config.html">config手册部分</a>所指的环境，
-						<br>用来告诉Soter使用config目录下面的哪个目录作为配置文件夹目录。</b>
+						<br>1.我们可以通过参数 --env指定环境，这里环境就是我们<a href="config.html">config手册部分</a>所指的环境，
+						<br>用来告诉Soter使用config目录下面的哪个目录作为配置文件夹目录。
+					</b>
+					<br>如果Task是hmvc子模块里面的(application/hmvc/demo/classes/Task/My/FirstTask.php )
+					<br>比如入口文件index.php里hmvc的配置：
+					<pre class="brush:php">
+						//注册hmvc模块，数组键是uri里面的hmvc模块名称，值是hmvc模块文件夹名称
+						->setHmvcModules(array(
+							 'Demo' => 'demo'
+						))
+					</pre>
+					我们执行下面的命令：
+					<pre class="brush:php">
+						php /home/www/soter/index.php --env=development --hmvc=Demo --task=My_FirstTask --test=hello	
+					</pre>
+					我们会看到输出了:hello
+					<br><b class="text_strong">提示：
+						<br>我们可以通过参数 --hmvc指定hmvc模块名称，也就是入口文件里面hvmc模块配置数组的键名称。
+					</b>
+
 				</li>
 				<li><h2 class="title_h2">单例Task</h2>
 					<h3 class="title_h3">1.概念</h3>
