@@ -3,9 +3,21 @@
 class Controller_Welcome extends Soter_Controller {
 
 	public function do_session() {
-		$value = rand(0, 10000);
+		$value = 1;
 		Sr::sessionSet('test', $value);
-//		Sr::dump(Sr::db()->from('session_handler_table')->execute()->rows());
+		echo Sr::session('test');
+	}
+
+	public function do_SessionSet() {
+		Sr::sessionSet('test.a', 1);
+		echo Sr::session('test.a');
+	}
+
+	public function do_SessionUnset() {
+		Sr::sessionSet('test.a', 1);
+		Sr::sessionUnset('test.a');
+		$value = Sr::session('test.a');
+		echo is_null($value) ? 1 : 0;
 	}
 
 	public function before($method, $args) {

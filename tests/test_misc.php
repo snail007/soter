@@ -126,5 +126,20 @@ class TestMisc extends UnitTestCase {
 		$browser->get(testUrl('Demo/Welcome/message.html'));
 		$this->assertEqual($browser->getContent(), 'msg');
 	}
+	function testSessionUnset() {
+		$browser = new SimpleBrowser();
+		$browser->get(testUrl('Welcome/SessionUnset.do'));
+		$this->assertEqual($browser->getContent(), '1');
+	}
+	function testSessionSet() {
+		$browser = new SimpleBrowser();
+		$browser->get(testUrl('Welcome/SessionSet.do'));
+		$this->assertEqual($browser->getContent(), '1');
+	}
+	function testSession() {
+		$browser = new SimpleBrowser();
+		$browser->get(testUrl('Welcome/session.do'));
+		$this->assertEqual($browser->getContent(), '1');
+	}
 
 }

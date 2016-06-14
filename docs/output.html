@@ -195,7 +195,7 @@
                                 </li>
                                 <li>
                                         <h2 class="title_h2">设置session</h2>
-                                        通过<b>Sr::sessionSet()</b>方法;我们可以方便的设置session。<br/>
+                                        通过<b>Sr::sessionSet($key, $value)</b>方法;我们可以方便的设置session。<br/>
                                         使用示例：
                                         <pre class="brush:php">
                                                 //1.设置单个session
@@ -206,6 +206,20 @@
                                                 //2.设置多个session
                                                 $arr = array('username'=>'张三', 'user_id'=>'1');
                                                 Sr::sessionSet($arr);
+						//3.$key支持多级，比如$key是user.id,那么设置的就是$_SESSION['user']['id']=$value。
+						Sr::sessionSet('user.id', '张三');
+                                        </pre>
+                                </li>
+				<li>
+                                        <h2 class="title_h2">销毁session</h2>
+                                        通过<b>Sr::sessionUnset($key = null)</b>方法;我们可以方便的销毁session。<br/>
+                                        使用示例：
+                                        <pre class="brush:php">
+						$key支持多级
+						比如$key是user.id,那么销毁的就是$_SESSION['user']['id']。
+						Sr::sessionUnset('user.id');
+						如果$key是null，那么销毁的就是$_SESSION变量。
+						Sr::sessionUnset();
                                         </pre>
                                 </li>
                                 <li>

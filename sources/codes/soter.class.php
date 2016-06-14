@@ -286,13 +286,21 @@ class Sr {
 	const ENV_PRODUCTION = 2; //产品环境
 	const ENV_DEVELOPMENT = 3; //开发环境
 
-	static function arrayGet($array, $key, $default = null) {
+	static private function parseKey($key) {
 		$_info = explode('.', $key);
 		$keyStrArray = '';
 		foreach ($_info as $k) {
 			$keyStrArray.= "['{$k}']";
 		}
-		return eval('return Sr::arrayKeyExists(\'' . implode('.', $_info) . '\',$array)?$array' . $keyStrArray . ':$default;');
+		return $keyStrArray;
+	}
+
+	static function arrayGet($array, $key, $default = null) {
+		return eval('return Sr::arrayKeyExists(\'' . $key . '\',$array)?$array' . self::parseKey($key) . ':$default;');
+	}
+
+	static function arraySet(&$array, $key, $value) {
+		return eval('$array' . self::parseKey($key) . '=$value;');
 	}
 
 	static function dump() {
@@ -572,12 +580,20 @@ class Sr {
 		return $xssClean ? self::xssClean($value) : $value;
 	}
 
-	static function sessionSet($key = null, $value = null) {
+	static function sessionSet($key, $value) {
 		self::sessionStart();
 		if (is_array($key)) {
 			$_SESSION = array_merge($_SESSION, $key);
 		} else {
-			$_SESSION[$key] = $value;
+			self::arraySet($_SESSION, $key,$value);
+		}
+	}
+
+	static function sessionUnset($key = null) {
+		if (is_null($key)) {
+			unset($_SESSION);
+		} else {
+			eval('unset($_SESSION' . self::parseKey($key) . ');');
 		}
 	}
 

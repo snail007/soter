@@ -1,3 +1,18 @@
+============v1.1.13[2016-06-14]===========
+增加了：
+1.Sr::sessionSet($key, $value)设置session的方法，$key支持多级，
+  比如$key是user.id,那么设置的就是$_SESSION['user']['id']=$value。
+
+2.Sr::sessionUnset($key = null)销毁session的方法，$key支持多级，
+  比如$key是user.id,那么销毁的就是$_SESSION['user']['id']。
+  如果$key是null，那么销毁的就是$_SESSION变量。
+
+3.Sr::arraySet($array, $key, $value)设置数组key值的方法，$key支持多级，
+  比如$key是user.id,那么设置的就是$array['user']['id']=$value。
+4.手册系统方法部分增加了Sr::arraySet()说明,输出部分增加了Sr::sessionSet()和Sr::sessionUnset()说明;
+升级提示：
+无
+
 ============v1.1.12[2016-06-12]===========
 增加了：
 1.手册命令行任务增加了hmvc的说明。

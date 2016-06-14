@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2016, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.1.12
- * @createdtime   2016-06-12 13:30:01
+ * @since         v1.1.13
+ * @createdtime   2016-06-14 17:24:30
  */
  
 
@@ -301,13 +301,19 @@ class Sr {
 	const ENV_TESTING = 1; //测试环境
 	const ENV_PRODUCTION = 2; //产品环境
 	const ENV_DEVELOPMENT = 3; //开发环境
-	static function arrayGet($array, $key, $default = null) {
+	static private function parseKey($key) {
 		$_info = explode('.', $key);
 		$keyStrArray = '';
 		foreach ($_info as $k) {
 			$keyStrArray.= "['{$k}']";
 		}
-		return eval('return Sr::arrayKeyExists(\'' . implode('.', $_info) . '\',$array)?$array' . $keyStrArray . ':$default;');
+		return $keyStrArray;
+	}
+	static function arrayGet($array, $key, $default = null) {
+		return eval('return Sr::arrayKeyExists(\'' . $key . '\',$array)?$array' . self::parseKey($key) . ':$default;');
+	}
+	static function arraySet(&$array, $key, $value) {
+		return eval('$array' . self::parseKey($key) . '=$value;');
 	}
 	static function dump() {
 		echo!self::isCli() ? '<pre style="line-height:1.5em;font-size:14px;">' : "\n";
@@ -566,12 +572,19 @@ class Sr {
 		$value = is_null($key) ? (empty($_SESSION) ? null : $_SESSION) : self::arrayGet($_SESSION, $key, $default);
 		return $xssClean ? self::xssClean($value) : $value;
 	}
-	static function sessionSet($key = null, $value = null) {
+	static function sessionSet($key, $value) {
 		self::sessionStart();
 		if (is_array($key)) {
 			$_SESSION = array_merge($_SESSION, $key);
 		} else {
-			$_SESSION[$key] = $value;
+			self::arraySet($_SESSION, $key,$value);
+		}
+	}
+	static function sessionUnset($key = null) {
+		if (is_null($key)) {
+			unset($_SESSION);
+		} else {
+			eval('unset($_SESSION' . self::parseKey($key) . ');');
 		}
 	}
 	static function server($key = null, $default = null) {

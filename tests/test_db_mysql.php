@@ -16,6 +16,7 @@ class testDbMysql extends UnitTestCase {
 	public function init() {
 
 		$config = array(
+		    'group' => 'mysql',
 		    'driverType' => 'mysql',
 		    'database' => 'test',
 		    'tablePrefix' => 'test_',
