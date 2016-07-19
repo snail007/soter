@@ -198,14 +198,14 @@
                                         通过<b>Sr::sessionSet($key, $value)</b>方法;我们可以方便的设置session。<br/>
                                         使用示例：
                                         <pre class="brush:php">
-                                                //1.设置单个session
-                                                Sr::sessionSet('username', '张三');
-                                                //第一个参数 必填： session的键值，也可以是一个键值对数组一次设置多个session，此时不需要第二个参数。 
-                                                //第二个参数 选填： session的值
+						//1.设置单个session
+						Sr::sessionSet('username', '张三');
+						//第一个参数 必填： session的键值，也可以是一个键值对数组一次设置多个session，此时不需要第二个参数。 
+						//第二个参数 选填： session的值
 
-                                                //2.设置多个session
-                                                $arr = array('username'=>'张三', 'user_id'=>'1');
-                                                Sr::sessionSet($arr);
+						//2.设置多个session
+						$arr = array('username'=>'张三', 'user_id'=>'1');
+						Sr::sessionSet($arr);
 						//3.$key支持多级，比如$key是user.id,那么设置的就是$_SESSION['user']['id']=$value。
 						Sr::sessionSet('user.id', '张三');
                                         </pre>

@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2016, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.1.13
- * @createdtime   2016-06-14 17:24:30
+ * @since         v1.1.14
+ * @createdtime   2016-07-19 17:36:30
  */
  
 
@@ -4855,92 +4855,89 @@ class Soter_Cache_Apc implements Soter_Cache {
 	}
 }
 class Soter_Cache_Redis implements Soter_Cache {
-	private $config, $handle;
-	private function _initMaters() {
-		if (empty($this->handle['masters'])) {
-			$this->handle['masters'] = array();
-			//array('masters', 'slaves')
-			foreach ($this->config['masters'] as $k => $config) {
-				$this->handle['masters'][$k] = new Redis();
-				if ($config['type'] == 'sock') {
-					$this->handle['masters'][$k]->connect($config['sock']);
-				} else {
-					$this->handle['masters'][$k]->connect($config['host'], $config['port'], $config['timeout'], $config['retry']);
-				}
-				if (!is_null($config['password'])) {
-					$this->handle['masters'][$k]->auth($config['password']);
-				}
-				if (!is_null($config['prefix'])) {
-					if ($config['prefix']{strlen($config['prefix']) - 1} != ':') {
-						$config['prefix'].=':';
-					}
-					$this->handle['masters'][$k]->setOption(Redis::OPT_PREFIX, $config['prefix']);
-				}
-				$this->handle['masters'][$k]->select($config['db']);
-			}
-		}
-	}
-	private function _initSlave() {
-		if (empty($this->handle['slave'])) {
-			//随机选取一个从redis配置，然后连接
-			$config = $this->config['slaves'][array_rand($this->config['slaves'])];
-			$this->handle['slave'] = new Redis();
-			if ($config['type'] == 'sock') {
-				$this->handle['slave']->connect($config['sock']);
-			} else {
-				$this->handle['slave']->connect($config['host'], $config['port'], $config['timeout'], $config['retry']);
-			}
-			if (!is_null($config['password'])) {
-				$this->handle['slave']->auth($config['password']);
-			}
-			if (!is_null($config['prefix'])) {
-				if ($config['prefix']{strlen($config['prefix']) - 1} != ':') {
-					$config['prefix'].=':';
-				}
-				$this->handle['slave']->setOption(Redis::OPT_PREFIX, $config['prefix']);
-			}
-			$this->handle['slave']->select($config['db']);
-		}
-	}
+	private $config, $servers, $force = false;
 	public function __construct($config) {
-		if (empty($config['slaves']) && !empty($config['masters'])) {
-			$config['slaves'][] = current($config['masters']);
+		foreach ($config as $key => $node) {
+			if (empty($node['slaves']) && !empty($node['master'])) {
+				$config[$key]['slaves'][] = $node['master'];
+			}
 		}
 		$this->config = $config;
 	}
-	public function clean() {
-		$this->_initMaters();
-		$status = true;
-		foreach ($this->handle['masters'] as $k => $handle) {
-			$status = $status & $this->handle['masters'][$k]->flushDB();
+	private function &selectNode($key, $type = 'read') {
+		$nodeIndex = sprintf("%u", crc32($key)) % count($this->config);
+		if ($type == 'read') {
+			$slaveIndex = array_rand($this->config[$nodeIndex]['slaves']);
+			$serverKey = $nodeIndex . '-slaves-' . $slaveIndex;
+			$config = $this->config[$nodeIndex]['slaves'][$slaveIndex];
+		} else {
+			$serverKey = $nodeIndex . '-master';
+			$config = $this->config[$nodeIndex]['master'];
 		}
+		var_dump('use key :' . $serverKey);
+		if ($this->force || empty($this->servers[$serverKey])) {
+			$this->servers[$serverKey] = $this->connect($config);
+		}
+		return $this->servers[$serverKey];
+	}
+	private function &connect($config) {
+		$redis = new Redis();
+		if ($config['type'] == 'sock') {
+			$redis->connect($config['sock']);
+		} else {
+			$redis->connect($config['host'], $config['port'], $config['timeout'], $config['retry']);
+		}
+		if (!is_null($config['password'])) {
+			$redis->auth($config['password']);
+		}
+		if (!is_null($config['prefix'])) {
+			if ($config['prefix']{strlen($config['prefix']) - 1} != ':') {
+				$config['prefix'].=':';
+			}
+			$redis->setOption(Redis::OPT_PREFIX, $config['prefix']);
+		}
+		$redis->select($config['db']);
+		return $redis;
+	}
+	protected function unForce() {
+		$this->force = false;
+		return $this;
+	}
+	public function force() {
+		$this->force = true;
+		return $this;
+	}
+	public function clean() {
+		$status = true;
+		foreach ($this->config as $nodeIndex => $config) {
+			$redis = $this->connect($config['master']);
+			$status = $status && $redis->flushDB();
+		}
+		$this->unForce();
 		return $status;
 	}
 	public function delete($key) {
-		$this->_initMaters();
-		$status = true;
-		foreach ($this->handle['masters'] as $k => $v) {
-			$status = $status & $this->handle['masters'][$k]->delete($key);
-		}
-		return $status;
+		$redis = $this->selectNode($key, 'write');
+		$this->unForce();
+		return $redis->delete($key);
 	}
 	public function get($key) {
-		$this->_initSlave();
-		if ($data = $this->handle['slave']->get($key)) {
+		$redis = $this->selectNode($key, 'read');
+		$this->unForce();
+		if ($data = $redis->get($key)) {
 			return @unserialize($data);
 		} else {
 			return null;
 		}
 	}
 	public function set($key, $value, $cacheTime = 0) {
-		$this->_initMaters();
+		$redis = $this->selectNode($key, 'write');
 		$value = serialize($value);
-		foreach ($this->handle['masters'] as $k => $v) {
-			if ($cacheTime) {
-				return $this->handle['masters'][$k]->setex($key, $cacheTime, $value);
-			} else {
-				return $this->handle['masters'][$k]->set($key, $value);
-			}
+		$this->unForce();
+		if ($cacheTime) {
+			return $redis->setex($key, $cacheTime, $value);
+		} else {
+			return $redis->set($key, $value);
 		}
 	}
 }
