@@ -33,4 +33,8 @@ class Cache_MyCache implements Soter_Cache {
 		return true;
 	}
 
+	public function &instance($key = null, $type = 'read') {
+		return $this;
+	}
+
 }

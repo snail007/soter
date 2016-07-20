@@ -290,6 +290,18 @@
 						 Sr::cache()->clean()
 					</pre>
 					返回值：成功：true，失败：false。
+					<h3 class="title_h3">5.获取缓存实例对象</h3>
+					1、如果是驱动使用的是Soter_Cache_Memcache
+					<br>Sr::cache('memache')->instance()返回的是缓存类使用的Memcache对象。
+					<br>2、如果是驱动使用的是Soter_Cache_Memcached
+					<br>Sr::cache('memached')->instance()返回的是缓存类使用的Memcached对象。
+					<br>3、如果是驱动使用的是Soter_Cache_File
+					<br>Sr::cache('file')->instance()返回的是Soter_Cache_File对象本身。
+					<br>4、如果是驱动使用的是Soter_Cache_Apc
+					<br>Sr::cache('apc')->instance()返回的是Soter_Cache_Apc对象本身。
+					<br>5、如果是驱动使用的是Soter_Cache_Redis
+					<br>Sr::cache('redis')->instance($key,$isRead)需要传递：缓存键名称$key和读写类型$isRead（true（读），false（写））两个参数
+					<br>返回的是缓存类使用的Redis对象。					 
 				</li>
 				<li><h3 class="title_h2">自定义缓存处理类</h3>
 					如果要把自己的类作为缓存类使用，那么必须实现缓存接口<code>Soter_Cache</code>，上面的几个Soter内置的缓存类都实现了这个接口。

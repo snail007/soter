@@ -7,10 +7,10 @@ return array(
     'default_type' => 'file', //默认的缓存类型，值是下面drivers关联数组的键名称。
     'drivers' => array(
 	//自定义缓存示例
-//	'my_cache' => array(
-//	    'class' => 'Cache_MyCache', //缓存类名称
-//	    'config' => null//需要传递给缓存类构造方法的第一个参数，一般是配置信息数组，不需要就保持null
-//	),
+	'my_cache' => array(
+	    'class' => 'Cache_MyCache', //缓存类名称
+	    'config' => null//需要传递给缓存类构造方法的第一个参数，一般是配置信息数组，不需要就保持null
+	),
 	'file' => array(
 	    'class' => 'Soter_Cache_File',
 	    //缓存文件保存路径

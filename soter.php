@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2016, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.1.14
- * @createdtime   2016-07-19 17:36:30
+ * @since         v1.1.15
+ * @createdtime   2016-07-20 10:17:51
  */
  
 
@@ -3035,10 +3035,11 @@ interface Soter_Database_Index_Handle {
 	public function handle($sql, $explainString, $time);
 }
 interface Soter_Cache {
-	public function set($key, $value, $cacheTime=0);
+	public function set($key, $value, $cacheTime = 0);
 	public function get($key);
 	public function delete($key);
 	public function clean();
+	public function &instance($key = null, $isRead=true);
 }
 
 abstract class Soter_Controller {
@@ -4769,6 +4770,9 @@ class Soter_Cache_File implements Soter_Cache {
 		}
 		return file_put_contents($filePath, $cacheData, LOCK_EX);
 	}
+	public function &instance($key = null, $isRead=true) {
+		return $this;
+	}
 }
 class Soter_Cache_Memcached implements Soter_Cache {
 	private $config, $handle;
@@ -4803,6 +4807,9 @@ class Soter_Cache_Memcached implements Soter_Cache {
 		$this->_init();
 		return $this->handle->set($key, $value, $cacheTime > 0 ? (time() + $cacheTime) : 0);
 	}
+	public function &instance($key = null, $isRead=true) {
+		return $this->handle;
+	}
 }
 class Soter_Cache_Memcache implements Soter_Cache {
 	private $config, $handle;
@@ -4833,6 +4840,9 @@ class Soter_Cache_Memcache implements Soter_Cache {
 		$this->_init();
 		return $this->handle->set($key, $value, false, $cacheTime);
 	}
+	public function &instance($key = null, $isRead=true) {
+		return $this->handle;
+	}
 }
 class Soter_Cache_Apc implements Soter_Cache {
 	public function clean() {
@@ -4853,6 +4863,9 @@ class Soter_Cache_Apc implements Soter_Cache {
 	public function set($key, $value, $cacheTime = 0) {
 		return apc_store($key, $value, $cacheTime);
 	}
+	public function &instance($key = null, $isRead=true) {
+		return $this;
+	}
 }
 class Soter_Cache_Redis implements Soter_Cache {
 	private $config, $servers, $force = false;
@@ -4864,9 +4877,9 @@ class Soter_Cache_Redis implements Soter_Cache {
 		}
 		$this->config = $config;
 	}
-	private function &selectNode($key, $type = 'read') {
+	private function &selectNode($key, $isRead) {
 		$nodeIndex = sprintf("%u", crc32($key)) % count($this->config);
-		if ($type == 'read') {
+		if ($isRead) {
 			$slaveIndex = array_rand($this->config[$nodeIndex]['slaves']);
 			$serverKey = $nodeIndex . '-slaves-' . $slaveIndex;
 			$config = $this->config[$nodeIndex]['slaves'][$slaveIndex];
@@ -4874,7 +4887,6 @@ class Soter_Cache_Redis implements Soter_Cache {
 			$serverKey = $nodeIndex . '-master';
 			$config = $this->config[$nodeIndex]['master'];
 		}
-		var_dump('use key :' . $serverKey);
 		if ($this->force || empty($this->servers[$serverKey])) {
 			$this->servers[$serverKey] = $this->connect($config);
 		}
@@ -4899,7 +4911,7 @@ class Soter_Cache_Redis implements Soter_Cache {
 		$redis->select($config['db']);
 		return $redis;
 	}
-	protected function unForce() {
+	private function unForce() {
 		$this->force = false;
 		return $this;
 	}
@@ -4917,12 +4929,12 @@ class Soter_Cache_Redis implements Soter_Cache {
 		return $status;
 	}
 	public function delete($key) {
-		$redis = $this->selectNode($key, 'write');
+		$redis = $this->selectNode($key, false);
 		$this->unForce();
 		return $redis->delete($key);
 	}
 	public function get($key) {
-		$redis = $this->selectNode($key, 'read');
+		$redis = $this->selectNode($key, true);
 		$this->unForce();
 		if ($data = $redis->get($key)) {
 			return @unserialize($data);
@@ -4931,7 +4943,7 @@ class Soter_Cache_Redis implements Soter_Cache {
 		}
 	}
 	public function set($key, $value, $cacheTime = 0) {
-		$redis = $this->selectNode($key, 'write');
+		$redis = $this->selectNode($key, false);
 		$value = serialize($value);
 		$this->unForce();
 		if ($cacheTime) {
@@ -4939,6 +4951,9 @@ class Soter_Cache_Redis implements Soter_Cache {
 		} else {
 			return $redis->set($key, $value);
 		}
+	}
+	public function &instance($key = null, $isRead=true) {
+		return $this->selectNode($key, $isRead);
 	}
 }
 class Soter_Generator extends Soter_Task {

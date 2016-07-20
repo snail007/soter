@@ -28,6 +28,7 @@ class TestCache extends UnitTestCase {
 			$this->assertTrue($cache->set('test', 'testvalue', 1));
 			sleep(2);
 			$this->assertEqual($cache->get('test'), null);
+			$this->assertIsA($cache->instance(), 'Memcache');
 		}
 	}
 
@@ -48,6 +49,7 @@ class TestCache extends UnitTestCase {
 			$this->assertTrue($cache->set('test', 'testvalue', 1));
 			sleep(2);
 			$this->assertEqual($cache->get('test'), null);
+			$this->assertIsA($cache->instance(), 'Memcached');
 		}
 	}
 
@@ -62,6 +64,8 @@ class TestCache extends UnitTestCase {
 			$this->assertTrue($cache->set('test', 'testvalue', 1));
 			$this->assertTrue($cache->clean());
 			$this->assertFalse($cache->get('test'));
+			$this->assertReference($cache, $cache->instance());
+			$this->assertIsA($cache->instance(), 'Soter_Cache_Apc');
 			//$this->assertTrue($cache->set('test', 'testvalue', 1));
 			//sleep(1);
 			//$this->assertEqual($cache->get('test'), null);
@@ -80,36 +84,38 @@ class TestCache extends UnitTestCase {
 		$this->assertTrue($cache->set('test', 'testvalue', 1));
 		sleep(2);
 		$this->assertEqual($cache->get('test'), null);
+		$this->assertReference($cache, $cache->instance());
+		$this->assertIsA($cache->instance(), 'Soter_Cache_File');
 	}
 
 	public function testRedis() {
-		$cache = new Soter_Cache_Redis( array(
-		//redis服务器信息，支持集群。
-		//原理是：读写的时候根据算法sprintf('%u',crc32($key))%count($nodeCount)
-		//把$key分散到下面不同的master服务器上，负载均衡，而且还支持单个key的主从负载均衡。
-		array(
-		    'master' => array(
-			//sock,tcp;连接类型，tcp：使用host port连接，sock：本地sock文件连接
-			'type' => 'tcp',
-			//key的前缀，便于管理查看，在set和get的时候会自动加上和去除前缀，无前缀请保持null
-			'prefix' => null, //Sr::server('HTTP_HOST')
-			//type是sock的时候，需要在这里指定sock文件的完整路径
-			'sock' => '',
-			//type是tcp的时候，需要在这里指定host，port，password，timeout，retry
-			//主机地址
-			'host' => '127.0.0.1',
-			//端口
-			'port' => 6379,
-			//密码，如果没有,保持null
-			'password' => NULL,
-			//0意味着没有超时限制，单位秒
-			'timeout' => 3000,
-			//连接失败后的重试时间间隔，单位毫秒
-			'retry' => 100,
-			// 数据库序号，默认0, 参考 http://redis.io/commands/select
-			'db' => 0,
-		    ),
-		    'slaves' => array(
+		$cache = new Soter_Cache_Redis(array(
+		    //redis服务器信息，支持集群。
+		    //原理是：读写的时候根据算法sprintf('%u',crc32($key))%count($nodeCount)
+		    //把$key分散到下面不同的master服务器上，负载均衡，而且还支持单个key的主从负载均衡。
+		    array(
+			'master' => array(
+			    //sock,tcp;连接类型，tcp：使用host port连接，sock：本地sock文件连接
+			    'type' => 'tcp',
+			    //key的前缀，便于管理查看，在set和get的时候会自动加上和去除前缀，无前缀请保持null
+			    'prefix' => null, //Sr::server('HTTP_HOST')
+			    //type是sock的时候，需要在这里指定sock文件的完整路径
+			    'sock' => '',
+			    //type是tcp的时候，需要在这里指定host，port，password，timeout，retry
+			    //主机地址
+			    'host' => '127.0.0.1',
+			    //端口
+			    'port' => 6379,
+			    //密码，如果没有,保持null
+			    'password' => NULL,
+			    //0意味着没有超时限制，单位秒
+			    'timeout' => 3000,
+			    //连接失败后的重试时间间隔，单位毫秒
+			    'retry' => 100,
+			    // 数据库序号，默认0, 参考 http://redis.io/commands/select
+			    'db' => 0,
+			),
+			'slaves' => array(
 //			array(
 //			    'type' => 'tcp',
 //			    'prefix' => null, //Sr::server('HTTP_HOST')
@@ -121,8 +127,8 @@ class TestCache extends UnitTestCase {
 //			    'retry' => 100,
 //			    'db' => 0,
 //			),
-		    )
-		),
+			)
+		    ),
 //		array(
 //		    'master' => array(
 //			'type' => 'tcp',
@@ -138,7 +144,7 @@ class TestCache extends UnitTestCase {
 //		    'slaves' => array(
 //		    )
 //		),
-	    ));
+		));
 		$this->assertTrue($cache->set('test', 'testvalue', 1));
 		$this->assertEqual($cache->get('test'), 'testvalue');
 		$this->assertTrue($cache->delete('test'));
@@ -149,6 +155,7 @@ class TestCache extends UnitTestCase {
 		$this->assertTrue($cache->set('test', 'testvalue', 1));
 		sleep(2);
 		$this->assertEqual($cache->get('test'), null);
+		$this->assertIsA($cache->instance(), 'Redis');
 	}
 
 	public function testSrCache() {
