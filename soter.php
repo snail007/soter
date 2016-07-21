@@ -26,7 +26,7 @@
  * @copyright     Copyright (c) 2015 - 2016, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         v1.1.16
- * @createdtime   2016-07-21 15:55:37
+ * @createdtime   2016-07-21 16:06:28
  */
  
 
@@ -4982,7 +4982,7 @@ class Soter_Cache_Redis_Cluster implements Soter_Cache {
 	}
 	public function delete($key) {
 		$this->_init();
-		return $this->handle->delete($key);
+		return $this->handle->del($key);
 	}
 	public function get($key) {
 		$this->_init();

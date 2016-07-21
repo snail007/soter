@@ -1716,7 +1716,7 @@ class Soter_Cache_Redis_Cluster implements Soter_Cache {
 
 	public function delete($key) {
 		$this->_init();
-		return $this->handle->delete($key);
+		return $this->handle->del($key);
 	}
 
 	public function get($key) {
