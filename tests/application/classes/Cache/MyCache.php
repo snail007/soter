@@ -37,4 +37,8 @@ class Cache_MyCache implements Soter_Cache {
 		return $this;
 	}
 
+	public function reset() {
+		return $this;
+	}
+
 }

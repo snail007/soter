@@ -158,6 +158,33 @@ class TestCache extends UnitTestCase {
 		$this->assertIsA($cache->instance(), 'Redis');
 	}
 
+	public function testRedisCluster() {
+		if (class_exists('RedisCluster', FALSE)) {
+			$cache = new Soter_Cache_Redis_Cluster(array(
+			    'hosts' => array(//集群中所有master主机信息
+				'127.0.0.1:7001',
+				'127.0.0.1:7002',
+				'127.0.0.1:7003',
+			    ),
+			    'timeout' => 1.5, //连接超时，单位秒
+			    'read_timeout' => 1.5, //读超时，单位秒
+			    'persistent' => false//是否持久化连接
+				)
+			);
+			$this->assertTrue($cache->set('test', 'testvalue', 1));
+			$this->assertEqual($cache->get('test'), 'testvalue');
+			$this->assertTrue($cache->delete('test'));
+			$this->assertFalse($cache->get('test'));
+			$this->assertTrue($cache->set('test', 'testvalue', 1));
+			$this->assertTrue($cache->clean('test'));
+			$this->assertFalse($cache->get('test'));
+			$this->assertTrue($cache->set('test', 'testvalue', 1));
+			sleep(2);
+			$this->assertEqual($cache->get('test'), null);
+			$this->assertIsA($cache->instance(), 'RedisCluster');
+		}
+	}
+
 	public function testSrCache() {
 		Sr::config()->setCacheConfig('cache');
 		$this->assertIsA(Sr::cache('file'), 'Soter_Cache_File');

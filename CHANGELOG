@@ -1,3 +1,29 @@
+============v1.1.16[2016-07-21]===========
+增加了：
+1.缓存接口增加了public function reset();方法，
+  这个操作会把缓存类内部使用的缓存操作对象重置为空，那么再次使用缓存的时候需，重新生成缓存操作对象。
+  使用场景是：
+  当我们在一个方法开始使用了get一个缓存，那么缓存类对象就会被创建，以后操作缓存的时候继续使用之前生成缓存类对象，
+  然后我们进行了一个长时间的操作，然后又调用了set设置缓存，如果是redis这种网络连接的缓存，这个时候就会报redis has goone away的异常，
+  原因是开始的时候get操作的缓存实例对象到redis的socket连接经过长时间操作已经超时了，连接被服务端断开，那么后面接着set就会报错了。
+  为了解决这个问题，我们可以在长时间操作之后，在操作缓存之前使用reset把缓存实例清空那么接着set就会重新生成缓存实例操作缓存，就不会报错了。
+2、增加了Soter_Cache_Redis_Cluster缓存类，支持最新官方Redis3.0 Cluster集群。需要安装phpredis拓展。
+升级提示：
+1、配置文件config/环境/cache.php中drivers需要加入如下配置项：
+'redis_cluster' => array(
+    'class' => 'Soter_Cache_Redis_Cluster',
+    'config' => array(
+	'hosts'=>array(//集群中所有master主机信息
+	    //'127.0.0.1:7001',
+	    //'127.0.0.1:7002',
+	    //'127.0.0.1:7003',
+	),
+	'timeout'=>1.5,//连接超时，单位秒
+	'read_timeout'=>1.5,//读超时，单位秒
+	'persistent'=>false//是否持久化连接
+    )
+),
+
 ============v1.1.15[2016-07-20]===========
 增加了：
 1.缓存接口增加了public function &instance($key = null, $isRead=true);方法，

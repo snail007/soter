@@ -34,6 +34,19 @@ return array(
 	    'class' => 'Soter_Cache_Apc',
 	    'config' => NULL//apc缓存不需要配置信息，保持null即可
 	),
+	'redis_cluster' => array(
+	    'class' => 'Soter_Cache_Redis_Cluster',
+	    'config' => array(
+		'hosts'=>array(//集群中所有master主机信息
+		    //'127.0.0.1:7001',
+		    //'127.0.0.1:7002',
+		    //'127.0.0.1:7003',
+		),
+		'timeout'=>1.5,//连接超时，单位秒
+		'read_timeout'=>1.5,//读超时，单位秒
+		'persistent'=>false//是否持久化连接
+	    )
+	),
 	'redis' => array(
 	    'class' => 'Soter_Cache_Redis',
 	    'config' =>

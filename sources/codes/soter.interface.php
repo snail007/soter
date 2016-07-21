@@ -47,5 +47,7 @@ interface Soter_Cache {
 
 	public function clean();
 
-	public function &instance($key = null, $isRead=true);
+	public function &instance($key = null, $isRead = true);
+
+	public function reset();
 }
