@@ -44,7 +44,9 @@ return array(
 		),
 		'timeout'=>1.5,//连接超时，单位秒
 		'read_timeout'=>1.5,//读超时，单位秒
-		'persistent'=>false//是否持久化连接
+		'persistent'=>false,//是否持久化连接
+		//key的前缀，便于管理查看，在set和get的时候会自动加上和去除前缀，无前缀请保持null
+		'prefix' => null, //Sr::server('HTTP_HOST')
 	    )
 	),
 	'redis' => array(

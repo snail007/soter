@@ -37,14 +37,16 @@ return array(
 	'redis_cluster' => array(
 	    'class' => 'Soter_Cache_Redis_Cluster',
 	    'config' => array(
-		'hosts'=>array(//集群中所有master主机信息
-		    //'127.0.0.1:7001',
-		    //'127.0.0.1:7002',
-		    //'127.0.0.1:7003',
+		'hosts' => array(//集群中所有master主机信息
+		//'127.0.0.1:7001',
+		//'127.0.0.1:7002',
+		//'127.0.0.1:7003',
 		),
-		'timeout'=>1.5,//连接超时，单位秒
-		'read_timeout'=>1.5,//读超时，单位秒
-		'persistent'=>false//是否持久化连接
+		'timeout' => 1.5, //连接超时，单位秒
+		'read_timeout' => 1.5, //读超时，单位秒
+		'persistent' => false, //是否持久化连接
+		//key的前缀，便于管理查看，在set和get的时候会自动加上和去除前缀，无前缀请保持null
+		'prefix' => null, //Sr::server('HTTP_HOST')
 	    )
 	),
 	'redis' => array(

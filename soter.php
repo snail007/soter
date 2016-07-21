@@ -26,7 +26,7 @@
  * @copyright     Copyright (c) 2015 - 2016, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         v1.1.16
- * @createdtime   2016-07-21 16:06:28
+ * @createdtime   2016-07-21 16:13:29
  */
  
 
@@ -4966,11 +4966,15 @@ class Soter_Cache_Redis implements Soter_Cache {
 class Soter_Cache_Redis_Cluster implements Soter_Cache {
 	private $config, $handle;
 	public function __construct($config) {
+		if (!is_null($config['prefix']) && ($config['prefix']{strlen($config['prefix']) - 1} != ':')) {
+			$config['prefix'].=':';
+		}
 		$this->config = $config;
 	}
 	private function _init() {
 		if (empty($this->handle)) {
 			$this->handle = new RedisCluster(null, $this->config['hosts'], $this->config['timeout'], $this->config['read_timeout'], $this->config['persistent']);
+			$this->handle->setOption(RedisCluster::OPT_PREFIX, $this->config['prefix']);
 		}
 	}
 	public function reset() {
