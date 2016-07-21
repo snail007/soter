@@ -162,13 +162,14 @@ class TestCache extends UnitTestCase {
 		if (class_exists('RedisCluster', FALSE)) {
 			$cache = new Soter_Cache_Redis_Cluster(array(
 			    'hosts' => array(//集群中所有master主机信息
-				'127.0.0.1:7001',
-				'127.0.0.1:7002',
-				'127.0.0.1:7003',
+				'10.69.213.231:8002',
+				'10.69.213.230:8002',
+				'10.69.213.229:8002',
 			    ),
 			    'timeout' => 1.5, //连接超时，单位秒
 			    'read_timeout' => 1.5, //读超时，单位秒
-			    'persistent' => false//是否持久化连接
+			    'persistent' => false,//是否持久化连接
+			    'prefix' => null,
 				)
 			);
 			$this->assertTrue($cache->set('test', 'testvalue', 1));
@@ -176,8 +177,8 @@ class TestCache extends UnitTestCase {
 			$this->assertTrue($cache->delete('test'));
 			$this->assertFalse($cache->get('test'));
 			$this->assertTrue($cache->set('test', 'testvalue', 1));
-			$this->assertTrue($cache->clean('test'));
-			$this->assertFalse($cache->get('test'));
+			//$this->assertTrue($cache->clean('test'));
+			//$this->assertFalse($cache->get('test'));
 			$this->assertTrue($cache->set('test', 'testvalue', 1));
 			sleep(2);
 			$this->assertEqual($cache->get('test'), null);

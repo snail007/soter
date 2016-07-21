@@ -1705,7 +1705,9 @@ class Soter_Cache_Redis_Cluster implements Soter_Cache {
 	private function _init() {
 		if (empty($this->handle)) {
 			$this->handle = new RedisCluster(null, $this->config['hosts'], $this->config['timeout'], $this->config['read_timeout'], $this->config['persistent']);
-			$this->handle->setOption(RedisCluster::OPT_PREFIX, $this->config['prefix']);
+			if ($this->config['prefix']) {
+				$this->handle->setOption(RedisCluster::OPT_PREFIX, $this->config['prefix']);
+			}
 		}
 	}
 
