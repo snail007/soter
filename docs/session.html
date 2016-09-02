@@ -66,6 +66,18 @@
 					<pre class="brush:php">
 					        ->setSessionHandle(new Soter_Session_Redis(array('path' => 'tcp://127.0.0.1:6379')))
 					</pre>
+					3.1、还可以使用多个redis服务器并且制定权重比如：
+					<br>tcp://host1:6379?weight=1, tcp://host2:6379?weight=2
+					<br>3.2、还可以通过在tcp://127.0.0.1:6379后面加参数，定义更多的功能，
+					<br>可用的参数及含义如下：
+					<br>格式：tcp://127.0.0.1:6379?weight=值1&参数2=值2&参数3=值3
+					<br>参数列表：
+					<br>weight(整数): 权重，当指定了多个服务器的时候.比如：tcp://host1:6379?weight=1, tcp://host2:6379?weight=2
+					<br>timeout (浮点数): 单位秒. 默认86400秒.
+					<br>persistent (整数, 1 或 0): defines if a persistent connection should be used. (experimental setting)
+					<br>prefix (字符串, 默认"PHPREDIS_SESSION:"):sesson id 前缀.
+					<br>auth (字符串, 默认：空):认证密码，避免特殊字符影响可以需要使用urlencode()处理一下.
+					<br>database (整数): 使用数据库的序号.
 					<h3 class="title_h3">4.mongodb</h3>
 					mongodb托管方式采用的是php自定义注册session处理实现的，Soter_Session_Mongodb类实现了这个功能，
 					<br>使用的时候，我们需要通过配置告诉它mongodb的连接信息。

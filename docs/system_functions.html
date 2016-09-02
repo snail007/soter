@@ -383,6 +383,14 @@
 						Sr::decrypt('33b01a9262e4ccec','','99999');
                                         </pre>
                                 </li>
+				<li>
+                                        <h2 class="title_h2">查找项目配置文件</h2>
+                                        通过Sr::config()->find($filename)方法，查找当前application里面的配置文件。
+                                        <br>如果文件存在就返回路径，不存在返回空。
+					<br>比如当前环境是development，那么：find('host.php'),
+					<br>首先会查找application/config/development/host.php，
+					<br>如果不存在继续查找application/config/default/host.php
+                                </li>
                         </ol>
                 </fieldset>
                 <script src="js/inc.foot.js"></script>

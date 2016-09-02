@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2016, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.1.16
- * @createdtime   2016-07-21 18:03:35
+ * @since         v1.1.17
+ * @createdtime   2016-09-02 16:00:25
  */
  
 
@@ -3893,6 +3893,23 @@ class Soter_Config {
 		$hmvcDomains = array(),
 		$errorMemoryReserveSize = 512000
 	;
+	/**
+	 * 查找当前application里面的配置文件
+	 * @param type $filename
+	 * @return string
+	 */
+	public function find($filename) {
+		$path = $this->getApplicationDir() . $this->getConfigDirName();
+		$default = $path . '/default/' . $filename;
+		$env = $path . '/' . $this->getConfigCurrentDirName() . '/' . $filename;
+		if (file_exists($env)) {
+			return $env;
+		} elseif (file_exists($default)) {
+			return $default;
+		} else {
+			return '';
+		}
+	}
 	public function getExceptionMemoryReserveSize() {
 		return $this->errorMemoryReserveSize;
 	}

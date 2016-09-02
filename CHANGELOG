@@ -1,3 +1,12 @@
+============v1.1.17[2016-09-02]===========
+增加了：
+1、Soter_Config类增加了find($filename)方法，查找当前application里面的配置文件，
+	如果文件存在就返回路径，不存在返回空。
+	比如当前环境是development，那么：find('host.php'),
+	首先会查找application/config/development/host.php，
+	如果不存在继续查找application/config/default/host.php
+2、手册系统方法部分增加了Sr::config()->find($filename)方法的说明。
+
 ============v1.1.16[2016-07-21]===========
 增加了：
 1.缓存接口增加了public function reset();方法，
