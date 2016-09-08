@@ -403,21 +403,22 @@ class Soter_Config {
 	;
 
 	/**
-	 * 查找当前application里面的配置文件
+	 * 按照包的顺序查找配置文件
 	 * @param type $filename
 	 * @return string
 	 */
 	public function find($filename) {
-		$path = $this->getApplicationDir() . $this->getConfigDirName();
-		$default = $path . '/default/' . $filename;
-		$env = $path . '/' . $this->getConfigCurrentDirName() . '/' . $filename;
-		if (file_exists($env)) {
-			return $env;
-		} elseif (file_exists($default)) {
-			return $default;
-		} else {
-			return '';
+		foreach ($this->getPackages() as $packagePath) {
+			$path = $packagePath . $this->getConfigDirName() . '/';
+			$filePath = $path . $this->getConfigCurrentDirName() . '/' . $filename . '.php';
+			$fileDefaultPath = $path . 'default/' . $filename . '.php';
+			if (file_exists($filePath)) {
+				return $filePath;
+			} elseif (file_exists($fileDefaultPath)) {
+				return $fileDefaultPath;
+			}
 		}
+		return "";
 	}
 
 	public function getExceptionMemoryReserveSize() {

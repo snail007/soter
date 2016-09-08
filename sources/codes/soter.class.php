@@ -476,28 +476,10 @@ class Sr {
 		$cfg = null;
 		if ($caching && Sr::arrayKeyExists($configFileName, $loadedConfig)) {
 			$cfg = $loadedConfig[$configFileName];
+		} elseif ($filePath = Soter::getConfig()->find($configFileName)) {
+			$loadedConfig[$configFileName] = $cfg = eval('?>' . file_get_contents($filePath));
 		} else {
-			$config = Soter::getConfig();
-			$found = false;
-			foreach ($config->getPackages() as $packagePath) {
-				$filePath = $packagePath . $config->getConfigDirName() . '/' . $config->getConfigCurrentDirName() . '/' . $configFileName . '.php';
-				$fileDefaultPath = $packagePath . $config->getConfigDirName() . '/default/' . $configFileName . '.php';
-				$contents = '';
-				if (file_exists($filePath)) {
-					$contents = file_get_contents($filePath);
-				} elseif (file_exists($fileDefaultPath)) {
-					$contents = file_get_contents($fileDefaultPath);
-				}
-				if ($contents) {
-					$cfg = eval('?>' . $contents);
-					$loadedConfig[$configFileName] = $cfg;
-					$found = true;
-					break;
-				}
-			}
-			if (!$found) {
-				throw new Soter_Exception_500('config file [ ' . $configFileName . '.php ] not found');
-			}
+			throw new Soter_Exception_500('config file [ ' . $configFileName . '.php ] not found');
 		}
 		if ($cfg && count($_info) > 1) {
 			$val = self::arrayGet($cfg, implode('.', array_slice($_info, 1)));
@@ -585,7 +567,7 @@ class Sr {
 		if (is_array($key)) {
 			$_SESSION = array_merge($_SESSION, $key);
 		} else {
-			self::arraySet($_SESSION, $key,$value);
+			self::arraySet($_SESSION, $key, $value);
 		}
 	}
 

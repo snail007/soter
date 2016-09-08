@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2016, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.1.17
- * @createdtime   2016-09-02 16:05:30
+ * @since         v1.1.18
+ * @createdtime   2016-09-08 16:12:45
  */
  
 
@@ -475,28 +475,10 @@ class Sr {
 		$cfg = null;
 		if ($caching && Sr::arrayKeyExists($configFileName, $loadedConfig)) {
 			$cfg = $loadedConfig[$configFileName];
+		} elseif ($filePath = Soter::getConfig()->find($configFileName)) {
+			$loadedConfig[$configFileName] = $cfg = eval('?>' . file_get_contents($filePath));
 		} else {
-			$config = Soter::getConfig();
-			$found = false;
-			foreach ($config->getPackages() as $packagePath) {
-				$filePath = $packagePath . $config->getConfigDirName() . '/' . $config->getConfigCurrentDirName() . '/' . $configFileName . '.php';
-				$fileDefaultPath = $packagePath . $config->getConfigDirName() . '/default/' . $configFileName . '.php';
-				$contents = '';
-				if (file_exists($filePath)) {
-					$contents = file_get_contents($filePath);
-				} elseif (file_exists($fileDefaultPath)) {
-					$contents = file_get_contents($fileDefaultPath);
-				}
-				if ($contents) {
-					$cfg = eval('?>' . $contents);
-					$loadedConfig[$configFileName] = $cfg;
-					$found = true;
-					break;
-				}
-			}
-			if (!$found) {
-				throw new Soter_Exception_500('config file [ ' . $configFileName . '.php ] not found');
-			}
+			throw new Soter_Exception_500('config file [ ' . $configFileName . '.php ] not found');
 		}
 		if ($cfg && count($_info) > 1) {
 			$val = self::arrayGet($cfg, implode('.', array_slice($_info, 1)));
@@ -577,7 +559,7 @@ class Sr {
 		if (is_array($key)) {
 			$_SESSION = array_merge($_SESSION, $key);
 		} else {
-			self::arraySet($_SESSION, $key,$value);
+			self::arraySet($_SESSION, $key, $value);
 		}
 	}
 	static function sessionUnset($key = null) {
@@ -3894,21 +3876,22 @@ class Soter_Config {
 		$errorMemoryReserveSize = 512000
 	;
 	/**
-	 * 查找当前application里面的配置文件
+	 * 按照包的顺序查找配置文件
 	 * @param type $filename
 	 * @return string
 	 */
 	public function find($filename) {
-		$path = $this->getApplicationDir() . $this->getConfigDirName();
-		$default = $path . '/default/' . $filename;
-		$env = $path . '/' . $this->getConfigCurrentDirName() . '/' . $filename;
-		if (file_exists($env)) {
-			return $env;
-		} elseif (file_exists($default)) {
-			return $default;
-		} else {
-			return '';
+		foreach ($this->getPackages() as $packagePath) {
+			$path = $packagePath . $this->getConfigDirName() . '/';
+			$filePath = $path . $this->getConfigCurrentDirName() . '/' . $filename . '.php';
+			$fileDefaultPath = $path . 'default/' . $filename . '.php';
+			if (file_exists($filePath)) {
+				return $filePath;
+			} elseif (file_exists($fileDefaultPath)) {
+				return $fileDefaultPath;
+			}
 		}
+		return "";
 	}
 	public function getExceptionMemoryReserveSize() {
 		return $this->errorMemoryReserveSize;
