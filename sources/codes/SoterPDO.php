@@ -691,9 +691,9 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		$this->_currentSql = '';
 	}
 
-	public function select($select) {
+	public function select($select, $wrap = TRUE) {
 		foreach (explode(',', $select) as $key) {
-			$this->arSelect[] = $key;
+			$this->arSelect[] = array($key, $wrap);
 		}
 		return $this;
 	}
@@ -1134,18 +1134,20 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 	private function _compileSelect() {
 		$selects = $this->arSelect;
 		if (empty($selects)) {
-			$selects[] = '*';
+			$selects[] = array('*', true);
 		}
-		foreach ($selects as $key => $value) {
-			$value = trim($value);
+		foreach ($selects as $key => $_value) {
+			$protect = $_value[1];
+			$value = trim($_value[0]);
 			if ($value != '*') {
 				$_info = explode('.', $value);
 				if (count($_info) == 2) {
-					$_info[0] = $this->_protectIdentifier($this->_checkPrefix($_info[0]));
-					$_info[1] = $this->_protectIdentifier($_info[1]);
+					$_v = $this->_checkPrefix($_info[0]);
+					$_info[0] = $protect ? $this->_protectIdentifier($_v) : $_v;
+					$_info[1] = $protect ? $this->_protectIdentifier($_info[1]) : $_info[1];
 					$value = implode('.', $_info);
 				} else {
-					$value = $this->_protectIdentifier($value);
+					$value = $protect ? $this->_protectIdentifier($value) : $value;
 				}
 			}
 			$selects[$key] = $value;

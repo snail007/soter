@@ -1,3 +1,14 @@
+============v1.1.20[2016-10-14]===========
+增加了：
+1、Sr::db()->select($field,$wrap=true)方法增加了第二个参数。
+   第二个参数意思是：是否用反引号保护字段。true：保护。false：不保护
+   比如：
+   1、Sr::db()->select(‘username’,true) 生成 ： select `username` 
+   2、Sr::db()->select(‘username’,false) 生成 ： select username
+
+升级提示：
+无
+
 ============v1.1.19[2016-10-08]===========
 优化了：
 1、优化了checkData方法的reg验证，该规则获取参数的时候不再分割，直接使用参数整体作为郑则表达式。

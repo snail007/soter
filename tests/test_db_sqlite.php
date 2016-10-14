@@ -26,6 +26,7 @@ class testDbSqlite extends UnitTestCase {
 
 	public function init() {
 		$config = array(
+		    'group' => 'sqlite',
 		    'driverType' => 'sqlite',
 		    'debug' => true,
 		    'pconnect' => true,

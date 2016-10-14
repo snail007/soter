@@ -597,8 +597,14 @@
 						$rs=Sr::db()->execute()->rows();
 						//$rs是数据库结果集数组
 		    </pre>
+		    
+		       
 		    提示：<b style="color:red">上面第一句，并没有真正的连接数据库进行查询，只是编译sql语句，
 			<br>只有最后调用了execute()方法时才会真正的查询数据库。</b>
+			<br>select还有第二个参数，第二个参数意思是：是否用反引号保护字段。true：保护。false：不保护
+			<br>比如：
+			<br>1、Sr::db()->select(‘username’,true) 生成 ： select `username` 
+			<br>2、Sr::db()->select(‘username’,false) 生成 ： select username
 		    <h3 class="title_h3">2.from</h3>
 		    <pre class="brush:php">
 						echo Sr::db()->select('c.id as cat_id , b.id as group_id, dd.id as user_id')
