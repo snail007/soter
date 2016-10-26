@@ -580,16 +580,16 @@
 		    查询数据，我可以通过Sr::db()获取数据库操作对象，然后进行查询。
 		    <br>为了简单明了的演示查询功能，请看下面的查询示例：
 		    <br>假设表前缀是空。
-		    <h3 class="title_h3">1.exexute</h3>
-		    Soter的数据库查询无论是增删改查，最后都是通过调用<b>exexute()</b>方法执行的。
-		    <br>exexute()根据查询的类型不同返回的数据类型也不同，具体如下：
+		    <h3 class="title_h3">1.execute</h3>
+		    Soter的数据库查询无论是增删改查，最后都是通过调用<b>execute()</b>方法执行的。
+		    <br>execute()根据查询的类型不同返回的数据类型也不同，具体如下：
 		    <br><b>1.数据库中受到影响的行数</b>
-		    <br>当执行的是DELETE，REPLACE，UPDATE，INSERT的时候，exexute()返回的是数据库中受到影响的行数；
+		    <br>当执行的是DELETE，REPLACE，UPDATE，INSERT的时候，execute()返回的是数据库中受到影响的行数；
 		    <br>INSERT，REPLACE操作的时候可以通过<b>Sr::db()->lastId()</b>获取最后插入的ID。
 		    <br><b>2.Soter_Database_ResultSet结果集对象</b>
-		    <br>当执行的是SELECT的时候，exexute()返回的是Soter_Database_Resultset结果集对象。
+		    <br>当执行的是SELECT的时候，execute()返回的是Soter_Database_Resultset结果集对象。
 		    <br><b>3.true或false</b>
-		    <br>当执行的是上面1和2之外的查询的时候，exexute()返回的是执行成功true或者失败false。
+		    <br>当执行的是上面1和2之外的查询的时候，execute()返回的是执行成功true或者失败false。
 		    <h3 class="title_h3">2.select</h3>
 		    <pre class="brush:php">
 						echo Sr::db()->select('*')->from('user');
@@ -601,7 +601,7 @@
 		       
 		    提示：<b style="color:red">上面第一句，并没有真正的连接数据库进行查询，只是编译sql语句，
 			<br>只有最后调用了execute()方法时才会真正的查询数据库。</b>
-			<br>select还有第二个参数，第二个参数意思是：是否用反引号保护字段。true：保护。false：不保护
+			<br>select还有第二个参数，第二个参数意思是：是否用反引号保护字段。true：保护。false：不保护。默认：true。
 			<br>比如：
 			<br>1、Sr::db()->select(‘username’,true) 生成 ： select `username` 
 			<br>2、Sr::db()->select(‘username’,false) 生成 ： select username
@@ -768,7 +768,7 @@
 						echo Sr::db()->insert('a', array('name' => 'name' . rand(1000, 10000), 'gid' => rand(1000, 10000)));
 						//将输出：INSERT INTO `a` (`name`,`gid`) VALUES (?,?)
 		    </pre>
-		    然后我们执行Sr::db()->exexute()返回的是数据库中受到影响的行数。
+		    然后我们执行Sr::db()->execute()返回的是数据库中受到影响的行数。
 		    <br>可以通过<b>Sr::db()->lastId()</b>获取最后插入的ID。
 		</li>
 		<li><h3 class="title_h2">批量插入数据</h3>
