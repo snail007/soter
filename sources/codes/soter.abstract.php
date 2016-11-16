@@ -348,6 +348,56 @@ abstract class Soter_Task_Single extends Soter_Task {
 
 }
 
+abstract class Soter_Task_Multiple extends Soter_Task {
+
+	protected abstract function getMaxCount();
+
+	public function _execute(Soter_CliArgs $args) {
+		$this->debug = $args->get('debug');
+		$class = get_class($this);
+		$startTime = Sr::microtime();
+		$this->_log('Multiple Task [ ' . $class . ' ] start');
+		$lockFilePath = $args->get('pid');
+		if (!$lockFilePath) {
+			$tempDirPath = Sr::config()->getStorageDirPath();
+			$key = md5(Sr::config()->getApplicationDir() .
+				Sr::config()->getClassesDirName() . '/'
+				. Sr::config()->getTaskDirName() . '/'
+				. str_replace('_', '/', get_class($this)) . '.php');
+			$lockFilePath = Sr::realPath($tempDirPath) . '/' . $key . '.pid';
+		}
+		$alivedPids = array(getmypid());
+		if (file_exists($lockFilePath)) {
+			$count = 0;
+			$pids = explode("\n", file_get_contents($lockFilePath));
+			foreach ($pids as $pid) {
+				if ($pid = (int) $pid) {
+					if ($this->pidIsExists($pid)) {
+						$alivedPids[] = $pid;
+						if (++$count > $this->getMaxCount()-1) {
+							//进程数达到最大值，直接返回
+							$this->_log('Multiple Task [ ' . $class . ' ] reach max count : ' . $this->getMaxCount() . ' , now exiting...');
+							$this->_log('Multiple Task [ ' . $class . ' ] end , use time ' . (Sr::microtime() - $startTime) . ' ms');
+							$this->_log('', false);
+							return;
+						}
+					}
+				}
+			}
+		}
+		//写入存活进程pid到lockfile
+		if (file_put_contents($lockFilePath, implode("\n", $alivedPids)) === false) {
+			throw new Soter_Exception_500('can not create file : [ ' . $lockFilePath . ' ]');
+		}
+		$this->_log('update pid file [ ' . $lockFilePath . ' ]');
+		$this->execute($args);
+		$this->_log('clean pid file [ ' . $lockFilePath . ' ]');
+		$this->_log('Multiple Task [ ' . $class . ' ] end , use time ' . (Sr::microtime() - $startTime) . ' ms');
+		$this->_log('', false);
+	}
+
+}
+
 /**
  * @property Soter_Route $route
  */
@@ -433,7 +483,7 @@ abstract class Soter_Exception extends Exception {
 	}
 
 	public function getEnvironment() {
-		$array=array(Sr::ENV_PRODUCTION=>'PRODUCTION',Sr::ENV_TESTING=>'TESTING',Sr::ENV_DEVELOPMENT=>'DEVELOPMENT');
+		$array = array(Sr::ENV_PRODUCTION => 'PRODUCTION', Sr::ENV_TESTING => 'TESTING', Sr::ENV_DEVELOPMENT => 'DEVELOPMENT');
 		return $array[Sr::config()->getEnvironment()];
 	}
 
@@ -492,7 +542,7 @@ abstract class Soter_Exception extends Exception {
 
 	public function renderCli() {
 		return "$this->exceptionName [ " . $this->getErrorType() . " ]\n"
-			. "Environment: " . $this->getEnvironment()."\n"
+			. "Environment: " . $this->getEnvironment() . "\n"
 			. "Line: " . $this->getErrorLine() . ". " . $this->getErrorFile() . "\n"
 			. "Message: " . $this->getErrorMessage() . "\n"
 			. "Time: " . date('Y/m/d H:i:s T') . "\n";
@@ -502,7 +552,7 @@ abstract class Soter_Exception extends Exception {
 		return '<body style="padding:0;margin:0;background:black;color:whitesmoke;">'
 			. '<div style="padding:10px;background:red;font-size:18px;">' . $this->exceptionName . ' [ ' . $this->getErrorType() . ' ] </div>'
 			. '<div style="padding:10px;background:black;font-size:14px;color:yellow;line-height:1.5em;">'
-			. '<font color="whitesmoke">Environment: </font>' . $this->getEnvironment().'<br/>'
+			. '<font color="whitesmoke">Environment: </font>' . $this->getEnvironment() . '<br/>'
 			. '<font color="whitesmoke">Line: </font>' . $this->getErrorLine() . ' [ ' . $this->getErrorFile(TRUE) . ' ]<br/>'
 			. '<font color="whitesmoke">Message: </font>' . htmlspecialchars($this->getErrorMessage()) . '</br>'
 			. '<font color="whitesmoke">Time: </font>' . date('Y/m/d H:i:s T') . '</div>'
