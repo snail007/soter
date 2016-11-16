@@ -1,5 +1,6 @@
 *
 *-debug/*
+index-debug
 !*-debug
 !.htaccess
 !.gitignore
