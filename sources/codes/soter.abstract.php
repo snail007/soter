@@ -169,10 +169,7 @@ abstract class Soter_Dao {
 	 * @param type $cond   附加的where条件，关联数组
 	 * 成功则返回影响的行数，失败返回false
 	 */
-	public function delete($values, Array $cond = NULL) {
-		if (empty($values)) {
-			return 0;
-		}
+	public function delete($values, $cond = NULL) {
 		if (!empty($values)) {
 			$this->getDb()->where(array($this->getPrimaryKey() => is_array($values) ? array_values($values) : $values));
 		}
@@ -374,7 +371,7 @@ abstract class Soter_Task_Multiple extends Soter_Task {
 				if ($pid = (int) $pid) {
 					if ($this->pidIsExists($pid)) {
 						$alivedPids[] = $pid;
-						if (++$count > $this->getMaxCount()-1) {
+						if (++$count > $this->getMaxCount() - 1) {
 							//进程数达到最大值，直接返回
 							$this->_log('Multiple Task [ ' . $class . ' ] reach max count : ' . $this->getMaxCount() . ' , now exiting...');
 							$this->_log('Multiple Task [ ' . $class . ' ] end , use time ' . (Sr::microtime() - $startTime) . ' ms');

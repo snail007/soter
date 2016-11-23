@@ -418,7 +418,7 @@
                                         <br>查询字段数据<b>findCol</b>和<b>find</b>类似，值是获取的是某个字段的值或者数组，示例可以参考<b>find</b>方法。
                                         <h3 class="title_h3">7.根据条件删除记录</h3>
                                         通过<code>delete($values, Array $cond = NULL)</code>方法，来删除记录，返回值是1或者0，1是代表执行成功，0是代表执行失败。
-                                        <br>$values 必填：以是一个主键的值或者主键主键的值数组
+                                        <br>$values 选填：以是一个主键的值或者主键主键的值数组
                                         <br>$cond 选填：附加的where条件，关联数组
                                         <br>假如我们Business要调用,如下：
                                         <pre class="brush:php">
@@ -426,9 +426,17 @@
                                                 $userDao = Sr::dao('Test');
                                                 $userDao->delete(1);
 
-                                                //2.删除主键是1,2,3的记录,记录中username是'刘一'的记录
+                                                //2.记录中username是'刘一'的记录
+                                                $userDao = Sr::dao('Test');
+                                                $userDao->delete(null, array('username' => '刘一'));
+						
+						//3.删除主键是1,2,3的记录,记录中username是'刘一'的记录
                                                 $userDao = Sr::dao('Test');
                                                 $userDao->delete(array(1,2,3), array('username' => '刘一'));
+						
+						//4.删除整个test表数据
+                                                $userDao = Sr::dao('Test');
+                                                $userDao->delete();
                                         </pre>
                                         <h3 class="title_h3">9.分页方法</h3>
                                         通过<code>getPage($page, $pagesize, $url, $fields = '*', Array $where = null, $orderBy = array(), $pageBarOrder = array(1, 2, 3, 4, 5, 6), $pageBarACount = 10)</code>方法，我们可以分页获取数据。
