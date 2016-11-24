@@ -26,7 +26,7 @@
  * @copyright     Copyright (c) 2015 - 2016, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         v1.1.23
- * @createdtime   2016-11-23 09:46:09
+ * @createdtime   2016-11-24 12:08:51
  */
  
 
@@ -3347,7 +3347,7 @@ abstract class Soter_Task_Multiple extends Soter_Task {
 				. str_replace('_', '/', get_class($this)) . '.php');
 			$lockFilePath = Sr::realPath($tempDirPath) . '/' . $key . '.pid';
 		}
-		$alivedPids = array(getmypid());
+		$alivedPids = array();
 		if (file_exists($lockFilePath)) {
 			$count = 0;
 			$pids = explode("\n", file_get_contents($lockFilePath));
@@ -3366,6 +3366,7 @@ abstract class Soter_Task_Multiple extends Soter_Task {
 				}
 			}
 		}
+		$alivedPids[] = getmypid();
 		//写入存活进程pid到lockfile
 		if (file_put_contents($lockFilePath, implode("\n", $alivedPids)) === false) {
 			throw new Soter_Exception_500('can not create file : [ ' . $lockFilePath . ' ]');
