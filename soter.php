@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2016, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.1.23
- * @createdtime   2016-11-24 12:08:51
+ * @since         v1.1.24
+ * @createdtime   2016-11-24 13:43:35
  */
  
 
@@ -3289,7 +3289,7 @@ abstract class Soter_Task {
 			return trim(shell_exec("ps ax | awk '{ print $1 }' | grep -e \"^{$pid}$\""), "\n") == $pid;
 		} else {
 			//windows
-			return strpos(shell_exec('tasklist /NH /FI "PID eq ' . $pid . '"'), $pid) !== false;
+			return preg_match("/\t?\s?$pid\t?\s?/", shell_exec('tasklist /NH /FI "PID eq ' . $pid . '"'));
 		}
 	}
 	abstract function execute(Soter_CliArgs $args);

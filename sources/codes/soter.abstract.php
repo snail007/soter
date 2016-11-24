@@ -298,7 +298,7 @@ abstract class Soter_Task {
 			return trim(shell_exec("ps ax | awk '{ print $1 }' | grep -e \"^{$pid}$\""), "\n") == $pid;
 		} else {
 			//windows
-			return strpos(shell_exec('tasklist /NH /FI "PID eq ' . $pid . '"'), $pid) !== false;
+			return preg_match("/\t?\s?$pid\t?\s?/", shell_exec('tasklist /NH /FI "PID eq ' . $pid . '"'));
 		}
 	}
 
