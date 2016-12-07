@@ -6,7 +6,7 @@
  */
 /**
  * Memcache托管
- * tcp写法（多个redis可以使用英文半角逗号分隔）：
+ * tcp写法（多个Memcache可以使用英文半角逗号分隔）：
  * tcp://127.0.0.1:11211?persistent=0&timeout=3&weight=1,tcp://192.168.1.33:11211?persistent=0&timeout=3&weight=2
  * 可以使用的参数：
  * persistent:1|0 是否持久连接
