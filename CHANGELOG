@@ -1,3 +1,12 @@
+============v1.1.25[2016-12-26]===========
+增加了：
+1、优化了命令行--task参数，不仅支持类名写法还支持路径的写法。
+2、Sr::config()->getEnvironment($retrunString = false)增加了$retrunString参数，
+      可以返回代表环境的字符串。默认返回是数字，即：Sr::ENV_DEVELOPMENT、Sr::ENV_TESTING、Sr::ENV_PRODUCTION
+
+升级提示：
+无
+
 ============v1.1.24[2016-11-24]===========
 修复了：
 1、修复了Soter_Task的判断pid是否存在的方法在windows上无法正确判断的bug。

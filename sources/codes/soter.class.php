@@ -213,7 +213,7 @@ class Soter {
 	 * 命令行模式运行
 	 */
 	private static function runCli() {
-		$task = Sr::getOpt('task');
+		$task = str_replace('/', '_', Sr::getOpt('task'));
 		$hmvcModuleName = Sr::getOpt('hmvc');
 		if (empty($task)) {
 			exit('require a task name,please use --task=<taskname>' . "\n");

@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2016, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.1.24
- * @createdtime   2016-11-24 13:43:35
+ * @since         v1.1.25
+ * @createdtime   2016-12-26 10:41:19
  */
  
 
@@ -109,6 +109,7 @@ class Soter {
 	}
 	private static function initSession() {
 		$config = self::getConfig();
+		//session初始化
 		$sessionConfig = $config->getSessionConfig();
 		@ini_set('session.auto_start', 0);
 		@ini_set('session.gc_probability', 1);
@@ -124,13 +125,14 @@ class Soter {
 		@ini_set('session.hash_bits_per_character', 5);
 		session_cache_limiter('nocache');
 		session_set_cookie_params(
-				$sessionConfig['lifetime'], $sessionConfig['cookie_path'], preg_match('/^[^\\.]+$/', Sr::server('HTTP_HOST')) ? null : $sessionConfig['cookie_domain']
+			$sessionConfig['lifetime'], $sessionConfig['cookie_path'], preg_match('/^[^\\.]+$/', Sr::server('HTTP_HOST')) ? null : $sessionConfig['cookie_domain']
 		);
 		if (!empty($sessionConfig['session_save_path'])) {
 			session_save_path($sessionConfig['session_save_path']);
 		}
 		session_name($sessionConfig['session_name']);
 		register_shutdown_function('session_write_close');
+		//session托管检测
 		$sessionHandle = $config->getSessionHandle();
 		if ($sessionHandle && $sessionHandle instanceof Soter_Session) {
 			$sessionHandle->init();
@@ -138,6 +140,7 @@ class Soter {
 		if ($sessionConfig['autostart']) {
 			Sr::sessionStart();
 		}
+		//session初始化完毕
 	}
 	/**
 	 * web模式运行
@@ -204,7 +207,7 @@ class Soter {
 				$response = call_user_func_array(array($controllerObject, $method), $route->getArgs());
 				$contents = @ob_get_contents();
 				@ob_end_clean();
-				$contents.=is_array($response) ? Sr::view()->set($response)->load("$cacheClassName/$cacheMethodName") : $response;
+				$contents .= is_array($response) ? Sr::view()->set($response)->load("$cacheClassName/$cacheMethodName") : $response;
 				Sr::cache()->set($cacheMethoKey, $contents, $cacheMethodConfig[$methodKey]['time']);
 			}
 		} else {
@@ -214,7 +217,7 @@ class Soter {
 				$response = call_user_func_array(array($controllerObject, $method), $route->getArgs());
 				$contents = @ob_get_contents();
 				@ob_end_clean();
-				$contents.=is_array($response) ? Sr::view()->set($response)->load("$cacheClassName/$cacheMethodName") : $response;
+				$contents .= is_array($response) ? Sr::view()->set($response)->load("$cacheClassName/$cacheMethodName") : $response;
 			} else {
 				$response = call_user_func_array(array($controllerObject, $method), $route->getArgs());
 				$contents = is_array($response) ? Sr::view()->set($response)->load("$cacheClassName/$cacheMethodName") : $response;
@@ -231,7 +234,7 @@ class Soter {
 	 * 命令行模式运行
 	 */
 	private static function runCli() {
-		$task = Sr::getOpt('task');
+		$task = str_replace('/', '_', Sr::getOpt('task'));
 		$hmvcModuleName = Sr::getOpt('hmvc');
 		if (empty($task)) {
 			exit('require a task name,please use --task=<taskname>' . "\n");
@@ -268,6 +271,7 @@ class Soter {
 	 * @throws Soter_Exception_404
 	 */
 	public static function checkHmvc($hmvcModuleName, $throwException = true) {
+		//hmvc检测
 		if (!empty($hmvcModuleName)) {
 			$config = Soter::getConfig();
 			$hmvcModules = $config->getHmvcModules();
@@ -301,7 +305,7 @@ class Sr {
 		$_info = explode('.', $key);
 		$keyStrArray = '';
 		foreach ($_info as $k) {
-			$keyStrArray.= "['{$k}']";
+			$keyStrArray .= "['{$k}']";
 		}
 		return $keyStrArray;
 	}
@@ -435,6 +439,7 @@ class Sr {
 	 */
 	static function factory($className, $hmvcModuleName = null) {
 		if (Sr::isPluginMode()) {
+			//hmvc检测
 			Soter::checkHmvc($hmvcModuleName);
 		}
 		if (Sr::strEndsWith(strtolower($className), '.php')) {
@@ -635,22 +640,29 @@ class Sr {
 		return $var;
 	}
 	private static function xssClean0($data) {
+		// Fix &entity\n;
 		$data = str_replace(array('&amp;', '&lt;', '&gt;'), array('&amp;amp;', '&amp;lt;', '&amp;gt;'), $data);
 		$data = preg_replace('/(&#*\w+)[\x00-\x20]+;/u', '$1;', $data);
 		$data = preg_replace('/(&#x*[0-9A-F]+);*/iu', '$1;', $data);
 		$data = html_entity_decode($data, ENT_COMPAT, 'UTF-8');
+		// Remove any attribute starting with "on" or xmlns
 		$data = preg_replace('#(<[^>]+?[\x00-\x20"\'])(?:on|xmlns)[^>]*+>#iu', '$1>', $data);
+		// Remove javascript: and vbscript: protocols
 		$data = preg_replace('#([a-z]*)[\x00-\x20]*=[\x00-\x20]*([`\'"]*)[\x00-\x20]*j[\x00-\x20]*a[\x00-\x20]*v[\x00-\x20]*a[\x00-\x20]*s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:#iu', '$1=$2nojavascript...', $data);
 		$data = preg_replace('#([a-z]*)[\x00-\x20]*=([\'"]*)[\x00-\x20]*v[\x00-\x20]*b[\x00-\x20]*s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:#iu', '$1=$2novbscript...', $data);
 		$data = preg_replace('#([a-z]*)[\x00-\x20]*=([\'"]*)[\x00-\x20]*-moz-binding[\x00-\x20]*:#u', '$1=$2nomozbinding...', $data);
+		// Only works in IE: <span style="width: expression(alert('Ping!'));"></span>
 		$data = preg_replace('#(<[^>]+?)style[\x00-\x20]*=[\x00-\x20]*[`\'"]*.*?expression[\x00-\x20]*\([^>]*+>#i', '$1>', $data);
 		$data = preg_replace('#(<[^>]+?)style[\x00-\x20]*=[\x00-\x20]*[`\'"]*.*?behaviour[\x00-\x20]*\([^>]*+>#i', '$1>', $data);
 		$data = preg_replace('#(<[^>]+?)style[\x00-\x20]*=[\x00-\x20]*[`\'"]*.*?s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:*[^>]*+>#iu', '$1>', $data);
+		// Remove namespaced elements (we do not need them)
 		$data = preg_replace('#</*\w+:\w[^>]*+>#i', '', $data);
 		do {
+			// Remove really unwanted tags
 			$old_data = $data;
 			$data = preg_replace('#</*(?:applet|b(?:ase|gsound|link)|embed|iframe|frame(?:set)?|i(?:frame|layer)|l(?:ayer|ink)|meta|object|s(?:cript|tyle)|title|xml)[^>]*+>#i', '', $data);
 		} while ($old_data !== $data);
+		// we are done...
 		return $data;
 	}
 	/**
@@ -768,6 +780,9 @@ class Sr {
 			self::$dbInstances = array();
 		}
 	}
+	/**
+	 * @return \Soter_Database_ActiveRecord
+	 */
 	static function &db($group = '', $isNewInstance = false) {
 		if (is_array($group)) {
 			ksort($group);
@@ -910,7 +925,7 @@ class Sr {
 		if (!empty($getData)) {
 			$url = $url . '?';
 			foreach ($getData as $k => $v) {
-				$url.= $k . '=' . urlencode($v) . '&';
+				$url .= $k . '=' . urlencode($v) . '&';
 			}
 			$url = rtrim($url, '&');
 		}
@@ -936,811 +951,811 @@ class Sr {
 		static $checkRules;
 		if (empty($checkRules)) {
 			$defaultRules = array(
-				'array' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					if (!Sr::arrayKeyExists($key, $data) || !is_array($value)) {
-						return false;
-					}
-					$minOkay = true;
-					if (Sr::arrayKeyExists(0, $args)) {
-						$minOkay = count($value) >= intval($args[0]);
-					}
-					$maxOkay = true;
-					if (Sr::arrayKeyExists(1, $args)) {
-						$minOkay = count($value) >= intval($args[1]);
-					}
-					return $minOkay && $maxOkay;
-				}, 'notArray' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					return !is_array($value);
-				}, 'default' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					if (is_array($value)) {
-						$i = 0;
-						foreach ($value as $k => $v) {
-							$returnValue[$k] = empty($v) ? (Sr::arrayKeyExists($i, $args) ? $args[$i] : $args[0]) : $v;
-							$i++;
-						}
-					} elseif (empty($value)) {
-						$returnValue = $args[0];
-					}
-					return true;
-				}, 'optional' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					$break = !isset($data[$key]);
-					return true;
-				}, 'required' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					if (!Sr::arrayKeyExists($key, $data) || empty($value)) {
-						return false;
-					}
-					$value = (array) $value;
-					foreach ($value as $v) {
-						if (empty($v)) {
-							return false;
-						}
-					}
-					return true;
-				}, 'requiredKey' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					$args[] = $key;
-					$args = array_unique($args);
-					foreach ($args as $k) {
-						if (!Sr::arrayKeyExists($k, $data)) {
-							return false;
-						}
-					}
-					return true;
-				}, 'functions' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					if (!Sr::arrayKeyExists($key, $data)) {
-						return true;
-					}
-					$returnValue = $value;
-					if (is_array($returnValue)) {
-						foreach ($returnValue as $k => $v) {
-							foreach ($args as $function) {
-								$returnValue[$k] = $function($v);
-							}
-						}
-					} else {
-						foreach ($args as $function) {
-							$returnValue = $function($returnValue);
-						}
-					}
-					return true;
-				}, 'xss' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					if (!Sr::arrayKeyExists($key, $data)) {
-						return true;
-					}
-					$returnValue = Sr::xssClean($value);
-					return true;
-				}, 'match' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					if (!Sr::arrayKeyExists($key, $data) || !Sr::arrayKeyExists(0, $args) || !Sr::arrayKeyExists($args[0], $data) || $value != $data[$args[0]]) {
-						return false;
-					}
-					return true;
-				}, 'equal' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					if (!Sr::arrayKeyExists($key, $data) || !Sr::arrayKeyExists(0, $args) || $value != $args[0]) {
-						return false;
-					}
-					return true;
-				}, 'enum' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					if (!Sr::arrayKeyExists($key, $data)) {
-						return false;
-					}
-					$value = (array) $value;
-					foreach ($value as $v) {
-						if (!in_array($v, $args)) {
-							return false;
-						}
-					}
-					return true;
-				}, 'unique' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					#比如unique[user.name] , unique[user.name,id:1]
-					if (!Sr::arrayKeyExists($key, $data) || !$value || !count($args)) {
-						return false;
-					}
-					$_info = explode('.', $args[0]);
-					if (count($_info) != 2) {
-						return false;
-					}
-					$table = $_info[0];
-					$col = $_info[1];
-					if (Sr::arrayKeyExists(1, $args)) {
-						$_id_info = explode(':', $args[1]);
-						if (count($_id_info) != 2) {
-							return false;
-						}
-						$id_col = $_id_info[0];
-						$id = $_id_info[1];
-						$id = stripos($id, '#') === 0 ? Sr::getPost(substr($id, 1)) : $id;
-						$where = array($col => $value, "$id_col <>" => $id);
-					} else {
-						$where = array($col => $value);
-					}
-					return !$db->where($where)->from($table)->limit(0, 1)->execute()->total();
-				}, 'exists' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					#比如exists[user.name] , exists[user.name,type:1], exists[user.name,type:1,sex:#sex]
-					if (!Sr::arrayKeyExists($key, $data) || !$value || !count($args)) {
-						return false;
-					}
-					$_info = explode('.', $args[0]);
-					if (count($_info) != 2) {
-						return false;
-					}
-					$table = $_info[0];
-					$col = $_info[1];
-					$where = array($col => $value);
-					if (count($args) > 1) {
-						foreach (array_slice($args, 1) as $v) {
-							$_id_info = explode(':', $v);
-							if (count($_id_info) != 2) {
-								continue;
-							}
-							$id_col = $_id_info[0];
-							$id = $_id_info[1];
-							$id = stripos($id, '#') === 0 ? Sr::getPost(substr($id, 1)) : $id;
-							$where[$id_col] = $id;
-						}
-					}
-					return $db->where($where)->from($table)->limit(0, 1)->execute()->total();
-				}, 'min_len' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					if (!Sr::arrayKeyExists($key, $data)) {
-						return false;
-					}
-					$v = (array) $value;
-					foreach ($v as $value) {
-						$okay = Sr::arrayKeyExists(0, $args) ? (mb_strlen($value, 'UTF-8') >= intval($args[0])) : false;
-						if (!$okay) {
-							return false;
-						}
-					}
-					return true;
-				}, 'max_len' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					if (!Sr::arrayKeyExists($key, $data)) {
-						return false;
-					}
-					$v = (array) $value;
-					foreach ($v as $value) {
-						$okay = Sr::arrayKeyExists(0, $args) ? (mb_strlen($value, 'UTF-8') <= intval($args[0])) : false;
-						if (!$okay) {
-							return false;
-						}
-					}
-					return true;
-				}, 'range_len' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					if (!Sr::arrayKeyExists($key, $data)) {
-						return false;
-					}
-					$v = (array) $value;
-					foreach ($v as $value) {
-						$okay = count($args) == 2 ? (mb_strlen($value, 'UTF-8') >= intval($args[0])) && (mb_strlen($value, 'UTF-8') <= intval($args[1])) : false;
-						if (!$okay) {
-							return false;
-						}
-					}
-					return true;
-				}, 'len' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					if (!Sr::arrayKeyExists($key, $data)) {
-						return false;
-					}
-					$v = (array) $value;
-					foreach ($v as $value) {
-						$okay = Sr::arrayKeyExists(0, $args) ? (mb_strlen($value, 'UTF-8') == intval($args[0])) : false;
-						if (!$okay) {
-							return false;
-						}
-					}
-					return true;
-				}, 'min' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					if (!Sr::arrayKeyExists($key, $data)) {
-						return false;
-					}
-					$v = (array) $value;
-					foreach ($v as $value) {
-						$okay = Sr::arrayKeyExists(0, $args) && is_numeric($value) ? $value >= $args[0] : false;
-						if (!$okay) {
-							return false;
-						}
-					}
-					return true;
-				}, 'max' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					if (!Sr::arrayKeyExists($key, $data)) {
-						return false;
-					}
-					$v = (array) $value;
-					foreach ($v as $value) {
-						$okay = Sr::arrayKeyExists(0, $args) && is_numeric($value) ? $value <= $args[0] : false;
-						if (!$okay) {
-							return false;
-						}
-					}
-					return true;
-				}, 'range' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					if (!Sr::arrayKeyExists($key, $data)) {
-						return false;
-					}
-					$v = (array) $value;
-					foreach ($v as $value) {
-						$okay = (count($args) == 2) && is_numeric($value) ? $value >= $args[0] && $value <= $args[1] : false;
-						if (!$okay) {
-							return false;
-						}
-					}
-					return true;
-				}, 'alpha' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					if (!Sr::arrayKeyExists($key, $data)) {
-						return false;
-					}
-					#纯字母
-					$v = (array) $value;
-					foreach ($v as $value) {
-						$okay = !preg_match('/[^A-Za-z]+/', $value);
-						if (!$okay) {
-							return false;
-						}
-					}
-					return true;
-				}, 'alpha_num' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					#纯字母和数字
-					if (!Sr::arrayKeyExists($key, $data)) {
-						return false;
-					}
-					$v = (array) $value;
-					foreach ($v as $value) {
-						$okay = !preg_match('/[^A-Za-z0-9]+/', $value);
-						if (!$okay) {
-							return false;
-						}
-					}
-					return true;
-				}, 'alpha_dash' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					#纯字母和数字和下划线和-
-					if (!Sr::arrayKeyExists($key, $data)) {
-						return false;
-					}
-					$v = (array) $value;
-					foreach ($v as $value) {
-						$okay = !preg_match('/[^A-Za-z0-9_-]+/', $value);
-						if (!$okay) {
-							return false;
-						}
-					}
-					return true;
-				}, 'alpha_start' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					#以字母开头
-					if (!Sr::arrayKeyExists($key, $data)) {
-						return false;
-					}
-					$v = (array) $value;
-					foreach ($v as $value) {
-						$okay = preg_match('/^[A-Za-z]+/', $value);
-						if (!$okay) {
-							return false;
-						}
-					}
-					return true;
-				}, 'num' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					#纯数字
-					if (!Sr::arrayKeyExists($key, $data)) {
-						return false;
-					}
-					$v = (array) $value;
-					foreach ($v as $value) {
-						$okay = !preg_match('/[^0-9]+/', $value);
-						if (!$okay) {
-							return false;
-						}
-					}
-					return true;
-				}, 'int' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					#整数
-					if (!Sr::arrayKeyExists($key, $data)) {
-						return false;
-					}
-					$v = (array) $value;
-					foreach ($v as $value) {
-						$okay = preg_match('/^([-+]?[1-9]\d*|0)$/', $value);
-						if (!$okay) {
-							return false;
-						}
-					}
-					return true;
-				}, 'float' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					#小数
-					if (!Sr::arrayKeyExists($key, $data)) {
-						return false;
-					}
-					$v = (array) $value;
-					foreach ($v as $value) {
-						$okay = preg_match('/^([1-9]\d*|0)\.\d+$/', $value);
-						if (!$okay) {
-							return false;
-						}
-					}
-					return true;
-				}, 'numeric' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					#数字-1，1.2，+3，4e5
-					if (!Sr::arrayKeyExists($key, $data)) {
-						return false;
-					}
-					$v = (array) $value;
-					foreach ($v as $value) {
-						$okay = is_numeric($value);
-						if (!$okay) {
-							return false;
-						}
-					}
-					return true;
-				}, 'natural' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					#自然数0，1，2，3，12，333
-					if (!Sr::arrayKeyExists($key, $data)) {
-						return false;
-					}
-					$v = (array) $value;
-					foreach ($v as $value) {
-						$okay = preg_match('/^([1-9]\d*|0)$/', $value);
-						if (!$okay) {
-							return false;
-						}
-					}
-					return true;
-				}, 'natural_no_zero' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					#自然数不包含0
-					if (!Sr::arrayKeyExists($key, $data)) {
-						return false;
-					}
-					$v = (array) $value;
-					foreach ($v as $value) {
-						$okay = preg_match('/^[1-9]\d*$/', $value);
-						if (!$okay) {
-							return false;
-						}
-					}
-					return true;
-				}, 'email' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					if (!Sr::arrayKeyExists($key, $data)) {
-						return false;
-					}
-					$args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
-					$v = (array) $value;
-					foreach ($v as $value) {
-						$okay = !empty($value) ? preg_match('/^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/', $value) : $args[0];
-						if (!$okay) {
-							return false;
-						}
-					}
-					return true;
-				}, 'url' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					if (!Sr::arrayKeyExists($key, $data)) {
-						return false;
-					}
-					$args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
-					$v = (array) $value;
-					foreach ($v as $value) {
-						$okay = !empty($value) ? preg_match('/^http[s]?:\/\/[A-Za-z0-9]+\.[A-Za-z0-9]+[\/=\?%\-&_~`@[\]\':+!]*([^<>\"])*$/', $value) : $args[0];
-						if (!$okay) {
-							return false;
-						}
-					}
-					return true;
-				}, 'qq' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					if (!Sr::arrayKeyExists($key, $data)) {
-						return false;
-					}
-					$args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
-					$v = (array) $value;
-					foreach ($v as $value) {
-						$okay = !empty($value) ? preg_match('/^[1-9][0-9]{4,}$/', $value) : $args[0];
-						if (!$okay) {
-							return false;
-						}
-					}
-					return true;
-				}, 'phone' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					if (!Sr::arrayKeyExists($key, $data)) {
-						return false;
-					}
-					$args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
-					$v = (array) $value;
-					foreach ($v as $value) {
-						$okay = !empty($value) ? preg_match('/^(?:\d{3}-?\d{8}|\d{4}-?\d{7})$/', $value) : $args[0];
-						if (!$okay) {
-							return false;
-						}
-					}
-					return true;
-				}, 'mobile' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					if (!Sr::arrayKeyExists($key, $data)) {
-						return false;
-					}
-					$args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
-					$v = (array) $value;
-					foreach ($v as $value) {
-						$okay = !empty($value) ? preg_match('/^(((13[0-9]{1})|(15[0-9]{1})|(18[0-9]{1})|(14[0-9]{1}))+\d{8})$/', $value) : $args[0];
-						if (!$okay) {
-							return false;
-						}
-					}
-					return true;
-				}, 'zipcode' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					if (!Sr::arrayKeyExists($key, $data)) {
-						return false;
-					}
-					$args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
-					$v = (array) $value;
-					foreach ($v as $value) {
-						$okay = !empty($value) ? preg_match('/^[1-9]\d{5}(?!\d)$/', $value) : $args[0];
-						if (!$okay) {
-							return false;
-						}
-					}
-					return true;
-				}, 'idcard' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					if (!Sr::arrayKeyExists($key, $data)) {
-						return false;
-					}
-					$args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
-					$v = (array) $value;
-					foreach ($v as $value) {
-						$okay = !empty($value) ? preg_match('/^\d{14}(\d{4}|(\d{3}[xX])|\d{1})$/', $value) : $args[0];
-						if (!$okay) {
-							return false;
-						}
-					}
-					return true;
-				}, 'ip' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					if (!Sr::arrayKeyExists($key, $data)) {
-						return false;
-					}
-					$args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
-					$v = (array) $value;
-					foreach ($v as $value) {
-						$okay = !empty($value) ? preg_match('/^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$/', $value) : $args[0];
-						if (!$okay) {
-							return false;
-						}
-					}
-					return true;
-				}, 'chs' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					if (!Sr::arrayKeyExists($key, $data)) {
-						return false;
-					}
-					$count = implode(',', array_slice($args, 1, 2));
-					$count = empty($count) ? '1,' : $count;
-					$can_empty = Sr::arrayKeyExists(0, $args) && $args[0] == 'true';
-					$v = (array) $value;
-					foreach ($v as $value) {
-						$okay = !empty($value) ? preg_match('/^[\x{4e00}-\x{9fa5}]{' . $count . '}$/u', $value) : $can_empty;
-						if (!$okay) {
-							return false;
-						}
-					}
-					return true;
-				}, 'date' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					if (!Sr::arrayKeyExists($key, $data)) {
-						return false;
-					}
-					$args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
-					$v = (array) $value;
-					foreach ($v as $value) {
-						$okay = !empty($value) ? preg_match('/^[0-9]{4}-(((0[13578]|(10|12))-(0[1-9]|[1-2][0-9]|3[0-1]))|(02-(0[1-9]|[1-2][0-9]))|((0[469]|11)-(0[1-9]|[1-2][0-9]|30)))$/', $value) : $args[0];
-						if (!$okay) {
-							return false;
-						}
-					}
-					return true;
-				}, 'time' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					if (!Sr::arrayKeyExists($key, $data)) {
-						return false;
-					}
-					$args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
-					$v = (array) $value;
-					foreach ($v as $value) {
-						$okay = !empty($value) ? preg_match('/^(([0-1][0-9])|([2][0-3])):([0-5][0-9])(:([0-5][0-9]))$/', $value) : $args[0];
-						if (!$okay) {
-							return false;
-						}
-					}
-					return true;
-				}, 'datetime' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					if (!Sr::arrayKeyExists($key, $data)) {
-						return false;
-					}
-					$args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
-					$v = (array) $value;
-					foreach ($v as $value) {
-						$okay = !empty($value) ? preg_match('/^[0-9]{4}-(((0[13578]|(10|12))-(0[1-9]|[1-2][0-9]|3[0-1]))|(02-(0[1-9]|[1-2][0-9]))|((0[469]|11)-(0[1-9]|[1-2][0-9]|30))) (([0-1][0-9])|([2][0-3])):([0-5][0-9])(:([0-5][0-9]))$/', $value) : $args[0];
-						if (!$okay) {
-							return false;
-						}
-					}
-					return true;
-				}, 'reg' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-					if (!Sr::arrayKeyExists($key, $data)) {
-						return false;
-					}
-					$v = (array) $value;
-					foreach ($v as $value) {
-						$okay = !empty($args[0]) ? preg_match($args[0], $value) : false;
-						if (!$okay) {
-							return false;
-						}
-					}
-					return true;
-				}
-					);
-					$userRules = Sr::config()->getDataCheckRules();
-					$checkRules = (is_array($userRules) && !empty($userRules)) ? array_merge($defaultRules, $userRules) : $defaultRules;
-				}
-				$getCheckRuleInfo = function($_rule) {
-					$matches = array();
-					preg_match('|([^\[]+)(?:\[(.*)\](.?))?|', $_rule, $matches);
-					$matches[1] = Sr::arrayKeyExists(1, $matches) ? $matches[1] : '';
-					if ($matches[1] == 'reg') {
-						$matches[3] = '';
-						$matches[2] = Sr::arrayKeyExists(2, $matches) ? array($matches[2]) : array();
-					} else {
-						$matches[3] = !empty($matches[3]) ? $matches[3] : ',';
-						$matches[2] = Sr::arrayKeyExists(2, $matches) ? explode($matches[3], $matches[2]) : array();
-					}
-					return $matches;
-				};
-				$returnData = $data;
-				foreach ($rules as $key => $keyRules) {
-					foreach ($keyRules as $rule => $message) {
-						$matches = $getCheckRuleInfo($rule);
-						$_v = self::arrayGet($returnData, $key);
-						$_r = $matches[1];
-						$args = $matches[2];
-						if (!Sr::arrayKeyExists($_r, $checkRules) || !is_callable($checkRules[$_r])) {
-							throw new Soter_Exception_500('error rule [ ' . $_r . ' ]');
-						}
-						$ruleFunction = $checkRules[$_r];
-						$db = (is_object($db) && ($db instanceof Soter_Database_ActiveRecord) ) ? $db : Sr::db();
-						$break = false;
-						$returnValue = null;
-						$isOkay = $ruleFunction($key, $_v, $data, $args, $returnValue, $break, $db);
-						if (!$isOkay) {
-							$errorMessage = $message;
-							$errorKey = $key;
-							return false;
-						}
-						if (!is_null($returnValue)) {
-							$returnData[$key] = $returnValue;
-						}
-						if ($break) {
-							break;
-						}
-					}
-				}
-				return true;
+			    'array' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!Sr::arrayKeyExists($key, $data) || !is_array($value)) {
+					    return false;
+				    }
+				    $minOkay = true;
+				    if (Sr::arrayKeyExists(0, $args)) {
+					    $minOkay = count($value) >= intval($args[0]);
+				    }
+				    $maxOkay = true;
+				    if (Sr::arrayKeyExists(1, $args)) {
+					    $minOkay = count($value) >= intval($args[1]);
+				    }
+				    return $minOkay && $maxOkay;
+			    }, 'notArray' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    return !is_array($value);
+			    }, 'default' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (is_array($value)) {
+					    $i = 0;
+					    foreach ($value as $k => $v) {
+						    $returnValue[$k] = empty($v) ? (Sr::arrayKeyExists($i, $args) ? $args[$i] : $args[0]) : $v;
+						    $i++;
+					    }
+				    } elseif (empty($value)) {
+					    $returnValue = $args[0];
+				    }
+				    return true;
+			    }, 'optional' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    $break = !isset($data[$key]);
+				    return true;
+			    }, 'required' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!Sr::arrayKeyExists($key, $data) || empty($value)) {
+					    return false;
+				    }
+				    $value = (array) $value;
+				    foreach ($value as $v) {
+					    if (empty($v)) {
+						    return false;
+					    }
+				    }
+				    return true;
+			    }, 'requiredKey' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    $args[] = $key;
+				    $args = array_unique($args);
+				    foreach ($args as $k) {
+					    if (!Sr::arrayKeyExists($k, $data)) {
+						    return false;
+					    }
+				    }
+				    return true;
+			    }, 'functions' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
+					    return true;
+				    }
+				    $returnValue = $value;
+				    if (is_array($returnValue)) {
+					    foreach ($returnValue as $k => $v) {
+						    foreach ($args as $function) {
+							    $returnValue[$k] = $function($v);
+						    }
+					    }
+				    } else {
+					    foreach ($args as $function) {
+						    $returnValue = $function($returnValue);
+					    }
+				    }
+				    return true;
+			    }, 'xss' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
+					    return true;
+				    }
+				    $returnValue = Sr::xssClean($value);
+				    return true;
+			    }, 'match' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!Sr::arrayKeyExists($key, $data) || !Sr::arrayKeyExists(0, $args) || !Sr::arrayKeyExists($args[0], $data) || $value != $data[$args[0]]) {
+					    return false;
+				    }
+				    return true;
+			    }, 'equal' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!Sr::arrayKeyExists($key, $data) || !Sr::arrayKeyExists(0, $args) || $value != $args[0]) {
+					    return false;
+				    }
+				    return true;
+			    }, 'enum' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
+					    return false;
+				    }
+				    $value = (array) $value;
+				    foreach ($value as $v) {
+					    if (!in_array($v, $args)) {
+						    return false;
+					    }
+				    }
+				    return true;
+			    }, 'unique' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    #比如unique[user.name] , unique[user.name,id:1]
+				    if (!Sr::arrayKeyExists($key, $data) || !$value || !count($args)) {
+					    return false;
+				    }
+				    $_info = explode('.', $args[0]);
+				    if (count($_info) != 2) {
+					    return false;
+				    }
+				    $table = $_info[0];
+				    $col = $_info[1];
+				    if (Sr::arrayKeyExists(1, $args)) {
+					    $_id_info = explode(':', $args[1]);
+					    if (count($_id_info) != 2) {
+						    return false;
+					    }
+					    $id_col = $_id_info[0];
+					    $id = $_id_info[1];
+					    $id = stripos($id, '#') === 0 ? Sr::getPost(substr($id, 1)) : $id;
+					    $where = array($col => $value, "$id_col <>" => $id);
+				    } else {
+					    $where = array($col => $value);
+				    }
+				    return !$db->where($where)->from($table)->limit(0, 1)->execute()->total();
+			    }, 'exists' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    #比如exists[user.name] , exists[user.name,type:1], exists[user.name,type:1,sex:#sex]
+				    if (!Sr::arrayKeyExists($key, $data) || !$value || !count($args)) {
+					    return false;
+				    }
+				    $_info = explode('.', $args[0]);
+				    if (count($_info) != 2) {
+					    return false;
+				    }
+				    $table = $_info[0];
+				    $col = $_info[1];
+				    $where = array($col => $value);
+				    if (count($args) > 1) {
+					    foreach (array_slice($args, 1) as $v) {
+						    $_id_info = explode(':', $v);
+						    if (count($_id_info) != 2) {
+							    continue;
+						    }
+						    $id_col = $_id_info[0];
+						    $id = $_id_info[1];
+						    $id = stripos($id, '#') === 0 ? Sr::getPost(substr($id, 1)) : $id;
+						    $where[$id_col] = $id;
+					    }
+				    }
+				    return $db->where($where)->from($table)->limit(0, 1)->execute()->total();
+			    }, 'min_len' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
+					    return false;
+				    }
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = Sr::arrayKeyExists(0, $args) ? (mb_strlen($value, 'UTF-8') >= intval($args[0])) : false;
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
+			    }, 'max_len' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
+					    return false;
+				    }
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = Sr::arrayKeyExists(0, $args) ? (mb_strlen($value, 'UTF-8') <= intval($args[0])) : false;
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
+			    }, 'range_len' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
+					    return false;
+				    }
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = count($args) == 2 ? (mb_strlen($value, 'UTF-8') >= intval($args[0])) && (mb_strlen($value, 'UTF-8') <= intval($args[1])) : false;
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
+			    }, 'len' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
+					    return false;
+				    }
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = Sr::arrayKeyExists(0, $args) ? (mb_strlen($value, 'UTF-8') == intval($args[0])) : false;
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
+			    }, 'min' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
+					    return false;
+				    }
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = Sr::arrayKeyExists(0, $args) && is_numeric($value) ? $value >= $args[0] : false;
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
+			    }, 'max' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
+					    return false;
+				    }
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = Sr::arrayKeyExists(0, $args) && is_numeric($value) ? $value <= $args[0] : false;
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
+			    }, 'range' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
+					    return false;
+				    }
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = (count($args) == 2) && is_numeric($value) ? $value >= $args[0] && $value <= $args[1] : false;
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
+			    }, 'alpha' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
+					    return false;
+				    }
+				    #纯字母
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = !preg_match('/[^A-Za-z]+/', $value);
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
+			    }, 'alpha_num' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    #纯字母和数字
+				    if (!Sr::arrayKeyExists($key, $data)) {
+					    return false;
+				    }
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = !preg_match('/[^A-Za-z0-9]+/', $value);
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
+			    }, 'alpha_dash' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    #纯字母和数字和下划线和-
+				    if (!Sr::arrayKeyExists($key, $data)) {
+					    return false;
+				    }
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = !preg_match('/[^A-Za-z0-9_-]+/', $value);
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
+			    }, 'alpha_start' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    #以字母开头
+				    if (!Sr::arrayKeyExists($key, $data)) {
+					    return false;
+				    }
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = preg_match('/^[A-Za-z]+/', $value);
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
+			    }, 'num' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    #纯数字
+				    if (!Sr::arrayKeyExists($key, $data)) {
+					    return false;
+				    }
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = !preg_match('/[^0-9]+/', $value);
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
+			    }, 'int' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    #整数
+				    if (!Sr::arrayKeyExists($key, $data)) {
+					    return false;
+				    }
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = preg_match('/^([-+]?[1-9]\d*|0)$/', $value);
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
+			    }, 'float' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    #小数
+				    if (!Sr::arrayKeyExists($key, $data)) {
+					    return false;
+				    }
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = preg_match('/^([1-9]\d*|0)\.\d+$/', $value);
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
+			    }, 'numeric' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    #数字-1，1.2，+3，4e5
+				    if (!Sr::arrayKeyExists($key, $data)) {
+					    return false;
+				    }
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = is_numeric($value);
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
+			    }, 'natural' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    #自然数0，1，2，3，12，333
+				    if (!Sr::arrayKeyExists($key, $data)) {
+					    return false;
+				    }
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = preg_match('/^([1-9]\d*|0)$/', $value);
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
+			    }, 'natural_no_zero' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    #自然数不包含0
+				    if (!Sr::arrayKeyExists($key, $data)) {
+					    return false;
+				    }
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = preg_match('/^[1-9]\d*$/', $value);
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
+			    }, 'email' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
+					    return false;
+				    }
+				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = !empty($value) ? preg_match('/^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/', $value) : $args[0];
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
+			    }, 'url' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
+					    return false;
+				    }
+				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = !empty($value) ? preg_match('/^http[s]?:\/\/[A-Za-z0-9]+\.[A-Za-z0-9]+[\/=\?%\-&_~`@[\]\':+!]*([^<>\"])*$/', $value) : $args[0];
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
+			    }, 'qq' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
+					    return false;
+				    }
+				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = !empty($value) ? preg_match('/^[1-9][0-9]{4,}$/', $value) : $args[0];
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
+			    }, 'phone' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
+					    return false;
+				    }
+				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = !empty($value) ? preg_match('/^(?:\d{3}-?\d{8}|\d{4}-?\d{7})$/', $value) : $args[0];
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
+			    }, 'mobile' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
+					    return false;
+				    }
+				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = !empty($value) ? preg_match('/^(((13[0-9]{1})|(15[0-9]{1})|(18[0-9]{1})|(14[0-9]{1}))+\d{8})$/', $value) : $args[0];
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
+			    }, 'zipcode' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
+					    return false;
+				    }
+				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = !empty($value) ? preg_match('/^[1-9]\d{5}(?!\d)$/', $value) : $args[0];
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
+			    }, 'idcard' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
+					    return false;
+				    }
+				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = !empty($value) ? preg_match('/^\d{14}(\d{4}|(\d{3}[xX])|\d{1})$/', $value) : $args[0];
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
+			    }, 'ip' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
+					    return false;
+				    }
+				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = !empty($value) ? preg_match('/^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$/', $value) : $args[0];
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
+			    }, 'chs' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
+					    return false;
+				    }
+				    $count = implode(',', array_slice($args, 1, 2));
+				    $count = empty($count) ? '1,' : $count;
+				    $can_empty = Sr::arrayKeyExists(0, $args) && $args[0] == 'true';
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = !empty($value) ? preg_match('/^[\x{4e00}-\x{9fa5}]{' . $count . '}$/u', $value) : $can_empty;
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
+			    }, 'date' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
+					    return false;
+				    }
+				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = !empty($value) ? preg_match('/^[0-9]{4}-(((0[13578]|(10|12))-(0[1-9]|[1-2][0-9]|3[0-1]))|(02-(0[1-9]|[1-2][0-9]))|((0[469]|11)-(0[1-9]|[1-2][0-9]|30)))$/', $value) : $args[0];
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
+			    }, 'time' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
+					    return false;
+				    }
+				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = !empty($value) ? preg_match('/^(([0-1][0-9])|([2][0-3])):([0-5][0-9])(:([0-5][0-9]))$/', $value) : $args[0];
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
+			    }, 'datetime' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
+					    return false;
+				    }
+				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = !empty($value) ? preg_match('/^[0-9]{4}-(((0[13578]|(10|12))-(0[1-9]|[1-2][0-9]|3[0-1]))|(02-(0[1-9]|[1-2][0-9]))|((0[469]|11)-(0[1-9]|[1-2][0-9]|30))) (([0-1][0-9])|([2][0-3])):([0-5][0-9])(:([0-5][0-9]))$/', $value) : $args[0];
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
+			    }, 'reg' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
+				    if (!Sr::arrayKeyExists($key, $data)) {
+					    return false;
+				    }
+				    $v = (array) $value;
+				    foreach ($v as $value) {
+					    $okay = !empty($args[0]) ? preg_match($args[0], $value) : false;
+					    if (!$okay) {
+						    return false;
+					    }
+				    }
+				    return true;
+			    }
+			);
+			$userRules = Sr::config()->getDataCheckRules();
+			$checkRules = (is_array($userRules) && !empty($userRules)) ? array_merge($defaultRules, $userRules) : $defaultRules;
+		}
+		$getCheckRuleInfo = function($_rule) {
+			$matches = array();
+			preg_match('|([^\[]+)(?:\[(.*)\](.?))?|', $_rule, $matches);
+			$matches[1] = Sr::arrayKeyExists(1, $matches) ? $matches[1] : '';
+			if ($matches[1] == 'reg') {
+				$matches[3] = '';
+				$matches[2] = Sr::arrayKeyExists(2, $matches) ? array($matches[2]) : array();
+			} else {
+				$matches[3] = !empty($matches[3]) ? $matches[3] : ',';
+				$matches[2] = Sr::arrayKeyExists(2, $matches) ? explode($matches[3], $matches[2]) : array();
 			}
-			static function sessionStart() {
-				if (!self::isCli()) {
-					$started = false;
-					if (version_compare(phpversion(), '5.4.0', '>=')) {
-						$started = session_status() === PHP_SESSION_ACTIVE ? TRUE : FALSE;
-					} else {
-						$started = session_id() === '' ? FALSE : TRUE;
-					}
-					if (!$started && !headers_sent()) {
-						@session_start();
-					}
+			return $matches;
+		};
+		$returnData = $data;
+		foreach ($rules as $key => $keyRules) {
+			foreach ($keyRules as $rule => $message) {
+				$matches = $getCheckRuleInfo($rule);
+				$_v = self::arrayGet($returnData, $key);
+				$_r = $matches[1];
+				$args = $matches[2];
+				if (!Sr::arrayKeyExists($_r, $checkRules) || !is_callable($checkRules[$_r])) {
+					throw new Soter_Exception_500('error rule [ ' . $_r . ' ]');
 				}
-			}
-			/**
-			 * 分页方法
-			 * @param type $total 一共多少记录
-			 * @param type $page  当前是第几页
-			 * @param type $pagesize 每页多少
-			 * @param type $url    url是什么，url里面的{page}会被替换成页码
-			 * @param array $order 分页条的组成，是一个数组，可以按着1-6的序号，选择分页条组成部分和每个部分的顺序
-			 * @param int $a_count   分页条中a页码链接的总数量,不包含当前页的a标签，默认10个。
-			 * @return type  String
-			 * echo Sr::page(100,3,10,'?article/list/{page}',array(3,4,5,1,2,6));
-			 */
-			static function page($total, $page, $pagesize, $url, $order = array(1, 2, 3, 4, 5, 6), $a_count = 10) {
-				$a_num = $a_count;
-				$first = '首页';
-				$last = '尾页';
-				$pre = '上页';
-				$next = '下页';
-				$a_num = $a_num % 2 == 0 ? $a_num + 1 : $a_num;
-				$pages = ceil($total / $pagesize);
-				$curpage = intval($page) ? intval($page) : 1;
-				$curpage = $curpage > $pages || $curpage <= 0 ? 1 : $curpage; #当前页超范围置为1
-				$body = '<span class="page_body">';
-				$prefix = '';
-				$subfix = '';
-				$start = $curpage - ($a_num - 1) / 2; #开始页
-				$end = $curpage + ($a_num - 1) / 2;  #结束页
-				$start = $start <= 0 ? 1 : $start;   #开始页超范围修正
-				$end = $end > $pages ? $pages : $end; #结束页超范围修正
-				if ($pages >= $a_num) {#总页数大于显示页数
-					if ($curpage <= ($a_num - 1) / 2) {
-						$end = $a_num;
-					}//当前页在左半边补右边
-					if ($end - $curpage <= ($a_num - 1) / 2) {
-						$start-=floor($a_num / 2) - ($end - $curpage);
-					}//当前页在右半边补左边
-				}
-				for ($i = $start; $i <= $end; $i++) {
-					if ($i == $curpage) {
-						$body.='<a class="page_cur_page" href="javascript:void(0);"><b>' . $i . '</b></a>';
-					} else {
-						$body.='<a href="' . str_replace('{page}', $i, $url) . '">' . $i . '</a>';
-					}
-				}
-				$body.='</span>';
-				$prefix = ($curpage == 1 ? '' : '<span class="page_bar_prefix"><a href="' . str_replace('{page}', 1, $url) . '">' . $first . '</a><a href="' . str_replace('{page}', $curpage - 1, $url) . '">' . $pre . '</a></span>');
-				$subfix = ($curpage == $pages ? '' : '<span class="page_bar_subfix"><a href="' . str_replace('{page}', $curpage + 1, $url) . '">' . $next . '</a><a href="' . str_replace('{page}', $pages, $url) . '">' . $last . '</a></span>');
-				$info = "<span class=\"page_cur\">第{$curpage}/{$pages}页</span>";
-				$id = "gsd09fhas9d" . rand(100000, 1000000);
-				$go = '<script>function ekup(){if(event.keyCode==13){clkyup();}}function clkyup(){var num=document.getElementById(\'' . $id . '\').value;if(!/^\d+$/.test(num)||num<=0||num>' . $pages . '){alert(\'请输入正确页码!\');return;};location=\'' . addslashes($url) . '\'.replace(/\\{page\\}/,document.getElementById(\'' . $id . '\').value);}</script><span class="page_input_num"><input onkeyup="ekup()" type="text" id="' . $id . '" style="width:40px;vertical-align:text-baseline;padding:0 2px;font-size:10px;border:1px solid gray;"/></span><span class="page_btn_go" onclick="clkyup();" style="cursor:pointer;">转到</span>';
-				$total = "<span class=\"page_total\">共{$total}条</span>";
-				$pagination = array(
-					$total,
-					$info,
-					$prefix,
-					$body,
-					$subfix,
-					$go
-				);
-				$output = array();
-				if (is_null($order)) {
-					$order = array(1, 2, 3, 4, 5, 6);
-				}
-				foreach ($order as $key) {
-					if (Sr::arrayKeyExists($key - 1, $pagination)) {
-						$output[] = $pagination[$key - 1];
-					}
-				}
-				return $pages > 1 ? implode("", $output) : '';
-			}
-			static function json() {
-				$args = func_get_args();
-				$handle = Sr::config()->getOutputJsonRender();
-				if (is_callable($handle)) {
-					return call_user_func_array($handle, $args);
-				} else {
-					return '';
-				}
-			}
-			static function redirect($url, $msg = null, $time = 3, $view = null) {
-				if (empty($msg) && empty($view)) {
-					header('Location: ' . $url);
-				} else {
-					$time = intval($time) ? intval($time) : 3;
-					header("refresh:{$time};url={$url}"); //单位秒
-					header("Content-type: text/html; charset=utf-8");
-					if (empty($view)) {
-						echo $msg;
-					} else {
-						self::view()->set(array('msg' => $msg, 'url' => $url, 'time' => $time))->load($view);
-					}
-				}
-				exit();
-			}
-			static function message($msg, $url = null, $time = 3, $view = null) {
-				$time = intval($time) ? intval($time) : 3;
-				if (!empty($url)) {
-					header("refresh:{$time};url={$url}"); //单位秒
-				}
-				header("Content-type: text/html; charset=utf-8");
-				if (!empty($view)) {
-					self::view()->set(array('msg' => $msg, 'url' => $url, 'time' => $time))->load($view);
-				} else {
-					echo $msg;
-				}
-				exit();
-			}
-			public static function __callStatic($name, $arguments) {
-				$methods = self::config()->getSrMethods();
-				if (empty($methods[$name])) {
-					throw new soter_exception_500($name . ' not found in ->setSrMethods() or it is empty');
-				}
-				if (is_string($methods[$name])) {
-					$className = $methods[$name] . '_' . self::arrayGet($arguments, 0);
-					if ($className) {
-						return Sr::factory($className);
-					} else {
-						throw new soter_exception_500($methods[$name] . '() need argument of class name ');
-					}
-				} elseif (is_callable($methods[$name])) {
-					return call_user_func_array($methods[$name], $arguments);
-				} else {
-					throw new soter_exception_500($name . ' unknown type of method [ ' . $name . ' ]');
-				}
-			}
-			static function arrayKeyExists($key, $array) {
-				if (empty($array) || !is_array($array)) {
+				$ruleFunction = $checkRules[$_r];
+				$db = (is_object($db) && ($db instanceof Soter_Database_ActiveRecord) ) ? $db : Sr::db();
+				$break = false;
+				$returnValue = null;
+				$isOkay = $ruleFunction($key, $_v, $data, $args, $returnValue, $break, $db);
+				if (!$isOkay) {
+					$errorMessage = $message;
+					$errorKey = $key;
 					return false;
 				}
-				$keys = explode('.', $key);
-				while (count($keys) != 0) {
-					if (empty($array) || !is_array($array)) {
-						return false;
-					}
-					$key = array_shift($keys);
-					if (!array_key_exists($key, $array)) {
-						return false;
-					}
-					$array = $array[$key];
+				if (!is_null($returnValue)) {
+					$returnData[$key] = $returnValue;
 				}
-				return true;
-			}
-			private static function getEncryptKey($key, $attachKey) {
-				$_key = $key ? $key : self::config()->getEncryptKey();
-				if (!$key && !$_key) {
-					throw new Soter_Exception_500('encrypt key can not empty or you can set it in index.php : ->setEncryptKey()');
+				if ($break) {
+					break;
 				}
-				return substr(md5($_key . $attachKey), 0, 8);
-			}
-			static function encrypt($str, $key = '', $attachKey = '') {
-				if (!$str) {
-					return '';
-				}
-				$str = $str . '';
-				$key = self::getEncryptKey($key, $attachKey);
-				$block = mcrypt_get_block_size('des', 'ecb');
-				$pad = $block - (strlen($str) % $block);
-				$str .= str_repeat(chr($pad), $pad);
-				return bin2hex(mcrypt_encrypt(MCRYPT_DES, $key, $str, MCRYPT_MODE_ECB));
-			}
-			static function decrypt($str, $key = '', $attachKey = '') {
-				if (!$str) {
-					return '';
-				}
-				$str = $str . '';
-				$key = self::getEncryptKey($key, $attachKey);
-				$str = @pack("H*", $str);
-				if (!$str) {
-					return '';
-				}
-				$str = @mcrypt_decrypt(MCRYPT_DES, $key, $str, MCRYPT_MODE_ECB);
-				$pad = ord($str[($len = strlen($str)) - 1]);
-				return substr($str, 0, strlen($str) - $pad);
-			}
-			static function classIsExists($class) {
-				if (class_exists($class, false)) {
-					return true;
-				}
-				$classNamePath = str_replace('_', '/', $class);
-				foreach (self::config()->getPackages() as $path) {
-					if (file_exists($filePath = $path . self::config()->getClassesDirName() . '/' . $classNamePath . '.php')) {
-						return true;
-					}
-				}
-				return false;
-			}
-			/**
-			 * 判断是否是ajax请求，只对jquery的ajax请求有效
-			 * @return boolean
-			 */
-			static function isAjax() {
-				return isset($_SERVER['HTTP_X_REQUESTED_WITH']) && (strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest');
-			}
-			/**
-			 * 获取系统临时目录路径
-			 * @return type
-			 */
-			public function getTempPath() {
-				$path = '';
-				if (!function_exists('sys_get_temp_dir')) {
-					if (!empty($_ENV['TMP'])) {
-						$path = realpath($_ENV['TMP']);
-					} elseif (!empty($_ENV['TMPDIR'])) {
-						$path = realpath($_ENV['TMPDIR']);
-					} elseif (!empty($_ENV['TEMP'])) {
-						$path = realpath($_ENV['TEMP']);
-					} else {
-						$tempfile = tempnam(uniqid(rand(), TRUE), '');
-						if (file_exists($tempfile)) {
-							unlink($tempfile);
-							$path = realpath(dirname($tempfile));
-						}
-					}
-				} else {
-					$path = sys_get_temp_dir();
-				}
-				return $path ? $path . '/' : '';
 			}
 		}
+		return true;
+	}
+	static function sessionStart() {
+		if (!self::isCli()) {
+			$started = false;
+			if (version_compare(phpversion(), '5.4.0', '>=')) {
+				$started = session_status() === PHP_SESSION_ACTIVE ? TRUE : FALSE;
+			} else {
+				$started = session_id() === '' ? FALSE : TRUE;
+			}
+			if (!$started && !headers_sent()) {
+				@session_start();
+			}
+		}
+	}
+	/**
+	 * 分页方法
+	 * @param type $total 一共多少记录
+	 * @param type $page  当前是第几页
+	 * @param type $pagesize 每页多少
+	 * @param type $url    url是什么，url里面的{page}会被替换成页码
+	 * @param array $order 分页条的组成，是一个数组，可以按着1-6的序号，选择分页条组成部分和每个部分的顺序
+	 * @param int $a_count   分页条中a页码链接的总数量,不包含当前页的a标签，默认10个。
+	 * @return type  String
+	 * echo Sr::page(100,3,10,'?article/list/{page}',array(3,4,5,1,2,6));
+	 */
+	static function page($total, $page, $pagesize, $url, $order = array(1, 2, 3, 4, 5, 6), $a_count = 10) {
+		$a_num = $a_count;
+		$first = '首页';
+		$last = '尾页';
+		$pre = '上页';
+		$next = '下页';
+		$a_num = $a_num % 2 == 0 ? $a_num + 1 : $a_num;
+		$pages = ceil($total / $pagesize);
+		$curpage = intval($page) ? intval($page) : 1;
+		$curpage = $curpage > $pages || $curpage <= 0 ? 1 : $curpage; #当前页超范围置为1
+		$body = '<span class="page_body">';
+		$prefix = '';
+		$subfix = '';
+		$start = $curpage - ($a_num - 1) / 2; #开始页
+		$end = $curpage + ($a_num - 1) / 2;  #结束页
+		$start = $start <= 0 ? 1 : $start;   #开始页超范围修正
+		$end = $end > $pages ? $pages : $end; #结束页超范围修正
+		if ($pages >= $a_num) {#总页数大于显示页数
+			if ($curpage <= ($a_num - 1) / 2) {
+				$end = $a_num;
+			}//当前页在左半边补右边
+			if ($end - $curpage <= ($a_num - 1) / 2) {
+				$start -= floor($a_num / 2) - ($end - $curpage);
+			}//当前页在右半边补左边
+		}
+		for ($i = $start; $i <= $end; $i++) {
+			if ($i == $curpage) {
+				$body .= '<a class="page_cur_page" href="javascript:void(0);"><b>' . $i . '</b></a>';
+			} else {
+				$body .= '<a href="' . str_replace('{page}', $i, $url) . '">' . $i . '</a>';
+			}
+		}
+		$body .= '</span>';
+		$prefix = ($curpage == 1 ? '' : '<span class="page_bar_prefix"><a href="' . str_replace('{page}', 1, $url) . '">' . $first . '</a><a href="' . str_replace('{page}', $curpage - 1, $url) . '">' . $pre . '</a></span>');
+		$subfix = ($curpage == $pages ? '' : '<span class="page_bar_subfix"><a href="' . str_replace('{page}', $curpage + 1, $url) . '">' . $next . '</a><a href="' . str_replace('{page}', $pages, $url) . '">' . $last . '</a></span>');
+		$info = "<span class=\"page_cur\">第{$curpage}/{$pages}页</span>";
+		$id = "gsd09fhas9d" . rand(100000, 1000000);
+		$go = '<script>function ekup(){if(event.keyCode==13){clkyup();}}function clkyup(){var num=document.getElementById(\'' . $id . '\').value;if(!/^\d+$/.test(num)||num<=0||num>' . $pages . '){alert(\'请输入正确页码!\');return;};location=\'' . addslashes($url) . '\'.replace(/\\{page\\}/,document.getElementById(\'' . $id . '\').value);}</script><span class="page_input_num"><input onkeyup="ekup()" type="text" id="' . $id . '" style="width:40px;vertical-align:text-baseline;padding:0 2px;font-size:10px;border:1px solid gray;"/></span><span class="page_btn_go" onclick="clkyup();" style="cursor:pointer;">转到</span>';
+		$total = "<span class=\"page_total\">共{$total}条</span>";
+		$pagination = array(
+		    $total,
+		    $info,
+		    $prefix,
+		    $body,
+		    $subfix,
+		    $go
+		);
+		$output = array();
+		if (is_null($order)) {
+			$order = array(1, 2, 3, 4, 5, 6);
+		}
+		foreach ($order as $key) {
+			if (Sr::arrayKeyExists($key - 1, $pagination)) {
+				$output[] = $pagination[$key - 1];
+			}
+		}
+		return $pages > 1 ? implode("", $output) : '';
+	}
+	static function json() {
+		$args = func_get_args();
+		$handle = Sr::config()->getOutputJsonRender();
+		if (is_callable($handle)) {
+			return call_user_func_array($handle, $args);
+		} else {
+			return '';
+		}
+	}
+	static function redirect($url, $msg = null, $time = 3, $view = null) {
+		if (empty($msg) && empty($view)) {
+			header('Location: ' . $url);
+		} else {
+			$time = intval($time) ? intval($time) : 3;
+			header("refresh:{$time};url={$url}"); //单位秒
+			header("Content-type: text/html; charset=utf-8");
+			if (empty($view)) {
+				echo $msg;
+			} else {
+				self::view()->set(array('msg' => $msg, 'url' => $url, 'time' => $time))->load($view);
+			}
+		}
+		exit();
+	}
+	static function message($msg, $url = null, $time = 3, $view = null) {
+		$time = intval($time) ? intval($time) : 3;
+		if (!empty($url)) {
+			header("refresh:{$time};url={$url}"); //单位秒
+		}
+		header("Content-type: text/html; charset=utf-8");
+		if (!empty($view)) {
+			self::view()->set(array('msg' => $msg, 'url' => $url, 'time' => $time))->load($view);
+		} else {
+			echo $msg;
+		}
+		exit();
+	}
+	public static function __callStatic($name, $arguments) {
+		$methods = self::config()->getSrMethods();
+		if (empty($methods[$name])) {
+			throw new soter_exception_500($name . ' not found in ->setSrMethods() or it is empty');
+		}
+		if (is_string($methods[$name])) {
+			$className = $methods[$name] . '_' . self::arrayGet($arguments, 0);
+			if ($className) {
+				return Sr::factory($className);
+			} else {
+				throw new soter_exception_500($methods[$name] . '() need argument of class name ');
+			}
+		} elseif (is_callable($methods[$name])) {
+			return call_user_func_array($methods[$name], $arguments);
+		} else {
+			throw new soter_exception_500($name . ' unknown type of method [ ' . $name . ' ]');
+		}
+	}
+	static function arrayKeyExists($key, $array) {
+		if (empty($array) || !is_array($array)) {
+			return false;
+		}
+		$keys = explode('.', $key);
+		while (count($keys) != 0) {
+			if (empty($array) || !is_array($array)) {
+				return false;
+			}
+			$key = array_shift($keys);
+			if (!array_key_exists($key, $array)) {
+				return false;
+			}
+			$array = $array[$key];
+		}
+		return true;
+	}
+	private static function getEncryptKey($key, $attachKey) {
+		$_key = $key ? $key : self::config()->getEncryptKey();
+		if (!$key && !$_key) {
+			throw new Soter_Exception_500('encrypt key can not empty or you can set it in index.php : ->setEncryptKey()');
+		}
+		return substr(md5($_key . $attachKey), 0, 8);
+	}
+	static function encrypt($str, $key = '', $attachKey = '') {
+		if (!$str) {
+			return '';
+		}
+		$str = $str . '';
+		$key = self::getEncryptKey($key, $attachKey);
+		$block = mcrypt_get_block_size('des', 'ecb');
+		$pad = $block - (strlen($str) % $block);
+		$str .= str_repeat(chr($pad), $pad);
+		return bin2hex(mcrypt_encrypt(MCRYPT_DES, $key, $str, MCRYPT_MODE_ECB));
+	}
+	static function decrypt($str, $key = '', $attachKey = '') {
+		if (!$str) {
+			return '';
+		}
+		$str = $str . '';
+		$key = self::getEncryptKey($key, $attachKey);
+		$str = @pack("H*", $str);
+		if (!$str) {
+			return '';
+		}
+		$str = @mcrypt_decrypt(MCRYPT_DES, $key, $str, MCRYPT_MODE_ECB);
+		$pad = ord($str[($len = strlen($str)) - 1]);
+		return substr($str, 0, strlen($str) - $pad);
+	}
+	static function classIsExists($class) {
+		if (class_exists($class, false)) {
+			return true;
+		}
+		$classNamePath = str_replace('_', '/', $class);
+		foreach (self::config()->getPackages() as $path) {
+			if (file_exists($filePath = $path . self::config()->getClassesDirName() . '/' . $classNamePath . '.php')) {
+				return true;
+			}
+		}
+		return false;
+	}
+	/**
+	 * 判断是否是ajax请求，只对jquery的ajax请求有效
+	 * @return boolean
+	 */
+	static function isAjax() {
+		return isset($_SERVER['HTTP_X_REQUESTED_WITH']) && (strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest');
+	}
+	/**
+	 * 获取系统临时目录路径
+	 * @return type
+	 */
+	public function getTempPath() {
+		$path = '';
+		if (!function_exists('sys_get_temp_dir')) {
+			if (!empty($_ENV['TMP'])) {
+				$path = realpath($_ENV['TMP']);
+			} elseif (!empty($_ENV['TMPDIR'])) {
+				$path = realpath($_ENV['TMPDIR']);
+			} elseif (!empty($_ENV['TEMP'])) {
+				$path = realpath($_ENV['TEMP']);
+			} else {
+				$tempfile = tempnam(uniqid(rand(), TRUE), '');
+				if (file_exists($tempfile)) {
+					unlink($tempfile);
+					$path = realpath(dirname($tempfile));
+				}
+			}
+		} else {
+			$path = sys_get_temp_dir();
+		}
+		return $path ? $path . '/' : '';
+	}
+}
 
 /**
  * SoterPDO is simple and smart wrapper for PDO
@@ -4343,8 +4358,11 @@ class Soter_Config {
 		}
 		return $name;
 	}
-	public function getEnvironment() {
-		return $this->environment;
+	public function getEnvironment($retrunString = false) {
+		$info = array(Sr::ENV_DEVELOPMENT => $this->getServerEnvironmentDevelopmentValue(),
+		    Sr::ENV_PRODUCTION => $this->getServerEnvironmentProductionValue(),
+		    Sr::ENV_TESTING => $this->getServerEnvironmentTestingValue());
+		return $retrunString ? $info[$this->environment] : $this->environment;
 	}
 	public function setEnvironment($environment) {
 		if (!in_array($environment, array(Sr::ENV_DEVELOPMENT, Sr::ENV_PRODUCTION, Sr::ENV_TESTING))) {
@@ -4958,7 +4976,7 @@ class Soter_Cache_Redis implements Soter_Cache {
 		}
 		if (!is_null($config['prefix'])) {
 			if ($config['prefix']{strlen($config['prefix']) - 1} != ':') {
-				$config['prefix'].=':';
+				$config['prefix'] .= ':';
 			}
 			$redis->setOption(Redis::OPT_PREFIX, $config['prefix']);
 		}
@@ -5006,7 +5024,7 @@ class Soter_Cache_Redis_Cluster implements Soter_Cache {
 	private $config, $handle;
 	public function __construct($config) {
 		if (!is_null($config['prefix']) && ($config['prefix']{strlen($config['prefix']) - 1} != ':')) {
-			$config['prefix'].=':';
+			$config['prefix'] .= ':';
 		}
 		$this->config = $config;
 	}

@@ -908,8 +908,11 @@ class Soter_Config {
 		return $name;
 	}
 
-	public function getEnvironment() {
-		return $this->environment;
+	public function getEnvironment($retrunString = false) {
+		$info = array(Sr::ENV_DEVELOPMENT => $this->getServerEnvironmentDevelopmentValue(),
+		    Sr::ENV_PRODUCTION => $this->getServerEnvironmentProductionValue(),
+		    Sr::ENV_TESTING => $this->getServerEnvironmentTestingValue());
+		return $retrunString ? $info[$this->environment] : $this->environment;
 	}
 
 	public function setEnvironment($environment) {
@@ -1658,7 +1661,7 @@ class Soter_Cache_Redis implements Soter_Cache {
 		}
 		if (!is_null($config['prefix'])) {
 			if ($config['prefix']{strlen($config['prefix']) - 1} != ':') {
-				$config['prefix'].=':';
+				$config['prefix'] .= ':';
 			}
 			$redis->setOption(Redis::OPT_PREFIX, $config['prefix']);
 		}
@@ -1716,7 +1719,7 @@ class Soter_Cache_Redis_Cluster implements Soter_Cache {
 
 	public function __construct($config) {
 		if (!is_null($config['prefix']) && ($config['prefix']{strlen($config['prefix']) - 1} != ':')) {
-			$config['prefix'].=':';
+			$config['prefix'] .= ':';
 		}
 		$this->config = $config;
 	}
