@@ -1528,6 +1528,7 @@ class Soter_Cache_Memcached implements Soter_Cache {
 	}
 
 	public function &instance($key = null, $isRead = true) {
+		$this->_init();
 		return $this->handle;
 	}
 
@@ -1576,6 +1577,7 @@ class Soter_Cache_Memcache implements Soter_Cache {
 	}
 
 	public function &instance($key = null, $isRead = true) {
+		$this->_init();
 		return $this->handle;
 	}
 
@@ -1767,6 +1769,7 @@ class Soter_Cache_Redis_Cluster implements Soter_Cache {
 	}
 
 	public function &instance($key = null, $isRead = true) {
+		$this->_init();
 		return $this->handle;
 	}
 

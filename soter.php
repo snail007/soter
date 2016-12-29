@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2016, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.1.25
- * @createdtime   2016-12-26 10:41:19
+ * @since         v1.1.26
+ * @createdtime   2016-12-29 11:29:03
  */
  
 
@@ -4869,6 +4869,7 @@ class Soter_Cache_Memcached implements Soter_Cache {
 		return $this->handle->set($key, $value, $cacheTime > 0 ? (time() + $cacheTime) : 0);
 	}
 	public function &instance($key = null, $isRead = true) {
+		$this->_init();
 		return $this->handle;
 	}
 	public function reset() {
@@ -4906,6 +4907,7 @@ class Soter_Cache_Memcache implements Soter_Cache {
 		return $this->handle->set($key, $value, false, $cacheTime);
 	}
 	public function &instance($key = null, $isRead = true) {
+		$this->_init();
 		return $this->handle;
 	}
 	public function reset() {
@@ -5065,6 +5067,7 @@ class Soter_Cache_Redis_Cluster implements Soter_Cache {
 		}
 	}
 	public function &instance($key = null, $isRead = true) {
+		$this->_init();
 		return $this->handle;
 	}
 }
