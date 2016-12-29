@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2016, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.1.26
- * @createdtime   2016-12-29 11:29:03
+ * @since         v1.1.27
+ * @createdtime   2016-12-29 15:52:48
  */
  
 
@@ -5003,8 +5003,9 @@ class Soter_Cache_Redis implements Soter_Cache {
 	}
 	public function get($key) {
 		$redis = $this->selectNode($key, true);
-		if ($data = $redis->get($key)) {
-			return @unserialize($data);
+		if ($rawData = $redis->get($key)) {
+			$data = @unserialize($rawData);
+			return $data ? $data : $rawData;
 		} else {
 			return null;
 		}
@@ -5051,8 +5052,9 @@ class Soter_Cache_Redis_Cluster implements Soter_Cache {
 	}
 	public function get($key) {
 		$this->_init();
-		if ($data = $this->handle->get($key)) {
-			return @unserialize($data);
+		if ($rawData = $this->handle->get($key)) {
+			$data = @unserialize($rawData);
+			return $data ? $data : $rawData;
 		} else {
 			return null;
 		}

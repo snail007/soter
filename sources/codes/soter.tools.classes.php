@@ -1692,8 +1692,9 @@ class Soter_Cache_Redis implements Soter_Cache {
 
 	public function get($key) {
 		$redis = $this->selectNode($key, true);
-		if ($data = $redis->get($key)) {
-			return @unserialize($data);
+		if ($rawData = $redis->get($key)) {
+			$data = @unserialize($rawData);
+			return $data ? $data : $rawData;
 		} else {
 			return null;
 		}
@@ -1751,8 +1752,9 @@ class Soter_Cache_Redis_Cluster implements Soter_Cache {
 
 	public function get($key) {
 		$this->_init();
-		if ($data = $this->handle->get($key)) {
-			return @unserialize($data);
+		if ($rawData = $this->handle->get($key)) {
+			$data = @unserialize($rawData);
+			return $data ? $data : $rawData;
 		} else {
 			return null;
 		}
