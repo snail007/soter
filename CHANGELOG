@@ -1,4 +1,4 @@
-============v1.1.27[2017-01-03]===========
+============v1.1.28[2017-01-03]===========
 修复了：
 1、修复了手册在某些最新浏览器里面右侧主体部分的导航位置不正确的bug.
 
@@ -10,14 +10,7 @@
       而不是局限于dvelopment,testing,production.
 
 升级提示：
-无
 
-============v1.1.27[2016-12-29]===========
-修复了：
-1、修复了缓存驱动Sr::cache()->get()方法在驱动redis,redis_cluster时,
-      对获取到的数据是非序列化的数据被设置为null的bug。
-
-升级提示：
 移除了方法:
 Soter_Config::getServerEnvironment(),使用Sr::getEnvironment()取代
 Soter_Config::getConfigCurrentDirName,使用Sr::getEnvironment()取代
@@ -35,6 +28,14 @@ Soter_Config::getConfigProductionDirName
 Soter_Config::getConfigDevelopmentDirName
 Soter_Config::setConfigProductionDirName
 Soter_Config::setConfigDevelopmentDirName
+
+============v1.1.27[2016-12-29]===========
+修复了：
+1、修复了缓存驱动Sr::cache()->get()方法在驱动redis,redis_cluster时,
+      对获取到的数据是非序列化的数据被设置为null的bug。
+
+升级提示：
+无
 
 ============v1.1.26[2016-12-29]===========
 修复了：
