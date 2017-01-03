@@ -12,9 +12,9 @@ Soter::getConfig()
 	    'functions'
 	))
 	//设置运行环境
-	//->setEnvironment(($env = (($cliEnv = getopt('', array('env:'))) ? $cliEnv['env'] : Sr::arrayGet($_SERVER, 'ENVIRONMENT'))) ? Sr::config()->getServerEnvironment($env) : Sr::ENV_DEVELOPMENT)
+	//->setEnvironment(($env = (($cliEnv = Sr::getOpt('env')) ? $cliEnv : Sr::arrayGet($_SERVER, 'ENVIRONMENT'))) ? $env : 'development')
 	//系统错误显示设置，非产品环境才显示
-	//->setShowError(Sr::config()->getEnvironment() != Sr::ENV_PRODUCTION)
+	//->setShowError(Sr::config()->getEnvironment() != 'production')
 	/**
 	 * 下面配置中可以使用：
 	 * 1.主项目的claseses目录，类库目录，拓展包里面的类

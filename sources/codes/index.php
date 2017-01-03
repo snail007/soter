@@ -30,10 +30,10 @@ Soter::initialize()
 	->addAutoloadFunctions(array(
 		// 'functions'
 	))
-	/* 设置运行环境 */
-	->setEnvironment(($env = (($cliEnv = Sr::getOpt('env')) ? $cliEnv : Sr::arrayGet($_SERVER, 'ENVIRONMENT'))) ? Sr::config()->getServerEnvironment($env) : Sr::ENV_DEVELOPMENT)
+	/* 设置运行环境 ,值就是config配置目录下面的子文件夹名称,区分大小写*/
+	->setEnvironment(($env = (($cliEnv = Sr::getOpt('env')) ? $cliEnv : Sr::arrayGet($_SERVER, 'ENVIRONMENT'))) ? $env : 'development')
 	/* 系统错误显示设置，非产品环境才显示 */
-	->setShowError(Sr::config()->getEnvironment() != Sr::ENV_PRODUCTION)
+	->setShowError(Sr::config()->getEnvironment() != 'production')
 	/**
 	 * 下面配置中可以使用：
 	 * 1.主项目的claseses目录，主项目类库目录，主项目拓展包里面的类
@@ -120,9 +120,9 @@ Soter::initialize()
 	 * 提示：这里可以使用数组指定三个环境下的密钥，还可以传递一个字符串
 	 * 这个字符串就是所有环境使用的密钥。 */
 	->setEncryptKey(array(
-	    Sr::ENV_DEVELOPMENT => '', //开发环境密钥
-	    Sr::ENV_TESTING => '', //测试环境密钥
-	    Sr::ENV_PRODUCTION => ''//产品环境密钥
+	    'development' => '', //开发环境密钥
+	    'testing'=> '', //测试环境密钥
+	    'production' => ''//产品环境密钥
 	))
 	/**
 	 * 配置缓存

@@ -351,9 +351,6 @@ class Soter_Config {
 		$storageDirPath = '',
 		$viewsDirName = 'views',
 		$configDirName = 'config',
-		$configTestingDirName = 'testing',
-		$configProductionDirName = 'production',
-		$configDevelopmentDirName = 'development',
 		$controllerDirName = 'Controller',
 		$businessDirName = 'Business',
 		$daoDirName = 'Dao',
@@ -378,10 +375,7 @@ class Soter_Config {
 		$packageContainer = array(),
 		$loggerWriterContainer = array(),
 		$uriRewriter,
-		$exceptionHandle, $route, $environment = Sr::ENV_DEVELOPMENT,
-		$serverEnvironmentTestingValue = 'testing',
-		$serverEnvironmentDevelopmentValue = 'development',
-		$serverEnvironmentProductionValue = 'production',
+		$exceptionHandle, $route, $environment = 'development',
 		$hmvcModules = array(),
 		$isMaintainMode = false,
 		$maintainIpWhitelist = array(),
@@ -410,7 +404,7 @@ class Soter_Config {
 	public function find($filename) {
 		foreach ($this->getPackages() as $packagePath) {
 			$path = $packagePath . $this->getConfigDirName() . '/';
-			$filePath = $path . $this->getConfigCurrentDirName() . '/' . $filename . '.php';
+			$filePath = $path . $this->getEnvironment() . '/' . $filename . '.php';
 			$fileDefaultPath = $path . 'default/' . $filename . '.php';
 			if (file_exists($filePath)) {
 				return $filePath;
@@ -485,7 +479,12 @@ class Soter_Config {
 
 	public function getEncryptKey() {
 		$key = $this->getEnvironment();
-		return isset($this->encryptKey[$key]) ? $this->encryptKey[$key] : '';
+		if (isset($this->encryptKey[$key])) {
+			return $this->encryptKey[$key];
+		} elseif (isset($this->encryptKey['default'])) {
+			return $this->encryptKey['default'];
+		}
+		return '';
 	}
 
 	public function setEncryptKey($encryptKey) {
@@ -493,9 +492,7 @@ class Soter_Config {
 			$this->encryptKey = $encryptKey;
 		} else {
 			$this->encryptKey = array(
-			    Sr::ENV_DEVELOPMENT => $encryptKey,
-			    Sr::ENV_TESTING => $encryptKey,
-			    Sr::ENV_PRODUCTION => $encryptKey
+			    'default' => $encryptKey,
 			);
 		}
 		return $this;
@@ -845,80 +842,11 @@ class Soter_Config {
 		return $this;
 	}
 
-	public function getServerEnvironment($environment) {
-		switch (strtoupper($environment)) {
-			case strtoupper($this->getServerEnvironmentDevelopmentValue()):
-				return Sr::ENV_DEVELOPMENT;
-			case strtoupper($this->getServerEnvironmentProductionValue()):
-				return Sr::ENV_PRODUCTION;
-			case strtoupper($this->getServerEnvironmentTestingValue()):
-				return Sr::ENV_TESTING;
-			default:
-				throw new Soter_Exception_500('wrong parameter value[' . $environment . '] of getServerEnvironment(), '
-				. 'should be one of [' . $this->getServerEnvironmentDevelopmentValue() . ',' .
-				$this->getServerEnvironmentTestingValue() . ',' .
-				$this->getServerEnvironmentProductionValue() . ']');
-		}
-	}
-
-	public function getServerEnvironmentTestingValue() {
-		return $this->serverEnvironmentTestingValue;
-	}
-
-	public function getServerEnvironmentProductionValue() {
-		return $this->serverEnvironmentProductionValue;
-	}
-
-	public function getServerEnvironmentDevelopmentValue() {
-		return $this->serverEnvironmentDevelopmentValue;
-	}
-
-	public function setServerEnvironmentDevelopmentValue($serverEnvironmentDevelopmentValue) {
-		$this->serverEnvironmentDevelopmentValue = $serverEnvironmentDevelopmentValue;
-		return $this;
-	}
-
-	public function setServerEnvironmentTestingValue($serverEnvironmentTestingValue) {
-		$this->serverEnvironmentTestingValue = $serverEnvironmentTestingValue;
-		return $this;
-	}
-
-	public function setServerEnvironmentProductionValue($serverEnvironmentProductionValue) {
-		$this->serverEnvironmentProductionValue = $serverEnvironmentProductionValue;
-		return $this;
-	}
-
-	/**
-	 * 获取当前运行环境下，配置文件目录路径
-	 * @return type
-	 */
-	public function getConfigCurrentDirName() {
-		$name = $this->getConfigDevelopmentDirName();
-		switch ($this->environment) {
-			case Sr::ENV_DEVELOPMENT :
-				$name = $this->getConfigDevelopmentDirName();
-				break;
-			case Sr::ENV_TESTING :
-				$name = $this->getConfigTestingDirName();
-				break;
-			case Sr::ENV_PRODUCTION :
-				$name = $this->getConfigProductionDirName();
-				break;
-		}
-		return $name;
-	}
-
-	public function getEnvironment($retrunString = false) {
-		$info = array(Sr::ENV_DEVELOPMENT => $this->getServerEnvironmentDevelopmentValue(),
-		    Sr::ENV_PRODUCTION => $this->getServerEnvironmentProductionValue(),
-		    Sr::ENV_TESTING => $this->getServerEnvironmentTestingValue());
-		return $retrunString ? $info[$this->environment] : $this->environment;
+	public function getEnvironment() {
+		return $this->environment;
 	}
 
 	public function setEnvironment($environment) {
-		if (!in_array($environment, array(Sr::ENV_DEVELOPMENT, Sr::ENV_PRODUCTION, Sr::ENV_TESTING))) {
-			throw new Soter_Exception_500('wrong parameter value[' . $environment . '] of setEnvironment(), should be one of [Sr::ENV_DEVELOPMENT,Sr::ENV_PRODUCTION,Sr::ENV_TESTING]');
-		}
 		$this->environment = $environment;
 		return $this;
 	}
@@ -927,35 +855,8 @@ class Soter_Config {
 		return $this->configDirName;
 	}
 
-	public function getConfigTestingDirName() {
-		return $this->configTestingDirName;
-	}
-
-	public function getConfigProductionDirName() {
-		return $this->configProductionDirName;
-	}
-
-	public function getConfigDevelopmentDirName() {
-		return $this->configDevelopmentDirName;
-	}
-
 	public function setConfigDirName($configDirName) {
 		$this->configDirName = $configDirName;
-		return $this;
-	}
-
-	public function setConfigTestingDirName($configTestingDirName) {
-		$this->configTestingDirName = $configTestingDirName;
-		return $this;
-	}
-
-	public function setConfigProductionDirName($configProductionDirName) {
-		$this->configProductionDirName = $configProductionDirName;
-		return $this;
-	}
-
-	public function setConfigDevelopmentDirName($configDevelopmentDirName) {
-		$this->configDevelopmentDirName = $configDevelopmentDirName;
 		return $this;
 	}
 

@@ -2,6 +2,13 @@
 修复了：
 1、修复了手册在某些最新浏览器里面右侧主体部分的导航位置不正确的bug.
 
+优化了:
+1.优化了运行环境变量的相关功能,剔除了4K代码,提高了性能,而且能够支持更多的环境,
+     1.1 之前的情况是:config配置目录下面默认的是四个子文件夹分别是:
+     default,dvelopment,testing,production,我们在入口文件里面通过setEnvironment()方法告诉soter使用哪个文件夹.
+     1.2 现在我们还可以设置更多的环境,比如setEnvironment('demo'),那么soter使用的就是config/demo作为配置文件夹.
+      而不是局限于dvelopment,testing,production.
+
 升级提示：
 无
 
@@ -11,7 +18,23 @@
       对获取到的数据是非序列化的数据被设置为null的bug。
 
 升级提示：
-无
+移除了方法:
+Soter_Config::getServerEnvironment(),使用Sr::getEnvironment()取代
+Soter_Config::getConfigCurrentDirName,使用Sr::getEnvironment()取代
+
+移除了下面方法,不再需要
+Soter_Config::getServerEnvironmentTestingValue
+Soter_Config::getServerEnvironmentProductionValue
+Soter_Config::getServerEnvironmentDevelopmentValue
+Soter_Config::setServerEnvironmentDevelopmentValue
+Soter_Config::setServerEnvironmentTestingValue
+Soter_Config::setServerEnvironmentProductionValue
+Soter_Config::setConfigTestingDirName
+Soter_Config::getConfigTestingDirName
+Soter_Config::getConfigProductionDirName
+Soter_Config::getConfigDevelopmentDirName
+Soter_Config::setConfigProductionDirName
+Soter_Config::setConfigDevelopmentDirName
 
 ============v1.1.26[2016-12-29]===========
 修复了：

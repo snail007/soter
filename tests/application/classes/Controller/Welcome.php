@@ -174,24 +174,24 @@ html;
 	 * 测试异常动态改变env ENV_DEVELOPMENT
 	 */
 	public function do_envTestDevelopment() {
-		Sr::config()->setEnvironment(Sr::ENV_DEVELOPMENT);
-		echo Sr::config()->getConfigCurrentDirName();
+		Sr::config()->setEnvironment('development');
+		echo Sr::config()->getEnvironment();
 	}
 
 	/**
 	 * 测试异常动态改变env ENV_TESTING
 	 */
 	public function do_envTestTesting() {
-		Sr::config()->setEnvironment(Sr::ENV_TESTING);
-		echo Sr::config()->getConfigCurrentDirName();
+		Sr::config()->setEnvironment('testing');
+		echo Sr::config()->getEnvironment();
 	}
 
 	/**
 	 * 测试异常动态改变env ENV_PRODUCTION
 	 */
 	public function do_envTestProduction() {
-		Sr::config()->setEnvironment(Sr::ENV_PRODUCTION);
-		echo Sr::config()->getConfigCurrentDirName();
+		Sr::config()->setEnvironment('production');
+		echo Sr::config()->getEnvironment();
 	}
 
 	/**

@@ -282,10 +282,6 @@ class Soter {
 
 class Sr {
 
-	const ENV_TESTING = 1; //测试环境
-	const ENV_PRODUCTION = 2; //产品环境
-	const ENV_DEVELOPMENT = 3; //开发环境
-
 	static private function parseKey($key) {
 		$_info = explode('.', $key);
 		$keyStrArray = '';

@@ -17,9 +17,9 @@ Soter::getConfig()
 	//入口文件名称
 	->setIndexName('indexfortest.php')
 	//设置运行环境
-	->setEnvironment(($env = (($cliEnv = Sr::getOpt('env')) ? $cliEnv : Sr::arrayGet($_SERVER, 'ENVIRONMENT'))) ? Sr::config()->getServerEnvironment($env) : Sr::ENV_DEVELOPMENT)
+	->setEnvironment(($env = (($cliEnv = Sr::getOpt('env')) ? $cliEnv : Sr::arrayGet($_SERVER, 'ENVIRONMENT'))) ? $env : 'development')
 	//系统错误显示设置，非产品环境才显示
-	->setShowError(Sr::config()->getEnvironment() != Sr::ENV_PRODUCTION)
+	->setShowError(Sr::config()->getEnvironment() != 'production')
 	->setDatabseConfig('database')
 	/**
 	 * 下面配置中可以使用：

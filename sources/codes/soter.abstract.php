@@ -481,8 +481,7 @@ abstract class Soter_Exception extends Exception {
 	}
 
 	public function getEnvironment() {
-		$array = array(Sr::ENV_PRODUCTION => 'PRODUCTION', Sr::ENV_TESTING => 'TESTING', Sr::ENV_DEVELOPMENT => 'DEVELOPMENT');
-		return $array[Sr::config()->getEnvironment()];
+		return Sr::config()->getEnvironment();
 	}
 
 	public function getErrorFile($safePath = FALSE) {
