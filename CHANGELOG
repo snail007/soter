@@ -9,11 +9,16 @@
      1.2 现在我们还可以设置更多的环境,比如setEnvironment('demo'),那么soter使用的就是config/demo作为配置文件夹.
       而不是局限于dvelopment,testing,production.
 
+2.手册命令行任务部分,增加了_log方法的使用实例.
+
 升级提示：
 
-移除了方法:
+移除了方法和变量:
 Soter_Config::getServerEnvironment(),使用Sr::getEnvironment()取代
 Soter_Config::getConfigCurrentDirName,使用Sr::getEnvironment()取代
+Sr::ENV_DEVELOPMENT,使用development替代
+Sr::ENV_PRODUCTION,使用production替代
+Sr::ENV_TESTING ,使用testing替代
 
 移除了下面方法,不再需要
 Soter_Config::getServerEnvironmentTestingValue
