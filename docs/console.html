@@ -36,6 +36,8 @@
 						class  Task_My_FirstTask extends Soter_Task {
 							public function execute(Soter_CliArgs $args) {
 								echo $args->get('test');
+								$this->_log('line start  with time');
+								$this->_log('line with no time',false);
 							}
 						}	
 					</pre>
@@ -43,7 +45,9 @@
 					<br>通过这个对象我们可以获取命令行传递过来的参数，比如上面传递的--test=hello，
 					<br>我们就可以通过$args->get('test')获取hello。
 					<b class="text_strong"><br>提示：
-						<br>因为Soter在执行完execute方法之后还有一些工作要做，所以不要在execute方法里面执行退出脚本的操作比如exit、die，可以使用return替代。</b>
+						<br>1.因为Soter在执行完execute方法之后还有一些工作要做，所以不要在execute方法里面执行退出脚本的操作比如exit、die，可以使用return替代。
+						<br>2.我们可以在任务里面通过$this->_log($msg, $time)在控制台显示一行日志信息,日志信息前面会有时间,会自动换行,
+						<br>我们在task里面利用$this->_log($msg, $time)可以方便的在控制台输出日志信息。</b>
 					<br><b>2.命令行执行这个Task任务</b>
 					<br>比如执行下面的命令：
 					<pre class="brush:php">
