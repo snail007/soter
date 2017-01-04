@@ -16,7 +16,7 @@
     1.1把
           ->setEnvironment(($env = (($cliEnv = Sr::getOpt('env')) ? $cliEnv : Sr::arrayGet($_SERVER, 'ENVIRONMENT'))) ? Sr::config()->getServerEnvironment($env) : Sr::ENV_DEVELOPMENT)
          修改为
-         ->setEnvironment(($env = (($cliEnv = Sr::getOpt('env')) ? $cliEnv : Sr::arrayGet($_SERVER, 'ENVIRONMENT'))) ? Sr::config()->getServerEnvironment($env) : Sr::ENV_DEVELOPMENT)
+         ->setEnvironment(($env = (($cliEnv = Sr::getOpt('env')) ? $cliEnv : Sr::arrayGet($_SERVER, 'ENVIRONMENT'))) ? $env : 'development')
     1.2把
           ->setShowError(Sr::config()->getEnvironment() != Sr::ENV_PRODUCTION)
          修改为
@@ -36,8 +36,8 @@
 
 2.移除了方法和变量:
 如果使用了下面的方法和变量,在你的代码里面需要:
-Soter_Config::getServerEnvironment(),使用Sr::getEnvironment()取代
-Soter_Config::getConfigCurrentDirName,使用Sr::getEnvironment()取代
+Soter_Config::getServerEnvironment(),使用Sr::config()->getEnvironment()取代
+Soter_Config::getConfigCurrentDirName,使用Sr::config()->getEnvironment()取代
 Sr::ENV_DEVELOPMENT,使用development替代
 Sr::ENV_PRODUCTION,使用production替代
 Sr::ENV_TESTING ,使用testing替代
