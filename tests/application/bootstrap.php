@@ -6,7 +6,7 @@ Soter::getConfig()
 	//注册拓展包
 	->addMasterPackages(array(
 	    SOTER_PACKAGES_PATH . 'misc',
-	    SOTER_PACKAGES_PATH . 'extensions',
+	    SOTER_PACKAGES_PATH . 'soter-extension-cron',
 	))
 	//注册自动加载的函数文件
 	->addAutoloadFunctions(array(
