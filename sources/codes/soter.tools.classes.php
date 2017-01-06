@@ -1133,7 +1133,6 @@ class Soter_Logger_Writer_Dispatcher {
 	}
 
 	final public function handleException($exception) {
-
 		if (is_subclass_of($exception, 'Soter_Exception')) {
 			$this->dispatch($exception);
 		} else {
