@@ -30,7 +30,7 @@ Soter::initialize()
 	->addAutoloadFunctions(array(
 		// 'functions'
 	))
-	/* 设置运行环境 ,值就是config配置目录下面的子文件夹名称,区分大小写*/
+	/* 设置运行环境 ,值就是config配置目录下面的子文件夹名称,区分大小写 */
 	->setEnvironment(($env = (($cliEnv = Sr::getOpt('env')) ? $cliEnv : Sr::arrayGet($_SERVER, 'ENVIRONMENT'))) ? $env : 'development')
 	/* 系统错误显示设置，非产品环境才显示 */
 	->setShowError(Sr::config()->getEnvironment() != 'production')
@@ -87,11 +87,23 @@ Soter::initialize()
 	->setHmvcModules(array(
 		// 'Demo' => 'demo'
 	))
-	/* hvmc模块子域名绑定，domains的键是二级开始的域，不包含顶级域名.
+	/* hvmc模块域名绑定
+	 * 1.子域名绑定
+	 * domains的键是二级开始的域，不包含顶级域名.
 	 * 比如顶级域名是test.com,这里的domains的键是demo代表demo.test.com
 	 * 再比如domains的键是i.user代表i.user.test.com
-	 * domains的键的值hmvcModuleName是要绑定的hmvc的URL模块名称，也就是对应着上面的setHmvcModules()
-	 * 注册的关联数组中的键名称，比如这里键demo的值hmvcModuleName是Demo，对应的hvmc模块就是上面注册的Demo模块。
+	 * isFullDomain这里设置为false.
+	 * 2.完整域名绑定
+	 * domains的键是完整的域名,比如demo.com,
+	 * isFullDomain这里设置为true.
+	 * 配置项介绍:
+	 * 	0.最外层的enable是总开关.
+	 * 	1.hmvcModuleName是域名要绑定的hmvc模块名称，
+	 * 	   也就是对应着上面的setHmvcModules()注册的关联数组中的"键"名称.
+	 * 	2.demo下面的enable是单个域名绑定是否启用.
+	 * 	3.domainOnly是否只能通过绑定的域名访问hvmc模块.
+	 * 	4.绑定完整的域名isFullDomain这里设置为true.
+	 * 	   绑定子域名isFullDomain这里设置为false.
 	 */
 	->setHmvcDomains(array(
 	    'enable' => false, //总开关，是否启用
@@ -99,7 +111,8 @@ Soter::initialize()
 		'demo' => array(
 		    'hmvcModuleName' => 'Demo', //hvmc模块名称
 		    'enable' => false, //单个开关，是否启用
-		    'domainOnly' => true//是否只能通过绑定的域名访问
+		    'domainOnly' => true, //是否只能通过绑定的域名访问
+		    'isFullDomain' => false//绑定完整的域名设置为true；子域名设置为false
 		)
 	    )
 	))
@@ -121,7 +134,7 @@ Soter::initialize()
 	 * 这个字符串就是所有环境使用的密钥。 */
 	->setEncryptKey(array(
 	    'development' => '', //开发环境密钥
-	    'testing'=> '', //测试环境密钥
+	    'testing' => '', //测试环境密钥
 	    'production' => ''//产品环境密钥
 	))
 	/**
