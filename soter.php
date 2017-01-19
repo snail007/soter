@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2017, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.1.28
- * @createdtime   2017-01-03 18:30:26
+ * @since         v1.1.29
+ * @createdtime   2017-01-19 12:23:35
  */
  
 
@@ -3970,7 +3970,7 @@ class Soter_Config {
 		}
 		$topDomain = $domain[$length - 2] . '.' . $domain[$length - 1];
 		foreach ($this->hmvcDomains['domains'] as $prefix => $hvmc) {
-			if ($prefix . '.' . $topDomain == $_domain) {
+			if (($hvmc['isFullDomain'] ? $prefix : ($prefix . '.' . $topDomain)) == $_domain) {
 				return $hvmc['enable'] ? $hvmc['hmvcModuleName'] : false;
 			}
 		}

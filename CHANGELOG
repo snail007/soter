@@ -1,3 +1,35 @@
+============v1.1.29[2017-01-19]===========
+增加了:
+1.入口文件setHmvcDomains配置项目里面增加了isFullDomain配置.
+   这样hvmc模块域名绑定支持子域名和完整域名绑定两种模式.
+
+升级提示:
+在入口文件setHmvcDomains配置项目里面增加isFullDomain配置.
+比如
+修改之前:
+	->setHmvcDomains(array(
+	    'enable' => false, //总开关，是否启用
+	    'domains' => array(
+		'demo' => array(
+		    'hmvcModuleName' => 'Demo', //hvmc模块名称
+		    'enable' => false, //单个开关，是否启用
+		    'domainOnly' => true, //是否只能通过绑定的域名访问
+		)
+	    )
+	))
+修改之后:
+	->setHmvcDomains(array(
+	    'enable' => false, //总开关，是否启用
+	    'domains' => array(
+		'demo' => array(
+		    'hmvcModuleName' => 'Demo', //hvmc模块名称
+		    'enable' => false, //单个开关，是否启用
+		    'domainOnly' => true, //是否只能通过绑定的域名访问
+		    'isFullDomain' => false//绑定完整的域名设置为true；绑定子域名设置为false
+		)
+	    )
+	))
+
 ============v1.1.28[2017-01-03]===========
 修复了：
 1、修复了手册在某些最新浏览器里面右侧主体部分的导航位置不正确的bug.
