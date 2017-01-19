@@ -26,7 +26,7 @@
  * @copyright     Copyright (c) 2015 - 2017, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         v1.1.29
- * @createdtime   2017-01-19 14:56:22
+ * @createdtime   2017-01-19 15:07:14
  */
  
 
@@ -3965,10 +3965,10 @@ class Soter_Config {
 		$_domain = Sr::server('http_host');
 		$domain = explode('.', $_domain);
 		$length = count($domain);
-		if ($length <= 2) {
-			return false;
+		$topDomain='';
+		if ($length >= 2) {
+			$topDomain = $domain[$length - 2] . '.' . $domain[$length - 1];
 		}
-		$topDomain = $domain[$length - 2] . '.' . $domain[$length - 1];
 		foreach ($this->hmvcDomains['domains'] as $prefix => $hvmc) {
 			if (($hvmc['isFullDomain'] ? $prefix : ($prefix . '.' . $topDomain)) == $_domain) {
 				return $hvmc['enable'] ? $hvmc['hmvcModuleName'] : false;

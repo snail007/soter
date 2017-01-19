@@ -448,10 +448,10 @@ class Soter_Config {
 		$_domain = Sr::server('http_host');
 		$domain = explode('.', $_domain);
 		$length = count($domain);
-		if ($length <= 2) {
-			return false;
+		$topDomain='';
+		if ($length >= 2) {
+			$topDomain = $domain[$length - 2] . '.' . $domain[$length - 1];
 		}
-		$topDomain = $domain[$length - 2] . '.' . $domain[$length - 1];
 		foreach ($this->hmvcDomains['domains'] as $prefix => $hvmc) {
 			if (($hvmc['isFullDomain'] ? $prefix : ($prefix . '.' . $topDomain)) == $_domain) {
 				return $hvmc['enable'] ? $hvmc['hmvcModuleName'] : false;
