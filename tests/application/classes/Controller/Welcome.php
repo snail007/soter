@@ -106,6 +106,7 @@ html;
 
 	public function do_index() {
 		//Sr::business('TestBusiness')->dbError();
+		//var_dump(Sr::db()->insertBatch('ac_log',array(array('message'=>111),array('message'=>222)))->execute(),Sr::db()->lastId());
 		echo 'xxx';
 	}
 
