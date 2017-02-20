@@ -32,7 +32,7 @@
 
                                 </li>
 				<li>
-                                        <h2 class="title_h2">分页条</h2>
+					<h2 class="title_h2">分页条</h2>
 					通过Sr::page($total, $page, $pagesize, $url,$order=array(1,2,3,4,5,6),$a_count=10)方法，可以方便的产生一个分页条。
 					<br>一个标准的分页条由下面6部分组成，如下：
 					<br><img src="images/page.jpg"/>
@@ -45,7 +45,7 @@
 					<br><b>$a_count</b>  分页条中a页码链接的总数量(也就是上面第4部分),不包含当前页的a标签，默认10个。
 					<br><b class="text_strong">示例：</b>
 					<pre class="brush:php">
-						echo Sr::page(100,3,10,'?article/list/{page}',array(3,4,5,1,2,6),10);
+		echo Sr::page(100,3,10,'?article/list/{page}',array(3,4,5,1,2,6),10);
 					</pre>
 					示例将输出:
 					<br><img src="images/page_demo.jpg"/>
@@ -140,10 +140,23 @@
                                                 ->setBackendServerIpWhitelist(array('192.168.2.2'))
                                         </pre>
 					如果服务器是ngix之类代理转发请求到后端apache运行的PHP。
-					<br>那么这里应该设置信任的nginx所在服务器的ip。
+					<br>那么这里应该设置信任的"<b>nginx所在服务器的ip</b>"。
 					<br>nginx里面应该设置 X_FORWARDED_FOR server变量来表示真实的客户端IP。
 					<br>不然通过Sr::clientIp()是获取不到真实的客户端IP的。
 					<br>参数是数组，有多个ip放入数组即可。
+					<br><b class="text_strong">提示:</b>
+					<br>clientIp定义有两个默认参数$source和$check,默认情况如下:
+					<pre class="brush:php">
+			function clientIp($source = array('HTTP_X_FORWARDED_FOR', 'HTTP_CLIENT_IP', 'REMOTE_ADDR'), 
+			$check = array('HTTP_X_FORWARDED_FOR')) {
+				...
+			}
+					</pre>
+					1.方法会按着$source里面名称的顺序去$_SERVER变量里面找IP,
+					<br>如果我们要改变这个顺序只需要把我们想要的顺序作为第一个参数传递给clientIp即可.
+					<br>2.如果服务器是ngix之类代理转发请求到后端apache运行的PHP,
+					<br>nginx里面一般会设置 X_FORWARDED_FOR server变量来表示真实的客户端IP,我们需要对这个IP进行检查.
+					<br>如果nginx设置了其他名称而不是X_FORWARDED_FOR,那么可以在第二个参数里面设置即可.
                                 </li>
                                 <li>
                                         <h2 class="title_h2">验证字符串开头</h2>

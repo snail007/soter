@@ -1,3 +1,14 @@
+============v1.1.30[2017-02-20]===========
+优化了:
+1.Sr::clientIp()方法,增加了两个默认参数,更了活动获取访问者IP.
+  function clientIp($source = array('HTTP_X_FORWARDED_FOR', 'HTTP_CLIENT_IP', 'REMOTE_ADDR'), $check = array('HTTP_X_FORWARDED_FOR'))
+
+增加了:
+1.手册系统方法部分增加了更详细的对clientIp的使用说明.
+
+升级提示:
+无
+
 ============v1.1.29[2017-01-19]===========
 增加了:
 1.入口文件setHmvcDomains配置项目里面增加了isFullDomain配置.

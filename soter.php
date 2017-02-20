@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2017, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.1.29
- * @createdtime   2017-01-19 15:08:24
+ * @since         v1.1.30
+ * @createdtime   2017-02-20 11:51:01
  */
  
 
@@ -671,27 +671,32 @@ class Sr {
 	}
 	/**
 	 * 服务器的ip
-	 * @return type
 	 */
 	static function serverIp() {
 		return self::isCli() ? gethostbyname(self::hostname()) : Sr::server('SERVER_ADDR');
 	}
-	static function clientIp() {
-		if ($ip = self::checkClientIp(Sr::arrayGet($_SERVER, 'HTTP_X_FORWARDED_FOR'))) {
-			return $ip;
-		} elseif ($ip = self::server('HTTP_CLIENT_IP')) {
-			return $ip;
-		} elseif ($ip = Sr::arrayGet($_SERVER, 'REMOTE_ADDR')) {
-			return $ip;
-		} elseif ($ip = self::checkClientIp(getenv("HTTP_X_FORWARDED_FOR"))) {
-			return $ip;
-		} elseif ($ip = getenv("HTTP_CLIENT_IP")) {
-			return $ip;
-		} elseif ($ip = getenv("REMOTE_ADDR")) {
-			return $ip;
-		} else {
-			return "Unknown";
+	/**
+	 * 访问者的ip
+	 */
+	static function clientIp($source = array('HTTP_X_FORWARDED_FOR', 'HTTP_CLIENT_IP', 'REMOTE_ADDR'), $check = array('HTTP_X_FORWARDED_FOR')) {
+		foreach ($source as $k => $v) {
+			$source[$k] = strtoupper($v);
 		}
+		foreach ($check as $k => $v) {
+			$check[$k] = strtoupper($v);
+		}
+		foreach ($source as $v) {
+			if ($ip = self::server($v)) {
+				if (!in_array($v, $check)) {
+					return $ip;
+				}if ($ip = self::checkClientIp($v)) {
+					return $ip;
+				} else {
+					break;
+				}
+			}
+		}
+		return "Unknown";
 	}
 	private static function checkClientIp($ip) {
 		if (empty($ip)) {
