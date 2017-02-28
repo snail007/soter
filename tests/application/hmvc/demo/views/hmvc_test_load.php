@@ -1,1 +1,0 @@
-<?php Sr::view()->loadParent('common/header_load')?>test_load
