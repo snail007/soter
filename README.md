@@ -4,4 +4,4 @@
 下载http://git.oschina.net/snail/soter/repository/archive/master
 然后解压到你的本地网站目录,比如/home/wwwroot/soter
 然后访问http://127.0.0.1/soter
-手册地址:
+手册地址:http://doc.soter.tk/

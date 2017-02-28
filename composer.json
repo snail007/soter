@@ -1,7 +1,7 @@
 {
 	"name":        "snail/soter",
 	"description": "tiny php framework",
-	"homepage":    "http://soter.microphp.us",
+	"homepage":    "http://www.soter.tk",
 	"license":     "MIT",
 	"keywords":    ["snail", "framework","soter","php"],
 	"authors": [
