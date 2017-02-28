@@ -101,7 +101,7 @@ exec('rm -rf ' . DIST_DIR . 'docs/*');
 exec('cp -r ' . DIST_DIR . '../soter-docs/* ' . DIST_DIR . 'docs/');
 
 //内测版生成
-exec('cd ' . DIST_DIR . '&&tar zcvf "' . '../soter-alpha-' . $ver . '.tar.gz' . '" application docs composer.json index.php LICENSE README.md CHANGELOG soter.min.php soter.php');
+exec('cd ' . DIST_DIR . '&&tar zcvf "' . '../soter-release-' . $ver . '.tar.gz' . '" application docs composer.json index.php LICENSE README.md CHANGELOG soter.min.php soter.php');
 
 echo $ver."\n";
 function common_replace(&$str) {

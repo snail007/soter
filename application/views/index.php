@@ -10,7 +10,7 @@
 		</style>
 	</head>
 	<body>
-		<h2>欢迎使用Soter(内测版)</h2>
+		<h2>欢迎使用Soter</h2>
 		<h5>或者你会对源码感兴趣
 			<br>它的视图文件位于application/views/index.php
 			<br>控制器文件位于application/classes/Controller/Welcome.php
