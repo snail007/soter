@@ -5,3 +5,9 @@
 然后解压到你的本地网站目录,比如/home/wwwroot/soter
 然后访问http://127.0.0.1/soter
 手册地址:http://doc.soter.tk/
+
+#Soter官方拓展列表
+1.官方拓展包
+http://git.oschina.net/snail/soter-extensions
+2.Soter计划任务服务拓展
+http://git.oschina.net/snail/soter-extension-cron
