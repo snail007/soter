@@ -1,4 +1,5 @@
 <?php
+
 $ver = "v1.1.31";
 define('SOTER_RUN_MODE_PLUGIN', TRUE);
 require dirname(__FILE__) . '/../codes/index.php';
@@ -84,7 +85,7 @@ $soter = "<?php\n" . $header . "\n";
 foreach ($files as $file) {
 	$content = file_get_contents(SRC_DIR . $file);
 	common_replace($content);
-	$soter.=$content;
+	$soter .= $content;
 }
 file_put_contents(DIST_DIR . 'soter.php', $soter);
 file_put_contents(DIST_DIR . 'soter.min.php', "<?php\n" . $header . substr(php_strip_whitespace(DIST_DIR . 'soter.php'), 5));
@@ -103,7 +104,8 @@ exec('cp -r ' . DIST_DIR . '../soter-docs/* ' . DIST_DIR . 'docs/');
 //内测版生成
 exec('cd ' . DIST_DIR . '&&tar zcvf "' . '../soter-release-' . $ver . '.tar.gz' . '" application docs composer.json index.php LICENSE README.md CHANGELOG soter.min.php soter.php');
 
-echo $ver."\n";
+echo $ver . "\n";
+
 function common_replace(&$str) {
 	$str = preg_replace('|^ *// *[\w].*$\n|m', '', $str); //去掉英文单行注释
 	$str = preg_replace('|^ *$\n|m', '', $str); //去掉空行
@@ -121,10 +123,10 @@ function space2tab($arr) {
 	$c = floor($len / $tab_count);
 	$str = '';
 	for ($i = 0; $i < $c; $i++) {
-		$str.="\t";
+		$str .= "\t";
 	}
 	for ($i = 0; $i < $left; $i++) {
-		$str.=" ";
+		$str .= " ";
 	}
 	return $str;
 }
