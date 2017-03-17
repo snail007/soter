@@ -13,7 +13,7 @@ class Soter {
 	 */
 	public static function classAutoloader($className) {
 		$config = self::$soterConfig;
-		$className = str_replace('_', '/', $className);
+		$className = str_replace(array('\\','_'), '/', $className);
 		foreach (self::$soterConfig->getPackages() as $path) {
 			if (file_exists($filePath = $path . $config->getClassesDirName() . '/' . $className . '.php')) {
 				Sr::includeOnce($filePath);
