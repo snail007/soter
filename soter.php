@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2017, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.1.30
- * @createdtime   2017-02-20 11:51:01
+ * @since         v1.1.31
+ * @createdtime   2017-03-17 13:55:18
  */
  
 
@@ -41,7 +41,7 @@ class Soter {
 	 */
 	public static function classAutoloader($className) {
 		$config = self::$soterConfig;
-		$className = str_replace('_', '/', $className);
+		$className = str_replace(array('\\','_'), '/', $className);
 		foreach (self::$soterConfig->getPackages() as $path) {
 			if (file_exists($filePath = $path . $config->getClassesDirName() . '/' . $className . '.php')) {
 				Sr::includeOnce($filePath);

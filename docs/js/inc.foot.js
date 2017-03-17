@@ -4,7 +4,7 @@ if (parent == self) {
 	if (goPage) {
 		$('#mainBody').attr('src', $('.leftNav').find('a[href$="' + goPage + '.html"]').eq(0).attr('href'));
 	}
-	$('.leftNav').find('a').click(function(){
+	$('.leftNav').find('a').click(function () {
 		$('#loadingInfo').show();
 	});
 } else {
@@ -54,3 +54,11 @@ $(function () {
 
 
 });
+
+var _hmt = _hmt || [];
+(function () {
+	var hm = document.createElement("script");
+	hm.src = "https://hm.baidu.com/hm.js?171ef9efe6276634284825893be5ece2";
+	var s = document.getElementsByTagName("script")[0];
+	s.parentNode.insertBefore(hm, s);
+})();
