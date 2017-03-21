@@ -26,7 +26,7 @@
  * @copyright     Copyright (c) 2015 - 2017, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         v1.1.31
- * @createdtime   2017-03-21 16:56:52
+ * @createdtime   2017-03-21 18:27:19
  */
  
 
@@ -44,7 +44,7 @@ class Soter {
 		$className = str_replace(array('\\', '_'), '/', $className);
 		foreach (self::$soterConfig->getPackages() as $path) {
 			if (file_exists($filePath = $path . $config->getClassesDirName() . '/' . $className . '.php')) {
-				Sr::includeOnce($filePath);
+				\Sr::includeOnce($filePath);
 				break;
 			}
 		}
@@ -54,7 +54,7 @@ class Soter {
 	 * @return \Soter_Config
 	 */
 	public static function initialize() {
-		self::$soterConfig = new Soter_Config();
+		self::$soterConfig = new \Soter_Config();
 		//注册类自动加载
 		if (function_exists('__autoload')) {
 			spl_autoload_register('__autoload');
@@ -65,7 +65,7 @@ class Soter {
 			$stripList = array('_GET', '_POST', '_COOKIE');
 			foreach ($stripList as $val) {
 				global $$val;
-				$$val = Sr::stripSlashes($$val);
+				$$val = \Sr::stripSlashes($$val);
 			}
 		}
 		return self::$soterConfig;
@@ -81,17 +81,17 @@ class Soter {
 	 * 运行调度
 	 */
 	public static function run() {
-		if (Sr::isPluginMode()) {
+		if (\Sr::isPluginMode()) {
 			self::runPlugin();
-		} elseif (Sr::isCli()) {
+		} elseif (\Sr::isCli()) {
 			self::runCli();
 		} else {
-			$canRunWeb = !Sr::config()->getIsMaintainMode();
+			$canRunWeb = !\Sr::config()->getIsMaintainMode();
 			if (!$canRunWeb) {
-				foreach (Sr::config()->getMaintainIpWhitelist() as $ip) {
+				foreach (\Sr::config()->getMaintainIpWhitelist() as $ip) {
 					$info = explode('/', $ip);
 					$netmask = empty($info[1]) ? '32' : $info[1];
-					if (Sr::ipInfo(Sr::clientIp() . '/' . $netmask, 'netaddress') == Sr::ipInfo($info[0] . '/' . $netmask, 'netaddress')) {
+					if (\Sr::ipInfo(\Sr::clientIp() . '/' . $netmask, 'netaddress') == \Sr::ipInfo($info[0] . '/' . $netmask, 'netaddress')) {
 						$canRunWeb = true;
 						break;
 					}
@@ -100,7 +100,7 @@ class Soter {
 			if ($canRunWeb) {
 				self::runWeb();
 			} else {
-				$handle = Sr::config()->getMaintainModeHandle();
+				$handle = \Sr::config()->getMaintainModeHandle();
 				if (is_object($handle)) {
 					$handle->handle();
 				}
@@ -125,7 +125,7 @@ class Soter {
 		@ini_set('session.hash_bits_per_character', 5);
 		session_cache_limiter('nocache');
 		session_set_cookie_params(
-			$sessionConfig['lifetime'], $sessionConfig['cookie_path'], preg_match('/^[^\\.]+$/', Sr::server('HTTP_HOST')) ? null : $sessionConfig['cookie_domain']
+			$sessionConfig['lifetime'], $sessionConfig['cookie_path'], preg_match('/^[^\\.]+$/', \Sr::server('HTTP_HOST')) ? null : $sessionConfig['cookie_domain']
 		);
 		if (!empty($sessionConfig['session_save_path'])) {
 			session_save_path($sessionConfig['session_save_path']);
@@ -138,7 +138,7 @@ class Soter {
 			$sessionHandle->init();
 		}
 		if ($sessionConfig['autostart']) {
-			Sr::sessionStart();
+			\Sr::sessionStart();
 		}
 		//session初始化完毕
 	}
@@ -160,12 +160,12 @@ class Soter {
 			}
 		}
 		if (empty($route)) {
-			throw new Soter_Exception_500('none router was found in configuration');
+			throw new \Soter_Exception_500('none router was found in configuration');
 		}
-		$_route = Sr::config()->getRoute();
+		$_route = \Sr::config()->getRoute();
 		//当前域名有绑定hmvc模块,需要处理hmvc模块
-		if ($hmvcModuleName = Sr::config()->getCurrentDomainHmvcModuleNname()) {
-			if (Soter::checkHmvc($hmvcModuleName, false)) {
+		if ($hmvcModuleName = \Sr::config()->getCurrentDomainHmvcModuleNname()) {
+			if (\Soter::checkHmvc($hmvcModuleName, false)) {
 				$_route->setHmvcModuleName($hmvcModuleName);
 				$_route->setFound(true);
 			}
@@ -179,14 +179,14 @@ class Soter {
 			$_route->setMethod($method);
 		}
 		$config->setRoute($_route);
-		if (!Sr::classIsExists($class)) {
-			throw new Soter_Exception_404('Controller [ ' . $class . ' ] not found');
+		if (!\Sr::classIsExists($class)) {
+			throw new \Soter_Exception_404('Controller [ ' . $class . ' ] not found');
 		}
 		//初始化session
 		self::initSession();
-		$controllerObject = Sr::factory($class);
+		$controllerObject = \Sr::factory($class);
 		if (!($controllerObject instanceof Soter_Controller)) {
-			throw new Soter_Exception_404('[ ' . $class . ' ] not a valid Soter_Controller');
+			throw new \Soter_Exception_404('[ ' . $class . ' ] not a valid Soter_Controller');
 		}
 		//前置方法检查执行
 		if (method_exists($controllerObject, 'before')) {
@@ -194,21 +194,21 @@ class Soter {
 		}
 		//方法检测
 		if (!method_exists($controllerObject, $method)) {
-			throw new Soter_Exception_404('Method [ ' . $class . '->' . $method . '() ] not found');
+			throw new \Soter_Exception_404('Method [ ' . $class . '->' . $method . '() ] not found');
 		}
 		//方法缓存检测
-		$cacheClassName = preg_replace('/^' . Sr::config()->getControllerDirName() . '_/', '', $class);
-		$cacheMethodName = preg_replace('/^' . Sr::config()->getMethodPrefix() . '/', '', $method);
+		$cacheClassName = preg_replace('/^' . \Sr::config()->getControllerDirName() . '_/', '', $class);
+		$cacheMethodName = preg_replace('/^' . \Sr::config()->getMethodPrefix() . '/', '', $method);
 		$methodKey = $cacheClassName . '::' . $cacheMethodName;
 		$cacheMethodConfig = $config->getMethodCacheConfig();
-		if (!empty($cacheMethodConfig) && Sr::arrayKeyExists($methodKey, $cacheMethodConfig) && $cacheMethodConfig[$methodKey]['cache'] && ($cacheMethoKey = $cacheMethodConfig[$methodKey]['key']())) {
-			if (!($contents = Sr::cache()->get($cacheMethoKey))) {
+		if (!empty($cacheMethodConfig) && \Sr::arrayKeyExists($methodKey, $cacheMethodConfig) && $cacheMethodConfig[$methodKey]['cache'] && ($cacheMethoKey = $cacheMethodConfig[$methodKey]['key']())) {
+			if (!($contents = \Sr::cache()->get($cacheMethoKey))) {
 				@ob_start();
 				$response = call_user_func_array(array($controllerObject, $method), $route->getArgs());
 				$contents = @ob_get_contents();
 				@ob_end_clean();
-				$contents .= is_array($response) ? Sr::view()->set($response)->load("$cacheClassName/$cacheMethodName") : $response;
-				Sr::cache()->set($cacheMethoKey, $contents, $cacheMethodConfig[$methodKey]['time']);
+				$contents .= is_array($response) ? \Sr::view()->set($response)->load("$cacheClassName/$cacheMethodName") : $response;
+				\Sr::cache()->set($cacheMethoKey, $contents, $cacheMethodConfig[$methodKey]['time']);
 			}
 		} else {
 			if (method_exists($controllerObject, 'after')) {
@@ -217,10 +217,10 @@ class Soter {
 				$response = call_user_func_array(array($controllerObject, $method), $route->getArgs());
 				$contents = @ob_get_contents();
 				@ob_end_clean();
-				$contents .= is_array($response) ? Sr::view()->set($response)->load("$cacheClassName/$cacheMethodName") : $response;
+				$contents .= is_array($response) ? \Sr::view()->set($response)->load("$cacheClassName/$cacheMethodName") : $response;
 			} else {
 				$response = call_user_func_array(array($controllerObject, $method), $route->getArgs());
-				$contents = is_array($response) ? Sr::view()->set($response)->load("$cacheClassName/$cacheMethodName") : $response;
+				$contents = is_array($response) ? \Sr::view()->set($response)->load("$cacheClassName/$cacheMethodName") : $response;
 			}
 		}
 		//后置方法检查执行
@@ -234,8 +234,8 @@ class Soter {
 	 * 命令行模式运行
 	 */
 	private static function runCli() {
-		$task = str_replace('/', '_', Sr::getOpt('task'));
-		$hmvcModuleName = Sr::getOpt('hmvc');
+		$task = str_replace('/', '_', \Sr::getOpt('task'));
+		$hmvcModuleName = \Sr::getOpt('hmvc');
 		if (empty($task)) {
 			exit('require a task name,please use --task=<taskname>' . "\n");
 		}
@@ -245,18 +245,18 @@ class Soter {
 		if (strpos($task, 'Soter_') === 0) {
 			$taskName = $task;
 		} else {
-			$taskName = Soter::getConfig()->getTaskDirName() . '_' . $task;
+			$taskName = \Soter::getConfig()->getTaskDirName() . '_' . $task;
 		}
 		if (!class_exists($taskName)) {
-			throw new Soter_Exception_500('class [ ' . $taskName . ' ] not found');
+			throw new \Soter_Exception_500('class [ ' . $taskName . ' ] not found');
 		}
 		$taskObject = new $taskName();
 		if (!($taskObject instanceof Soter_Task)) {
-			throw new Soter_Exception_500('[ ' . $taskName . ' ] not a valid Soter_Task');
+			throw new \Soter_Exception_500('[ ' . $taskName . ' ] not a valid Soter_Task');
 		}
-		$args = Sr::getOpt();
+		$args = \Sr::getOpt();
 		$args = empty($args) ? array() : $args;
-		$taskObject->_execute(new Soter_CliArgs($args));
+		$taskObject->_execute(new \Soter_CliArgs($args));
 	}
 	/**
 	 * 插件模式运行
@@ -273,11 +273,11 @@ class Soter {
 	public static function checkHmvc($hmvcModuleName, $throwException = true) {
 		//hmvc检测
 		if (!empty($hmvcModuleName)) {
-			$config = Soter::getConfig();
+			$config = \Soter::getConfig();
 			$hmvcModules = $config->getHmvcModules();
 			if (empty($hmvcModules[$hmvcModuleName])) {
 				if ($throwException) {
-					throw new Soter_Exception_500('Hmvc Module [ ' . $hmvcModuleName . ' ] not found, please check your config.');
+					throw new \Soter_Exception_500('Hmvc Module [ ' . $hmvcModuleName . ' ] not found, please check your config.');
 				} else {
 					return FALSE;
 				}
@@ -285,7 +285,7 @@ class Soter {
 			//避免重复加载，提高性能
 			static $loadedModules = array();
 			$hmvcModuleDirName = $hmvcModules[$hmvcModuleName];
-			if (!Sr::arrayKeyExists($hmvcModuleName, $loadedModules)) {
+			if (!\Sr::arrayKeyExists($hmvcModuleName, $loadedModules)) {
 				$loadedModules[$hmvcModuleName] = 1;
 				//找到hmvc模块,去除hmvc模块名称，得到真正的路径
 				$hmvcModulePath = $config->getApplicationDir() . $config->getHmvcDirName() . '/' . $hmvcModuleDirName . '/';
@@ -307,7 +307,7 @@ class Sr {
 		return $keyStrArray;
 	}
 	static function arrayGet($array, $key, $default = null) {
-		return eval('return Sr::arrayKeyExists(\'' . $key . '\',$array)?$array' . self::parseKey($key) . ':$default;');
+		return eval('return \Sr::arrayKeyExists(\'' . $key . '\',$array)?$array' . self::parseKey($key) . ':$default;');
 	}
 	static function arraySet(&$array, $key, $value) {
 		return eval('$array' . self::parseKey($key) . '=$value;');
@@ -324,7 +324,7 @@ class Sr {
 	static function includeOnce($filePath) {
 		static $includeFiles = array();
 		$key = self::realPath($filePath);
-		if (!Sr::arrayKeyExists($key, $includeFiles)) {
+		if (!\Sr::arrayKeyExists($key, $includeFiles)) {
 			include $filePath;
 			$includeFiles[$key] = 1;
 		}
@@ -378,26 +378,26 @@ class Sr {
 		return $var;
 	}
 	static function business($businessName) {
-		$name = Soter::getConfig()->getBusinessDirName() . '_' . $businessName;
+		$name = \Soter::getConfig()->getBusinessDirName() . '_' . $businessName;
 		$object = self::factory($name);
 		if (!($object instanceof Soter_Business)) {
-			throw new Soter_Exception_500('[ ' . $name . ' ] not a valid Soter_Business');
+			throw new \Soter_Exception_500('[ ' . $name . ' ] not a valid Soter_Business');
 		}
 		return $object;
 	}
 	static function dao($daoName) {
-		$name = Soter::getConfig()->getDaoDirName() . '_' . $daoName;
+		$name = \Soter::getConfig()->getDaoDirName() . '_' . $daoName;
 		$object = self::factory($name);
 		if (!($object instanceof Soter_Dao)) {
-			throw new Soter_Exception_500('[ ' . $name . ' ] not a valid Soter_Dao');
+			throw new \Soter_Exception_500('[ ' . $name . ' ] not a valid Soter_Dao');
 		}
 		return $object;
 	}
 	static function model($modelName) {
-		$name = Soter::getConfig()->getModelDirName() . '_' . $modelName;
+		$name = \Soter::getConfig()->getModelDirName() . '_' . $modelName;
 		$object = self::factory($name);
 		if (!($object instanceof Soter_Model)) {
-			throw new Soter_Exception_500('[ ' . $name . ' ] not a valid Soter_Model');
+			throw new \Soter_Exception_500('[ ' . $name . ' ] not a valid Soter_Model');
 		}
 		return $object;
 	}
@@ -409,12 +409,12 @@ class Sr {
 	}
 	static function functions($functionFilename) {
 		static $loadedFunctionsFile = array();
-		if (Sr::arrayKeyExists($functionFilename, $loadedFunctionsFile)) {
+		if (\Sr::arrayKeyExists($functionFilename, $loadedFunctionsFile)) {
 			return;
 		} else {
 			$loadedFunctionsFile[$functionFilename] = 1;
 		}
-		$config = Soter::getConfig();
+		$config = \Soter::getConfig();
 		$found = false;
 		foreach ($config->getPackages() as $packagePath) {
 			$filePath = $packagePath . $config->getFunctionsDirName() . '/' . $functionFilename . '.php';
@@ -425,7 +425,7 @@ class Sr {
 			}
 		}
 		if (!$found) {
-			throw new Soter_Exception_500('functions file [ ' . $functionFilename . '.php ] not found');
+			throw new \Soter_Exception_500('functions file [ ' . $functionFilename . '.php ] not found');
 		}
 	}
 	/**
@@ -435,11 +435,11 @@ class Sr {
 	 * @throws Soter_Exception_404
 	 */
 	static function factory($className, $hmvcModuleName = null) {
-		if (Sr::isPluginMode()) {
+		if (\Sr::isPluginMode()) {
 			//hmvc检测
-			Soter::checkHmvc($hmvcModuleName);
+			\Soter::checkHmvc($hmvcModuleName);
 		}
-		if (Sr::strEndsWith(strtolower($className), '.php')) {
+		if (\Sr::strEndsWith(strtolower($className), '.php')) {
 			$className = substr($className, 0, strlen($className) - 4);
 		}
 		$className1 = str_replace(array('\\', '/'), '_', $className);
@@ -449,7 +449,7 @@ class Sr {
 		} elseif (class_exists($className2)) {
 			return new $className2();
 		}
-		throw new Soter_Exception_500("class [ $className ] not found");
+		throw new \Soter_Exception_500("class [ $className ] not found");
 	}
 	/**
 	 * 判断是否是插件模式运行
@@ -467,18 +467,18 @@ class Sr {
 	 */
 	static function &config($configName = null, $caching = true) {
 		if (empty($configName)) {
-			return Soter::getConfig();
+			return \Soter::getConfig();
 		}
 		$_info = explode('.', $configName);
 		$configFileName = current($_info);
 		static $loadedConfig = array();
 		$cfg = null;
-		if ($caching && Sr::arrayKeyExists($configFileName, $loadedConfig)) {
+		if ($caching && \Sr::arrayKeyExists($configFileName, $loadedConfig)) {
 			$cfg = $loadedConfig[$configFileName];
-		} elseif ($filePath = Soter::getConfig()->find($configFileName)) {
+		} elseif ($filePath = \Soter::getConfig()->find($configFileName)) {
 			$loadedConfig[$configFileName] = $cfg = eval('?>' . file_get_contents($filePath));
 		} else {
-			throw new Soter_Exception_500('config file [ ' . $configFileName . '.php ] not found');
+			throw new \Soter_Exception_500('config file [ ' . $configFileName . '.php ] not found');
 		}
 		if ($cfg && count($_info) > 1) {
 			$val = self::arrayGet($cfg, implode('.', array_slice($_info, 1)));
@@ -529,7 +529,7 @@ class Sr {
 				}
 			}
 		}
-		return empty($key) ? $result : (Sr::arrayKeyExists($key, $result) ? $result[$key] : null);
+		return empty($key) ? $result : (\Sr::arrayKeyExists($key, $result) ? $result[$key] : null);
 	}
 	static function get($key = null, $default = null, $xssClean = false) {
 		$value = is_null($key) ? $_GET : self::arrayGet($_GET, $key, $default);
@@ -587,7 +587,7 @@ class Sr {
 	 * @return type
 	 */
 	static function cookie($key = null, $default = null, $xssClean = false) {
-		$key = is_null($key) ? null : Sr::config()->getCookiePrefix() . $key;
+		$key = is_null($key) ? null : \Sr::config()->getCookiePrefix() . $key;
 		$value = self::cookieRaw($key, $default, $xssClean);
 		return $xssClean ? self::xssClean($value) : $value;
 	}
@@ -601,11 +601,11 @@ class Sr {
 	 * 或者设置前缀为空那么Sr::cookie和Sr::cookieRaw效果一样。前缀默认就是空。
 	 */
 	static function setCookie($key, $value, $life = null, $path = '/', $domian = null, $http_only = false) {
-		$key = Sr::config()->getCookiePrefix() . $key;
+		$key = \Sr::config()->getCookiePrefix() . $key;
 		return self::setCookieRaw($key, $value, $life, $path, $domian, $http_only);
 	}
 	static function setCookieRaw($key, $value, $life = null, $path = '/', $domian = null, $httpOnly = false) {
-		if (!Sr::isCli()) {
+		if (!\Sr::isCli()) {
 			header('P3P: CP="CURa ADMa DEVa PSAo PSDo OUR BUS UNI PUR INT DEM STA PRE COM NAV OTC NOI DSP COR"');
 		}
 		if (!is_null($domian)) {
@@ -676,7 +676,7 @@ class Sr {
 	 * 服务器的ip
 	 */
 	static function serverIp() {
-		return self::isCli() ? gethostbyname(self::hostname()) : Sr::server('SERVER_ADDR');
+		return self::isCli() ? gethostbyname(self::hostname()) : \Sr::server('SERVER_ADDR');
 	}
 	/**
 	 * 访问者的ip
@@ -705,7 +705,7 @@ class Sr {
 		if (empty($ip)) {
 			return false;
 		}
-		$whitelist = Sr::config()->getBackendServerIpWhitelist();
+		$whitelist = \Sr::config()->getBackendServerIpWhitelist();
 		foreach ($whitelist as $okayIp) {
 			if ($okayIp == $ip) {
 				return $ip;
@@ -742,7 +742,7 @@ class Sr {
 			$ipAddrArr[$k] = intval($v); //去掉192.023.20.01其中的023的0
 		}
 		$ipAddr = implode('.', $ipAddrArr); //修正后的ip地址
-		$netbits = intval((Sr::arrayKeyExists(1, $arr) ? $arr[1] : 0));   //得到掩码位
+		$netbits = intval((\Sr::arrayKeyExists(1, $arr) ? $arr[1] : 0));   //得到掩码位
 		$subnetMask = long2ip(ip2long("255.255.255.255") << (32 - $netbits));
 		$ip = ip2long($ipAddr);
 		$nm = ip2long($subnetMask);
@@ -793,32 +793,32 @@ class Sr {
 			ksort($group);
 			$groupString = json_encode($group);
 			$key = md5($groupString);
-			if (!Sr::arrayKeyExists($key, self::$dbInstances) || $isNewInstance) {
+			if (!\Sr::arrayKeyExists($key, self::$dbInstances) || $isNewInstance) {
 				$group['group'] = $groupString;
-				self::$dbInstances[$key] = new Soter_Database_ActiveRecord($group);
+				self::$dbInstances[$key] = new \Soter_Database_ActiveRecord($group);
 			}
 			return self::$dbInstances[$key];
 		} else {
 			$config = self::config()->getDatabseConfig();
 			if (empty($config)) {
-				throw new Soter_Exception_Database('database configuration is empty , did you forget to use "->setDatabseConfig()" in index.php ?');
+				throw new \Soter_Exception_Database('database configuration is empty , did you forget to use "->setDatabseConfig()" in index.php ?');
 			}
 			if (empty($group)) {
 				$group = $config['default_group'];
 			}
-			if (!Sr::arrayKeyExists($group, self::$dbInstances) || $isNewInstance) {
+			if (!\Sr::arrayKeyExists($group, self::$dbInstances) || $isNewInstance) {
 				$config = self::config()->getDatabseConfig($group);
 				if (empty($config)) {
-					throw new Soter_Exception_Database('unknown database config group [ ' . $group . ' ]');
+					throw new \Soter_Exception_Database('unknown database config group [ ' . $group . ' ]');
 				}
 				$config['group'] = $group;
-				self::$dbInstances[$group] = new Soter_Database_ActiveRecord($config);
+				self::$dbInstances[$group] = new \Soter_Database_ActiveRecord($config);
 			}
 			return self::$dbInstances[$group];
 		}
 	}
 	static function createSqlite3Database($path) {
-		return new PDO('sqlite:' . $path);
+		return new \PDO('sqlite:' . $path);
 	}
 	/**
 	 * 获取当前UNIX毫秒时间戳
@@ -884,7 +884,7 @@ class Sr {
 	static function view() {
 		static $view;
 		if (!$view) {
-			$view = new Soter_View();
+			$view = new \Soter_View();
 		}
 		return $view;
 	}
@@ -897,7 +897,7 @@ class Sr {
 	 */
 	static function urlPath($subpath = null, $addSlash = true) {
 		if (self::isCli()) {
-			throw new Soter_Exception_500('urlPath() can not be used in cli mode');
+			throw new \Soter_Exception_500('urlPath() can not be used in cli mode');
 		} else {
 			$old_path = getcwd();
 			$root = str_replace(array("/", "\\"), '/', self::server('DOCUMENT_ROOT'));
@@ -917,7 +917,7 @@ class Sr {
 	 * @return string
 	 */
 	static function url($action = '', $getData = array()) {
-		$config = Sr::config();
+		$config = \Sr::config();
 		$hmvcModuleName = $config->getCurrentDomainHmvcModuleNname(); //当前域名绑定的hmvc模块名称
 		//访问的是hmvc模块且绑定了当前域名，且是DomainOnly的，就去掉开头的模块名称
 		if ($hmvcModuleName && $config->hmvcIsDomainOnly($hmvcModuleName)) {
@@ -944,9 +944,9 @@ class Sr {
 	 */
 	static function readData(Array $map, $sourceData = null) {
 		$data = array();
-		$formdata = is_null($sourceData) ? Sr::post() : $sourceData;
+		$formdata = is_null($sourceData) ? \Sr::post() : $sourceData;
 		foreach ($formdata as $formKey => $val) {
-			if (Sr::arrayKeyExists($formKey, $map)) {
+			if (\Sr::arrayKeyExists($formKey, $map)) {
 				$data[$map[$formKey]] = $val;
 			}
 		}
@@ -957,15 +957,15 @@ class Sr {
 		if (empty($checkRules)) {
 			$defaultRules = array(
 			    'array' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data) || !is_array($value)) {
+				    if (!\Sr::arrayKeyExists($key, $data) || !is_array($value)) {
 					    return false;
 				    }
 				    $minOkay = true;
-				    if (Sr::arrayKeyExists(0, $args)) {
+				    if (\Sr::arrayKeyExists(0, $args)) {
 					    $minOkay = count($value) >= intval($args[0]);
 				    }
 				    $maxOkay = true;
-				    if (Sr::arrayKeyExists(1, $args)) {
+				    if (\Sr::arrayKeyExists(1, $args)) {
 					    $minOkay = count($value) >= intval($args[1]);
 				    }
 				    return $minOkay && $maxOkay;
@@ -975,7 +975,7 @@ class Sr {
 				    if (is_array($value)) {
 					    $i = 0;
 					    foreach ($value as $k => $v) {
-						    $returnValue[$k] = empty($v) ? (Sr::arrayKeyExists($i, $args) ? $args[$i] : $args[0]) : $v;
+						    $returnValue[$k] = empty($v) ? (\Sr::arrayKeyExists($i, $args) ? $args[$i] : $args[0]) : $v;
 						    $i++;
 					    }
 				    } elseif (empty($value)) {
@@ -986,7 +986,7 @@ class Sr {
 				    $break = !isset($data[$key]);
 				    return true;
 			    }, 'required' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data) || empty($value)) {
+				    if (!\Sr::arrayKeyExists($key, $data) || empty($value)) {
 					    return false;
 				    }
 				    $value = (array) $value;
@@ -1000,13 +1000,13 @@ class Sr {
 				    $args[] = $key;
 				    $args = array_unique($args);
 				    foreach ($args as $k) {
-					    if (!Sr::arrayKeyExists($k, $data)) {
+					    if (!\Sr::arrayKeyExists($k, $data)) {
 						    return false;
 					    }
 				    }
 				    return true;
 			    }, 'functions' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return true;
 				    }
 				    $returnValue = $value;
@@ -1023,23 +1023,23 @@ class Sr {
 				    }
 				    return true;
 			    }, 'xss' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return true;
 				    }
-				    $returnValue = Sr::xssClean($value);
+				    $returnValue = \Sr::xssClean($value);
 				    return true;
 			    }, 'match' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data) || !Sr::arrayKeyExists(0, $args) || !Sr::arrayKeyExists($args[0], $data) || $value != $data[$args[0]]) {
+				    if (!\Sr::arrayKeyExists($key, $data) || !\Sr::arrayKeyExists(0, $args) || !\Sr::arrayKeyExists($args[0], $data) || $value != $data[$args[0]]) {
 					    return false;
 				    }
 				    return true;
 			    }, 'equal' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data) || !Sr::arrayKeyExists(0, $args) || $value != $args[0]) {
+				    if (!\Sr::arrayKeyExists($key, $data) || !\Sr::arrayKeyExists(0, $args) || $value != $args[0]) {
 					    return false;
 				    }
 				    return true;
 			    }, 'enum' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $value = (array) $value;
@@ -1051,7 +1051,7 @@ class Sr {
 				    return true;
 			    }, 'unique' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #比如unique[user.name] , unique[user.name,id:1]
-				    if (!Sr::arrayKeyExists($key, $data) || !$value || !count($args)) {
+				    if (!\Sr::arrayKeyExists($key, $data) || !$value || !count($args)) {
 					    return false;
 				    }
 				    $_info = explode('.', $args[0]);
@@ -1060,14 +1060,14 @@ class Sr {
 				    }
 				    $table = $_info[0];
 				    $col = $_info[1];
-				    if (Sr::arrayKeyExists(1, $args)) {
+				    if (\Sr::arrayKeyExists(1, $args)) {
 					    $_id_info = explode(':', $args[1]);
 					    if (count($_id_info) != 2) {
 						    return false;
 					    }
 					    $id_col = $_id_info[0];
 					    $id = $_id_info[1];
-					    $id = stripos($id, '#') === 0 ? Sr::getPost(substr($id, 1)) : $id;
+					    $id = stripos($id, '#') === 0 ? \Sr::getPost(substr($id, 1)) : $id;
 					    $where = array($col => $value, "$id_col <>" => $id);
 				    } else {
 					    $where = array($col => $value);
@@ -1075,7 +1075,7 @@ class Sr {
 				    return !$db->where($where)->from($table)->limit(0, 1)->execute()->total();
 			    }, 'exists' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #比如exists[user.name] , exists[user.name,type:1], exists[user.name,type:1,sex:#sex]
-				    if (!Sr::arrayKeyExists($key, $data) || !$value || !count($args)) {
+				    if (!\Sr::arrayKeyExists($key, $data) || !$value || !count($args)) {
 					    return false;
 				    }
 				    $_info = explode('.', $args[0]);
@@ -1093,37 +1093,37 @@ class Sr {
 						    }
 						    $id_col = $_id_info[0];
 						    $id = $_id_info[1];
-						    $id = stripos($id, '#') === 0 ? Sr::getPost(substr($id, 1)) : $id;
+						    $id = stripos($id, '#') === 0 ? \Sr::getPost(substr($id, 1)) : $id;
 						    $where[$id_col] = $id;
 					    }
 				    }
 				    return $db->where($where)->from($table)->limit(0, 1)->execute()->total();
 			    }, 'min_len' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
 				    foreach ($v as $value) {
-					    $okay = Sr::arrayKeyExists(0, $args) ? (mb_strlen($value, 'UTF-8') >= intval($args[0])) : false;
+					    $okay = \Sr::arrayKeyExists(0, $args) ? (mb_strlen($value, 'UTF-8') >= intval($args[0])) : false;
 					    if (!$okay) {
 						    return false;
 					    }
 				    }
 				    return true;
 			    }, 'max_len' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
 				    foreach ($v as $value) {
-					    $okay = Sr::arrayKeyExists(0, $args) ? (mb_strlen($value, 'UTF-8') <= intval($args[0])) : false;
+					    $okay = \Sr::arrayKeyExists(0, $args) ? (mb_strlen($value, 'UTF-8') <= intval($args[0])) : false;
 					    if (!$okay) {
 						    return false;
 					    }
 				    }
 				    return true;
 			    }, 'range_len' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
@@ -1135,43 +1135,43 @@ class Sr {
 				    }
 				    return true;
 			    }, 'len' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
 				    foreach ($v as $value) {
-					    $okay = Sr::arrayKeyExists(0, $args) ? (mb_strlen($value, 'UTF-8') == intval($args[0])) : false;
+					    $okay = \Sr::arrayKeyExists(0, $args) ? (mb_strlen($value, 'UTF-8') == intval($args[0])) : false;
 					    if (!$okay) {
 						    return false;
 					    }
 				    }
 				    return true;
 			    }, 'min' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
 				    foreach ($v as $value) {
-					    $okay = Sr::arrayKeyExists(0, $args) && is_numeric($value) ? $value >= $args[0] : false;
+					    $okay = \Sr::arrayKeyExists(0, $args) && is_numeric($value) ? $value >= $args[0] : false;
 					    if (!$okay) {
 						    return false;
 					    }
 				    }
 				    return true;
 			    }, 'max' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
 				    foreach ($v as $value) {
-					    $okay = Sr::arrayKeyExists(0, $args) && is_numeric($value) ? $value <= $args[0] : false;
+					    $okay = \Sr::arrayKeyExists(0, $args) && is_numeric($value) ? $value <= $args[0] : false;
 					    if (!$okay) {
 						    return false;
 					    }
 				    }
 				    return true;
 			    }, 'range' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
@@ -1183,7 +1183,7 @@ class Sr {
 				    }
 				    return true;
 			    }, 'alpha' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    #纯字母
@@ -1197,7 +1197,7 @@ class Sr {
 				    return true;
 			    }, 'alpha_num' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #纯字母和数字
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
@@ -1210,7 +1210,7 @@ class Sr {
 				    return true;
 			    }, 'alpha_dash' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #纯字母和数字和下划线和-
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
@@ -1223,7 +1223,7 @@ class Sr {
 				    return true;
 			    }, 'alpha_start' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #以字母开头
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
@@ -1236,7 +1236,7 @@ class Sr {
 				    return true;
 			    }, 'num' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #纯数字
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
@@ -1249,7 +1249,7 @@ class Sr {
 				    return true;
 			    }, 'int' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #整数
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
@@ -1262,7 +1262,7 @@ class Sr {
 				    return true;
 			    }, 'float' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #小数
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
@@ -1275,7 +1275,7 @@ class Sr {
 				    return true;
 			    }, 'numeric' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #数字-1，1.2，+3，4e5
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
@@ -1288,7 +1288,7 @@ class Sr {
 				    return true;
 			    }, 'natural' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #自然数0，1，2，3，12，333
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
@@ -1301,7 +1301,7 @@ class Sr {
 				    return true;
 			    }, 'natural_no_zero' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #自然数不包含0
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
@@ -1313,10 +1313,10 @@ class Sr {
 				    }
 				    return true;
 			    }, 'email' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
-				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
+				    $args[0] = \Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($value) ? preg_match('/^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/', $value) : $args[0];
@@ -1326,10 +1326,10 @@ class Sr {
 				    }
 				    return true;
 			    }, 'url' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
-				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
+				    $args[0] = \Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($value) ? preg_match('/^http[s]?:\/\/[A-Za-z0-9]+\.[A-Za-z0-9]+[\/=\?%\-&_~`@[\]\':+!]*([^<>\"])*$/', $value) : $args[0];
@@ -1339,10 +1339,10 @@ class Sr {
 				    }
 				    return true;
 			    }, 'qq' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
-				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
+				    $args[0] = \Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($value) ? preg_match('/^[1-9][0-9]{4,}$/', $value) : $args[0];
@@ -1352,10 +1352,10 @@ class Sr {
 				    }
 				    return true;
 			    }, 'phone' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
-				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
+				    $args[0] = \Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($value) ? preg_match('/^(?:\d{3}-?\d{8}|\d{4}-?\d{7})$/', $value) : $args[0];
@@ -1365,10 +1365,10 @@ class Sr {
 				    }
 				    return true;
 			    }, 'mobile' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
-				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
+				    $args[0] = \Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($value) ? preg_match('/^(((13[0-9]{1})|(15[0-9]{1})|(18[0-9]{1})|(14[0-9]{1}))+\d{8})$/', $value) : $args[0];
@@ -1378,10 +1378,10 @@ class Sr {
 				    }
 				    return true;
 			    }, 'zipcode' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
-				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
+				    $args[0] = \Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($value) ? preg_match('/^[1-9]\d{5}(?!\d)$/', $value) : $args[0];
@@ -1391,10 +1391,10 @@ class Sr {
 				    }
 				    return true;
 			    }, 'idcard' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
-				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
+				    $args[0] = \Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($value) ? preg_match('/^\d{14}(\d{4}|(\d{3}[xX])|\d{1})$/', $value) : $args[0];
@@ -1404,10 +1404,10 @@ class Sr {
 				    }
 				    return true;
 			    }, 'ip' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
-				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
+				    $args[0] = \Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($value) ? preg_match('/^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$/', $value) : $args[0];
@@ -1417,12 +1417,12 @@ class Sr {
 				    }
 				    return true;
 			    }, 'chs' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $count = implode(',', array_slice($args, 1, 2));
 				    $count = empty($count) ? '1,' : $count;
-				    $can_empty = Sr::arrayKeyExists(0, $args) && $args[0] == 'true';
+				    $can_empty = \Sr::arrayKeyExists(0, $args) && $args[0] == 'true';
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($value) ? preg_match('/^[\x{4e00}-\x{9fa5}]{' . $count . '}$/u', $value) : $can_empty;
@@ -1432,10 +1432,10 @@ class Sr {
 				    }
 				    return true;
 			    }, 'date' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
-				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
+				    $args[0] = \Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($value) ? preg_match('/^[0-9]{4}-(((0[13578]|(10|12))-(0[1-9]|[1-2][0-9]|3[0-1]))|(02-(0[1-9]|[1-2][0-9]))|((0[469]|11)-(0[1-9]|[1-2][0-9]|30)))$/', $value) : $args[0];
@@ -1445,10 +1445,10 @@ class Sr {
 				    }
 				    return true;
 			    }, 'time' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
-				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
+				    $args[0] = \Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($value) ? preg_match('/^(([0-1][0-9])|([2][0-3])):([0-5][0-9])(:([0-5][0-9]))$/', $value) : $args[0];
@@ -1458,10 +1458,10 @@ class Sr {
 				    }
 				    return true;
 			    }, 'datetime' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
-				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
+				    $args[0] = \Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($value) ? preg_match('/^[0-9]{4}-(((0[13578]|(10|12))-(0[1-9]|[1-2][0-9]|3[0-1]))|(02-(0[1-9]|[1-2][0-9]))|((0[469]|11)-(0[1-9]|[1-2][0-9]|30))) (([0-1][0-9])|([2][0-3])):([0-5][0-9])(:([0-5][0-9]))$/', $value) : $args[0];
@@ -1471,7 +1471,7 @@ class Sr {
 				    }
 				    return true;
 			    }, 'reg' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
@@ -1484,19 +1484,19 @@ class Sr {
 				    return true;
 			    }
 			);
-			$userRules = Sr::config()->getDataCheckRules();
+			$userRules = \Sr::config()->getDataCheckRules();
 			$checkRules = (is_array($userRules) && !empty($userRules)) ? array_merge($defaultRules, $userRules) : $defaultRules;
 		}
 		$getCheckRuleInfo = function($_rule) {
 			$matches = array();
 			preg_match('|([^\[]+)(?:\[(.*)\](.?))?|', $_rule, $matches);
-			$matches[1] = Sr::arrayKeyExists(1, $matches) ? $matches[1] : '';
+			$matches[1] = \Sr::arrayKeyExists(1, $matches) ? $matches[1] : '';
 			if ($matches[1] == 'reg') {
 				$matches[3] = '';
-				$matches[2] = Sr::arrayKeyExists(2, $matches) ? array($matches[2]) : array();
+				$matches[2] = \Sr::arrayKeyExists(2, $matches) ? array($matches[2]) : array();
 			} else {
 				$matches[3] = !empty($matches[3]) ? $matches[3] : ',';
-				$matches[2] = Sr::arrayKeyExists(2, $matches) ? explode($matches[3], $matches[2]) : array();
+				$matches[2] = \Sr::arrayKeyExists(2, $matches) ? explode($matches[3], $matches[2]) : array();
 			}
 			return $matches;
 		};
@@ -1507,11 +1507,11 @@ class Sr {
 				$_v = self::arrayGet($returnData, $key);
 				$_r = $matches[1];
 				$args = $matches[2];
-				if (!Sr::arrayKeyExists($_r, $checkRules) || !is_callable($checkRules[$_r])) {
-					throw new Soter_Exception_500('error rule [ ' . $_r . ' ]');
+				if (!\Sr::arrayKeyExists($_r, $checkRules) || !is_callable($checkRules[$_r])) {
+					throw new \Soter_Exception_500('error rule [ ' . $_r . ' ]');
 				}
 				$ruleFunction = $checkRules[$_r];
-				$db = (is_object($db) && ($db instanceof Soter_Database_ActiveRecord) ) ? $db : Sr::db();
+				$db = (is_object($db) && ($db instanceof Soter_Database_ActiveRecord) ) ? $db : \Sr::db();
 				$break = false;
 				$returnValue = null;
 				$isOkay = $ruleFunction($key, $_v, $data, $args, $returnValue, $break, $db);
@@ -1606,7 +1606,7 @@ class Sr {
 			$order = array(1, 2, 3, 4, 5, 6);
 		}
 		foreach ($order as $key) {
-			if (Sr::arrayKeyExists($key - 1, $pagination)) {
+			if (\Sr::arrayKeyExists($key - 1, $pagination)) {
 				$output[] = $pagination[$key - 1];
 			}
 		}
@@ -1614,7 +1614,7 @@ class Sr {
 	}
 	static function json() {
 		$args = func_get_args();
-		$handle = Sr::config()->getOutputJsonRender();
+		$handle = \Sr::config()->getOutputJsonRender();
 		if (is_callable($handle)) {
 			return call_user_func_array($handle, $args);
 		} else {
@@ -1652,19 +1652,19 @@ class Sr {
 	public static function __callStatic($name, $arguments) {
 		$methods = self::config()->getSrMethods();
 		if (empty($methods[$name])) {
-			throw new soter_exception_500($name . ' not found in ->setSrMethods() or it is empty');
+			throw new \Soter_Exception_500($name . ' not found in ->setSrMethods() or it is empty');
 		}
 		if (is_string($methods[$name])) {
 			$className = $methods[$name] . '_' . self::arrayGet($arguments, 0);
 			if ($className) {
-				return Sr::factory($className);
+				return \Sr::factory($className);
 			} else {
-				throw new soter_exception_500($methods[$name] . '() need argument of class name ');
+				throw new \Soter_Exception_500($methods[$name] . '() need argument of class name ');
 			}
 		} elseif (is_callable($methods[$name])) {
 			return call_user_func_array($methods[$name], $arguments);
 		} else {
-			throw new soter_exception_500($name . ' unknown type of method [ ' . $name . ' ]');
+			throw new Soter_Exception_500($name . ' unknown type of method [ ' . $name . ' ]');
 		}
 	}
 	static function arrayKeyExists($key, $array) {
@@ -2071,18 +2071,18 @@ abstract class Soter_Database {
 				$configGroup = $this->{$group[0]}();
 				$connections = &$this->{$group[1]};
 				foreach ($configGroup as $key => $config) {
-					if (!Sr::arrayKeyExists($key, $connections)) {
-						$options[PDO::ATTR_ERRMODE] = PDO::ERRMODE_EXCEPTION;
-						$options[PDO::ATTR_PERSISTENT] = $this->getPconnect();
+					if (!\Sr::arrayKeyExists($key, $connections)) {
+						$options[\PDO::ATTR_ERRMODE] = \PDO::ERRMODE_EXCEPTION;
+						$options[\PDO::ATTR_PERSISTENT] = $this->getPconnect();
 						if ($this->_isMysql()) {
-							$options[PDO::MYSQL_ATTR_INIT_COMMAND] = 'SET NAMES ' . $this->getCharset() . ' COLLATE ' . $this->getCollate();
-							$options[PDO::ATTR_EMULATE_PREPARES] = TRUE; //empty($slaves) && (count($masters) == 1);
+							$options[\PDO::MYSQL_ATTR_INIT_COMMAND] = 'SET NAMES ' . $this->getCharset() . ' COLLATE ' . $this->getCollate();
+							$options[\PDO::ATTR_EMULATE_PREPARES] = TRUE; //empty($slaves) && (count($masters) == 1);
 							$dsn = 'mysql:host=' . $config['hostname'] . ';port=' . $config['port'] . ';dbname=' . $this->getDatabase() . ';charset=' . $this->getCharset();
 							$connections[$key] = new \Soter_PDO($dsn, $config['username'], $config['password'], $options);
 							$connections[$key]->exec('SET NAMES ' . $this->getCharset());
 						} elseif ($this->_isSqlite()) {
 							if (!file_exists($this->getDatabase())) {
-								throw new \Soter_Exception_Database('sqlite3 database file [' . Sr::realPath($this->getDatabase()) . '] not found');
+								throw new \Soter_Exception_Database('sqlite3 database file [' . \Sr::realPath($this->getDatabase()) . '] not found');
 							}
 							$connections[$key] = new \Soter_PDO('sqlite:' . $this->getDatabase(), null, null, $options);
 						} else {
@@ -2142,7 +2142,7 @@ abstract class Soter_Database {
 		if (!$this->_init()) {
 			return FALSE;
 		}
-		$startTime = Sr::microtime();
+		$startTime = \Sr::microtime();
 		$sql = $sql ? $this->_checkPrefixIdentifier($sql) : $this->getSql();
 		$this->_lastSql = $sql;
 		$values = !empty($values) ? $values : $this->_getValues();
@@ -2151,7 +2151,7 @@ abstract class Soter_Database {
 		$cacheKey = '';
 		if ($this->_cacheTime) {
 			$cacheKey = empty($this->_cacheKey) ? md5($sql . var_export($values, true)) : $this->_cacheKey;
-			$cacheHandle = Sr::config()->getCacheHandle();
+			$cacheHandle = \Sr::config()->getCacheHandle();
 			if (empty($cacheHandle)) {
 				throw new \Soter_Exception_500('no cache handle found , please set cache handle');
 			}
@@ -2178,7 +2178,7 @@ abstract class Soter_Database {
 						$return = $isWritetRowsType ? $sth->rowCount() : $status;
 						$this->_lastInsertId = $isWriteInsertType ? $pdo->lastInsertId() : 0;
 					} else {
-						$return = $sth->execute($values) ? $sth->fetchAll(PDO::FETCH_ASSOC) : array();
+						$return = $sth->execute($values) ? $sth->fetchAll(\PDO::FETCH_ASSOC) : array();
 						$return = new \Soter_Database_Resultset($return);
 					}
 				} else {
@@ -2205,7 +2205,7 @@ abstract class Soter_Database {
 						$return = $isWritetRowsType ? $sth->rowCount() : $status;
 						$this->_lastInsertId = $isWriteInsertType ? $pdo->lastInsertId() : 0;
 					} else {
-						$return = $sth->execute($values) ? $sth->fetchAll(PDO::FETCH_ASSOC) : array();
+						$return = $sth->execute($values) ? $sth->fetchAll(\PDO::FETCH_ASSOC) : array();
 						$return = new \Soter_Database_Resultset($return);
 					}
 				} else {
@@ -2214,14 +2214,14 @@ abstract class Soter_Database {
 				}
 			}
 			//查询消耗的时间
-			$usingTime = (Sr::microtime() - $startTime) . '';
+			$usingTime = (\Sr::microtime() - $startTime) . '';
 			//explain查询
 			$explainRows = array();
 			if ($this->_isMysql() && ($this->slowQueryDebug || $this->indexDebug) && (($this->_isExplain56Type($sql) && $this->versionThan56) || ($this->_isExplainType($sql) && !$this->versionThan56))) {
 				reset($this->connectionMasters);
 				$sth = $this->connectionMasters[key($this->connectionMasters)]->prepare('EXPLAIN ' . $sql);
 				$sth->execute($this->_getValues());
-				$explainRows = $sth->fetchAll(PDO::FETCH_ASSOC);
+				$explainRows = $sth->fetchAll(\PDO::FETCH_ASSOC);
 			}
 			//慢查询记录
 			if ($this->slowQueryDebug && ($usingTime >= $this->getSlowQueryTime())) {
@@ -2239,7 +2239,7 @@ abstract class Soter_Database {
 					    'index_subquery' => 9, 'range' => 10, 'index' => 11, 'all' => 12,
 					);
 					foreach ($explainRows as $row) {
-						if (Sr::arrayKeyExists(strtolower($row['type']), $order) && Sr::arrayKeyExists(strtolower($this->getMinIndexType()), $order)) {
+						if (\Sr::arrayKeyExists(strtolower($row['type']), $order) && \Sr::arrayKeyExists(strtolower($this->getMinIndexType()), $order)) {
 							$key = $order[strtolower($row['type'])];
 							$minKey = $order[strtolower($this->getMinIndexType())];
 							if ($key > $minKey) {
@@ -2312,7 +2312,7 @@ abstract class Soter_Database {
 			if ($message instanceof Exception) {
 				throw new \Soter_Exception_Database($group . $this->_errorMsg, 500, 'Soter_Exception_Database', $message->getFile(), $message->getLine());
 			} else {
-				throw new Soter_Exception_Database($group . $message . $sql, $code);
+				throw new \Soter_Exception_Database($group . $message . $sql, $code);
 			}
 		}
 	}
@@ -2511,7 +2511,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 	}
 	private function _compileUpdateBatch() {
 		list($values, $index) = $this->arUpdateBatch;
-		if (count($values) && Sr::arrayKeyExists("0.$index", $values)) {
+		if (count($values) && \Sr::arrayKeyExists("0.$index", $values)) {
 			$ids = array();
 			$final = array();
 			$_values = array();
@@ -2841,7 +2841,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		}
 		$prefix = $this->getTablePrefix();
 		if ($prefix && strpos($str, $prefix) === FALSE) {
-			if (!Sr::arrayKeyExists($str, $this->_asTable)) {
+			if (!\Sr::arrayKeyExists($str, $this->_asTable)) {
 				return $prefix . $str;
 			}
 		}
@@ -2941,7 +2941,7 @@ class Soter_Database_Resultset {
 		}
 	}
 	public function row($index = null, $isAssoc = true) {
-		if (!is_null($index) && Sr::arrayKeyExists($index, $this->_resultSet)) {
+		if (!is_null($index) && \Sr::arrayKeyExists($index, $this->_resultSet)) {
 			return $isAssoc ? $this->_resultSet[$index] : array_values($this->_resultSet[$index]);
 		} else {
 			$row = current($this->_resultSet);
@@ -2949,13 +2949,13 @@ class Soter_Database_Resultset {
 		}
 	}
 	public function object($beanClassName, $index = null) {
-		$beanDirName = Sr::config()->getBeanDirName();
+		$beanDirName = \Sr::config()->getBeanDirName();
 		if (stripos($beanClassName, $beanDirName . '_') === false) {
 			$beanClassName = $beanDirName . '_' . $beanClassName;
 		}
 		$object = new $beanClassName();
 		if (!($object instanceof Soter_Bean)) {
-			throw new Soter_Exception_500('error class [ ' . $beanClassName . ' ] , need instanceof Soter_Bean');
+			throw new \Soter_Exception_500('error class [ ' . $beanClassName . ' ] , need instanceof Soter_Bean');
 		}
 		$row = $this->row($index);
 		foreach ($row as $key => $value) {
@@ -2967,13 +2967,13 @@ class Soter_Database_Resultset {
 	public function objects($beanClassName) {
 		$rowsKey = $this->_rowsKey;
 		$this->_rowsKey = '';
-		$beanDirName = Sr::config()->getBeanDirName();
+		$beanDirName = \Sr::config()->getBeanDirName();
 		if (stripos($beanClassName, $beanDirName . '_') === false) {
 			$beanClassName = $beanDirName . '_' . $beanClassName;
 		}
 		$object = new $beanClassName();
 		if (!($object instanceof Soter_Bean)) {
-			throw new Soter_Exception_500('error class [ ' . $beanClassName . ' ] , need instanceof Soter_Bean');
+			throw new \Soter_Exception_500('error class [ ' . $beanClassName . ' ] , need instanceof Soter_Bean');
 		}
 		$objects = array();
 		$rows = $this->rows();
@@ -2994,7 +2994,7 @@ class Soter_Database_Resultset {
 	public function values($columnName) {
 		$columns = array();
 		foreach ($this->_resultSet as $row) {
-			if (Sr::arrayKeyExists($columnName, $row)) {
+			if (\Sr::arrayKeyExists($columnName, $row)) {
 				$columns[] = $row[$columnName];
 			} else {
 				return array();
@@ -3004,7 +3004,7 @@ class Soter_Database_Resultset {
 	}
 	public function value($columnName, $default = null, $index = null) {
 		$row = $this->row($index);
-		return ($columnName && Sr::arrayKeyExists($columnName, $row)) ? $row[$columnName] : $default;
+		return ($columnName && \Sr::arrayKeyExists($columnName, $row)) ? $row[$columnName] : $default;
 	}
 	public function key($columnName) {
 		$this->_rowsKey = $columnName;
@@ -3052,7 +3052,7 @@ abstract class Soter_Model {
 abstract class Soter_Dao {
 	private $db;
 	public function __construct() {
-		$this->db = Sr::db();
+		$this->db = \Sr::db();
 	}
 	/**
 	 * 设置Dao中使用的数据库操作对象
@@ -3236,7 +3236,7 @@ abstract class Soter_Dao {
 				->select($fields)
 				->limit(($page - 1) * $pagesize, $pagesize)
 				->from($this->getTable())->execute()->rows();
-		$data['page'] = Sr::page($total, $page, $pagesize, $url, $pageBarOrder, $pageBarACount);
+		$data['page'] = \Sr::page($total, $page, $pagesize, $url, $pageBarOrder, $pageBarACount);
 		return $data;
 	}
 	/**
@@ -3261,7 +3261,7 @@ abstract class Soter_Dao {
 		$data['items'] = $this->getDb()
 			->execute('select ' . $fields . ' from ' . $table . (strpos(trim($cond), 'order') === 0 ? ' ' : ' where ') . $cond . ' limit ' . (($page - 1) * $pagesize) . ',' . $pagesize, $values)
 			->rows();
-		$data['page'] = Sr::page($total, $page, $pagesize, $url, $pageBarOrder, $pageBarACount);
+		$data['page'] = \Sr::page($total, $page, $pagesize, $url, $pageBarOrder, $pageBarACount);
 		return $data;
 	}
 }
@@ -3274,35 +3274,35 @@ abstract class Soter_Bean {
 abstract class Soter_Task {
 	protected $debug = false, $debugError = false;
 	public function __construct() {
-		if (!Sr::isCli()) {
-			throw new Soter_Exception_500('Task only in cli mode');
+		if (!\Sr::isCli()) {
+			throw new \Soter_Exception_500('Task only in cli mode');
 		}
 		if (!function_exists('shell_exec')) {
-			throw new Soter_Exception_500('Function [ shell_exec ] was disabled , run task must be enabled it .');
+			throw new \Soter_Exception_500('Function [ shell_exec ] was disabled , run task must be enabled it .');
 		}
 	}
 	public function _execute(Soter_CliArgs $args) {
 		$this->debug = $args->get('debug');
 		$this->debugError = $args->get('debug-error');
-		$startTime = Sr::microtime();
+		$startTime = \Sr::microtime();
 		$class = get_class($this);
 		if ($this->debugError) {
 			$_startTime = date('Y-m-d H:i:s.') . substr($startTime . '', strlen($startTime . '') - 3);
 			$error = $this->execute($args);
 			if ($error) {
-				$this->_log('Task [ ' . $class . ' ] execute failed , started at [ ' . $_startTime . ' ], use time ' . (Sr::microtime() - $startTime) . ' ms , exited with error : [ ' . $error . ' ]');
+				$this->_log('Task [ ' . $class . ' ] execute failed , started at [ ' . $_startTime . ' ], use time ' . (\Sr::microtime() - $startTime) . ' ms , exited with error : [ ' . $error . ' ]');
 				$this->_log('', false);
 			}
 		} else {
 			$this->_log('Task [ ' . $class . ' ] start');
 			$this->execute($args);
-			$this->_log('Task [ ' . $class . ' ] end , use time ' . (Sr::microtime() - $startTime) . ' ms');
+			$this->_log('Task [ ' . $class . ' ] end , use time ' . (\Sr::microtime() - $startTime) . ' ms');
 			$this->_log('', false);
 		}
 	}
 	public function _log($msg, $time = true) {
 		if ($this->debug || $this->debugError) {
-			$nowTime = '' . Sr::microtime();
+			$nowTime = '' . \Sr::microtime();
 			echo ($time ? date('[Y-m-d H:i:s.' . substr($nowTime, strlen($nowTime) - 3) . ']') . ' [PID:' . sprintf('%- 5d', getmypid()) . '] ' : '') . $msg . "\n";
 		}
 	}
@@ -3321,36 +3321,36 @@ abstract class Soter_Task_Single extends Soter_Task {
 	public function _execute(Soter_CliArgs $args) {
 		$this->debug = $args->get('debug');
 		$class = get_class($this);
-		$startTime = Sr::microtime();
+		$startTime = \Sr::microtime();
 		$this->_log('Single Task [ ' . $class . ' ] start');
 		$lockFilePath = $args->get('pid');
 		if (!$lockFilePath) {
-			$tempDirPath = Sr::config()->getStorageDirPath();
-			$key = md5(Sr::config()->getApplicationDir() .
-				Sr::config()->getClassesDirName() . '/'
-				. Sr::config()->getTaskDirName() . '/'
+			$tempDirPath = \Sr::config()->getStorageDirPath();
+			$key = md5(\Sr::config()->getApplicationDir() .
+				\Sr::config()->getClassesDirName() . '/'
+				. \Sr::config()->getTaskDirName() . '/'
 				. str_replace('_', '/', get_class($this)) . '.php');
-			$lockFilePath = Sr::realPath($tempDirPath) . '/' . $key . '.pid';
+			$lockFilePath = \Sr::realPath($tempDirPath) . '/' . $key . '.pid';
 		}
 		if (file_exists($lockFilePath)) {
 			$pid = file_get_contents($lockFilePath);
 			//lockfile进程pid存在，直接返回
 			if ($this->pidIsExists($pid)) {
 				$this->_log('Single Task [ ' . $class . ' ] is running with pid ' . $pid . ' , now exiting...');
-				$this->_log('Single Task [ ' . $class . ' ] end , use time ' . (Sr::microtime() - $startTime) . ' ms');
+				$this->_log('Single Task [ ' . $class . ' ] end , use time ' . (\Sr::microtime() - $startTime) . ' ms');
 				$this->_log('', false);
 				return;
 			}
 		}
 		//写入进程pid到lockfile
 		if (file_put_contents($lockFilePath, getmypid()) === false) {
-			throw new Soter_Exception_500('can not create file : [ ' . $lockFilePath . ' ]');
+			throw new \Soter_Exception_500('can not create file : [ ' . $lockFilePath . ' ]');
 		}
 		$this->_log('update pid file [ ' . $lockFilePath . ' ]');
 		$this->execute($args);
 		@unlink($lockFilePath);
 		$this->_log('clean pid file [ ' . $lockFilePath . ' ]');
-		$this->_log('Single Task [ ' . $class . ' ] end , use time ' . (Sr::microtime() - $startTime) . ' ms');
+		$this->_log('Single Task [ ' . $class . ' ] end , use time ' . (\Sr::microtime() - $startTime) . ' ms');
 		$this->_log('', false);
 	}
 }
@@ -3359,16 +3359,16 @@ abstract class Soter_Task_Multiple extends Soter_Task {
 	public function _execute(Soter_CliArgs $args) {
 		$this->debug = $args->get('debug');
 		$class = get_class($this);
-		$startTime = Sr::microtime();
+		$startTime = \Sr::microtime();
 		$this->_log('Multiple Task [ ' . $class . ' ] start');
 		$lockFilePath = $args->get('pid');
 		if (!$lockFilePath) {
-			$tempDirPath = Sr::config()->getStorageDirPath();
-			$key = md5(Sr::config()->getApplicationDir() .
-				Sr::config()->getClassesDirName() . '/'
-				. Sr::config()->getTaskDirName() . '/'
+			$tempDirPath = \Sr::config()->getStorageDirPath();
+			$key = md5(\Sr::config()->getApplicationDir() .
+				\Sr::config()->getClassesDirName() . '/'
+				. \Sr::config()->getTaskDirName() . '/'
 				. str_replace('_', '/', get_class($this)) . '.php');
-			$lockFilePath = Sr::realPath($tempDirPath) . '/' . $key . '.pid';
+			$lockFilePath = \Sr::realPath($tempDirPath) . '/' . $key . '.pid';
 		}
 		$alivedPids = array();
 		if (file_exists($lockFilePath)) {
@@ -3381,7 +3381,7 @@ abstract class Soter_Task_Multiple extends Soter_Task {
 						if (++$count > $this->getMaxCount() - 1) {
 							//进程数达到最大值，直接返回
 							$this->_log('Multiple Task [ ' . $class . ' ] reach max count : ' . $this->getMaxCount() . ' , now exiting...');
-							$this->_log('Multiple Task [ ' . $class . ' ] end , use time ' . (Sr::microtime() - $startTime) . ' ms');
+							$this->_log('Multiple Task [ ' . $class . ' ] end , use time ' . (\Sr::microtime() - $startTime) . ' ms');
 							$this->_log('', false);
 							return;
 						}
@@ -3392,12 +3392,12 @@ abstract class Soter_Task_Multiple extends Soter_Task {
 		$alivedPids[] = getmypid();
 		//写入存活进程pid到lockfile
 		if (file_put_contents($lockFilePath, implode("\n", $alivedPids)) === false) {
-			throw new Soter_Exception_500('can not create file : [ ' . $lockFilePath . ' ]');
+			throw new \Soter_Exception_500('can not create file : [ ' . $lockFilePath . ' ]');
 		}
 		$this->_log('update pid file [ ' . $lockFilePath . ' ]');
 		$this->execute($args);
 		$this->_log('clean pid file [ ' . $lockFilePath . ' ]');
-		$this->_log('Multiple Task [ ' . $class . ' ] end , use time ' . (Sr::microtime() - $startTime) . ' ms');
+		$this->_log('Multiple Task [ ' . $class . ' ] end , use time ' . (\Sr::microtime() - $startTime) . ' ms');
 		$this->_log('', false);
 	}
 }
@@ -3407,7 +3407,7 @@ abstract class Soter_Task_Multiple extends Soter_Task {
 abstract class Soter_Router {
 	protected $route;
 	public function __construct() {
-		$this->route = new Soter_Route();
+		$this->route = new \Soter_Route();
 	}
 	/**
 	 *
@@ -3427,7 +3427,7 @@ abstract class Soter_Exception extends Exception {
 		$this->errorMessage = $errorMessage;
 		$this->errorCode = $errorCode;
 		$this->errorType = $errorType;
-		$this->errorFile = Sr::realPath($errorFile);
+		$this->errorFile = \Sr::realPath($errorFile);
 		$this->errorLine = $errorLine;
 		$this->trace = debug_backtrace(false);
 	}
@@ -3474,11 +3474,11 @@ abstract class Soter_Exception extends Exception {
 		return $this->errorCode ? $this->errorCode : $this->getCode();
 	}
 	public function getEnvironment() {
-		return Sr::config()->getEnvironment();
+		return \Sr::config()->getEnvironment();
 	}
 	public function getErrorFile($safePath = FALSE) {
 		$file = $this->errorFile ? $this->errorFile : $this->getFile();
-		return $safePath ? Sr::safePath($file) : $file;
+		return $safePath ? \Sr::safePath($file) : $file;
 	}
 	public function getErrorLine() {
 		return $this->errorLine ? $this->errorLine : ( $this->errorFile ? $this->errorLine : $this->getLine());
@@ -3489,7 +3489,7 @@ abstract class Soter_Exception extends Exception {
 	public function render($isJson = FALSE, $return = FALSE) {
 		if ($isJson) {
 			$string = $this->renderJson();
-		} elseif (Sr::isCli()) {
+		} elseif (\Sr::isCli()) {
 			$string = $this->renderCli();
 		} else {
 			$string = str_replace('</body>', $this->getTraceString(FALSE) . '</body>', $this->renderHtml());
@@ -3514,8 +3514,8 @@ abstract class Soter_Exception extends Exception {
 		}
 		$i = 1;
 		foreach ($trace as $e) {
-			$file = Sr::safePath(Sr::arrayGet($e, 'file'));
-			$line = Sr::arrayGet($e, 'line');
+			$file = \Sr::safePath(Sr::arrayGet($e, 'file'));
+			$line = \Sr::arrayGet($e, 'line');
 			$func = (!empty($e['class']) ? "{$e['class']}{$e['type']}{$e['function']}()" : "{$e['function']}()");
 			$str.="&rarr; " . ($i++) . ".{$func} " . ($line ? "[ line:{$line} {$file} ]" : '') . ($isCli ? "\n" : '<br/>');
 		}
@@ -3540,14 +3540,14 @@ abstract class Soter_Exception extends Exception {
 			. '</body>';
 	}
 	public function renderJson() {
-		$render = soter::getConfig()->getExceptionJsonRender();
+		$render = \Soter::getConfig()->getExceptionJsonRender();
 		if (is_callable($render)) {
 			return $render($this);
 		}
 		return '';
 	}
 	public function setHttpHeader() {
-		if (!Sr::isCli()) {
+		if (!\Sr::isCli()) {
 			header($this->httpStatusLine);
 		}
 		return $this;
@@ -3562,7 +3562,7 @@ abstract class Soter_Session {
 		if (is_array($configFileName)) {
 			$this->config = $configFileName;
 		} else {
-			$this->config = Sr::config($configFileName);
+			$this->config = \Sr::config($configFileName);
 		}
 	}
 	public abstract function init();
@@ -3584,8 +3584,8 @@ class Soter_Exception_Database extends Soter_Exception {
 class Soter_Request_Default implements Soter_Request {
 	private $pathInfo, $queryString;
 	public function __construct() {
-		$this->pathInfo = Sr::arrayGet($_SERVER, 'PATH_INFO', Sr::arrayGet($_SERVER, 'REDIRECT_PATH_INFO'));
-		$this->queryString = Sr::arrayGet($_SERVER, 'QUERY_STRING', '');
+		$this->pathInfo = \Sr::arrayGet($_SERVER, 'PATH_INFO', \Sr::arrayGet($_SERVER, 'REDIRECT_PATH_INFO'));
+		$this->queryString = \Sr::arrayGet($_SERVER, 'QUERY_STRING', '');
 	}
 	public function getPathInfo() {
 		return $this->pathInfo;
@@ -3607,12 +3607,12 @@ class Soter_View {
 	public function add($key, $value = array()) {
 		if (is_array($key)) {
 			foreach ($key as $k => $v) {
-				if (!Sr::arrayKeyExists($k, self::$vars)) {
+				if (!\Sr::arrayKeyExists($k, self::$vars)) {
 					self::$vars[$k] = $v;
 				}
 			}
 		} else {
-			if (!Sr::arrayKeyExists($key, self::$vars)) {
+			if (!\Sr::arrayKeyExists($key, self::$vars)) {
 				self::$vars[$key] = $value;
 			}
 		}
@@ -3630,7 +3630,7 @@ class Soter_View {
 	}
 	private function _load($path, $data = array(), $return = false) {
 		if (!file_exists($path)) {
-			throw new Soter_Exception_500('view file : [ ' . $path . ' ] not found');
+			throw new \Soter_Exception_500('view file : [ ' . $path . ' ] not found');
 		}
 		$data = array_merge(self::$vars, $data);
 		if (!empty($data)) {
@@ -3655,23 +3655,23 @@ class Soter_View {
 	 * @return string
 	 */
 	public function load($viewName, $data = array(), $return = false) {
-		$config = Sr::config();
+		$config = \Sr::config();
 		$path = $config->getApplicationDir() . $config->getViewsDirName() . '/' . $viewName . '.php';
 		$hmvcModules = $config->getHmvcModules();
-		$hmvcDirName = Sr::arrayGet($hmvcModules, $config->getRoute()->getHmvcModuleName(), '');
+		$hmvcDirName = \Sr::arrayGet($hmvcModules, $config->getRoute()->getHmvcModuleName(), '');
 		//当load方法在主项目的视图中被调用，然后hmvc主项目load了这个视图，那么这个视图里面的load应该使用的是主项目视图。
 		//hmvc访问
 		if ($hmvcDirName) {
-			$hmvcPath = Sr::realPath($config->getPrimaryApplicationDir() . $config->getHmvcDirName() . '/' . $hmvcDirName);
+			$hmvcPath = \Sr::realPath($config->getPrimaryApplicationDir() . $config->getHmvcDirName() . '/' . $hmvcDirName);
 			$trace = debug_backtrace();
 			$calledIsInHmvc = false;
-			$appPath = Sr::realPath($config->getApplicationDir());
+			$appPath = \Sr::realPath($config->getApplicationDir());
 			foreach ($trace as $t) {
-				$filepath = Sr::arrayGet($t, 'file', '');
+				$filepath = \Sr::arrayGet($t, 'file', '');
 				if (!empty($filepath)) {
-					$filepath = Sr::realPath($filepath);
+					$filepath = \Sr::realPath($filepath);
 					$checkList = array('load', 'runWeb', 'message', 'redirect');
-					$function = Sr::arrayGet($t, 'function', '');
+					$function = \Sr::arrayGet($t, 'function', '');
 					if ($filepath && in_array($function, $checkList) && strpos($filepath, $appPath) === 0 && strpos($filepath, $hmvcPath) === 0) {
 						$calledIsInHmvc = true;
 						break;
@@ -3696,7 +3696,7 @@ class Soter_View {
 	 * @return string
 	 */
 	public function loadParent($viewName, $data = array(), $return = false) {
-		$config = Sr::config();
+		$config = \Sr::config();
 		$path = $config->getPrimaryApplicationDir() . $config->getViewsDirName() . '/' . $viewName . '.php';
 		return $this->_load($path, $data, $return);
 	}
@@ -3704,13 +3704,13 @@ class Soter_View {
 class Soter_CliArgs {
 	private $args;
 	public function __construct() {
-		$this->args = Sr::getOpt();
+		$this->args = \Sr::getOpt();
 	}
 	public function get($key = null, $default = null) {
 		if (empty($key)) {
 			return $this->args;
 		}
-		return Sr::arrayGet($this->args, $key, $default);
+		return \Sr::arrayGet($this->args, $key, $default);
 	}
 }
 class Soter_Route {
@@ -3737,10 +3737,10 @@ class Soter_Route {
 		return $this->method;
 	}
 	public function getControllerShort() {
-		return preg_replace('/^' . Sr::config()->getControllerDirName() . '_/', '', $this->getController());
+		return preg_replace('/^' . \Sr::config()->getControllerDirName() . '_/', '', $this->getController());
 	}
 	public function getMethodShort() {
-		return preg_replace('/^' . Sr::config()->getMethodPrefix() . '/', '', $this->getMethod());
+		return preg_replace('/^' . \Sr::config()->getMethodPrefix() . '/', '', $this->getMethod());
 	}
 	public function getArgs() {
 		return $this->args;
@@ -3763,16 +3763,16 @@ class Soter_Route {
 }
 class Soter_Router_Get_Default extends Soter_Router {
 	public function find() {
-		$config = Sr::config();
+		$config = \Sr::config();
 		$query = $config->getRequest()->getQueryString();
 		//pathinfo非空说明是pathinfo路由，get路由器不再处理直接返回
 		if ($config->getRequest()->getPathInfo() || !$query) {
 			return $this->route->setFound(FALSE);
 		}
 		parse_str($query, $get);
-		$controllerName = Sr::arrayGet($get, $config->getRouterUrlControllerKey(), '');
-		$methodName = Sr::arrayGet($get, $config->getRouterUrlMethodKey(), '');
-		$hmvcModule = Sr::arrayGet($get, $config->getRouterUrlModuleKey(), '');
+		$controllerName = \Sr::arrayGet($get, $config->getRouterUrlControllerKey(), '');
+		$methodName = \Sr::arrayGet($get, $config->getRouterUrlMethodKey(), '');
+		$hmvcModule = \Sr::arrayGet($get, $config->getRouterUrlModuleKey(), '');
 		$_hmvcModule = $config->getCurrentDomainHmvcModuleNname();
 		if (!$_hmvcModule) {
 			if ($config->hmvcIsDomainOnly($hmvcModule)) {
@@ -3784,7 +3784,7 @@ class Soter_Router_Get_Default extends Soter_Router {
 			$hmvcModule = $_hmvcModule;
 		}
 		//处理hmvc模块
-		$hmvcModuleDirName = Soter::checkHmvc($hmvcModule, false);
+		$hmvcModuleDirName = \Soter::checkHmvc($hmvcModule, false);
 		if ($controllerName) {
 			$controllerName = $config->getControllerDirName() . '_' . $controllerName;
 		}
@@ -3799,7 +3799,7 @@ class Soter_Router_Get_Default extends Soter_Router {
 }
 class Soter_Router_PathInfo_Default extends Soter_Router {
 	public function find() {
-		$config = Soter::getConfig();
+		$config = \Soter::getConfig();
 		$uri = $config->getRequest()->getPathInfo();
 		$uri = trim($uri, '/');
 		if (empty($uri)) {
@@ -3825,7 +3825,7 @@ class Soter_Router_PathInfo_Default extends Soter_Router {
 			$hmvcModule = $_hmvcModule;
 		}
 		//处理hmvc模块
-		$hmvcModuleDirName = Soter::checkHmvc($hmvcModule, FALSE);
+		$hmvcModuleDirName = \Soter::checkHmvc($hmvcModule, FALSE);
 		if (!$_hmvcModule && $hmvcModuleDirName && !$config->hmvcIsDomainOnly($hmvcModule)) {
 			//当前域名没有绑定hvmc,且访问的是hmvc模块，且是非domainOnly的，那么就去除hmvc模块名称，得到真正的路径
 			$uri = ltrim(substr($uri, strlen($hmvcModule)), '/');
@@ -3844,7 +3844,7 @@ class Soter_Router_PathInfo_Default extends Soter_Router {
 			//解析路径
 			$methodPathArr = explode($subfix, $uri);
 			//找到了控制器名或者方法-参数名(1,2,3,4)
-			if (Sr::strEndsWith($uri, $subfix)) {
+			if (\Sr::strEndsWith($uri, $subfix)) {
 				//找到了控制器名和方法-参数名(1,2)，覆盖上面的默认控制器名和方法-参数名
 				if (stripos($methodPathArr[0], '/') !== false) {
 					$controller = str_replace('/', '_', dirname($uri));
@@ -3956,9 +3956,9 @@ class Soter_Config {
 		return $this;
 	}
 	public function setExceptionControl($isExceptionControl) {
-		if ($isExceptionControl && !Sr::isPluginMode()) {
+		if ($isExceptionControl && !\Sr::isPluginMode()) {
 			//注册错误处理
-			Soter_Logger_Writer_Dispatcher::initialize();
+			\Soter_Logger_Writer_Dispatcher::initialize();
 		}
 		return $this;
 	}
@@ -3966,17 +3966,17 @@ class Soter_Config {
 		return empty($this->storageDirPath) ? $this->getPrimaryApplicationDir() . 'storage/' : $this->storageDirPath;
 	}
 	public function setStorageDirPath($storageDirPath) {
-		$this->storageDirPath = Sr::realPath($storageDirPath, true);
+		$this->storageDirPath = \Sr::realPath($storageDirPath, true);
 		return $this;
 	}
 	public function getCurrentDomainHmvcModuleNname() {
 		if (!$this->hmvcDomains['enable']) {
 			return false;
 		}
-		$_domain = Sr::server('http_host');
+		$_domain = \Sr::server('http_host');
 		$domain = explode('.', $_domain);
 		$length = count($domain);
-		$topDomain='';
+		$topDomain = '';
 		if ($length >= 2) {
 			$topDomain = $domain[$length - 2] . '.' . $domain[$length - 1];
 		}
@@ -4046,14 +4046,14 @@ class Soter_Config {
 		return $this->dataCheckRules;
 	}
 	public function setDataCheckRules($dataCheckRules) {
-		$this->dataCheckRules = is_array($dataCheckRules) ? $dataCheckRules : Sr::config($dataCheckRules, false);
+		$this->dataCheckRules = is_array($dataCheckRules) ? $dataCheckRules : \Sr::config($dataCheckRules, false);
 		return $this;
 	}
 	public function getMethodCacheConfig() {
 		return $this->methodCacheConfig;
 	}
 	public function setMethodCacheConfig($methodCacheConfig) {
-		$this->methodCacheConfig = is_array($methodCacheConfig) ? $methodCacheConfig : Sr::config($methodCacheConfig, false);
+		$this->methodCacheConfig = is_array($methodCacheConfig) ? $methodCacheConfig : \Sr::config($methodCacheConfig, false);
 		return $this;
 	}
 	public function getViewsDirName() {
@@ -4075,7 +4075,7 @@ class Soter_Config {
 				'file' => array(
 				    'class' => 'Soter_Cache_File',
 				    //缓存文件保存路径
-				    'config' => Sr::config()->getStorageDirPath() . 'cache/'
+				    'config' => \Sr::config()->getStorageDirPath() . 'cache/'
 				),
 			    )
 			);
@@ -4086,12 +4086,12 @@ class Soter_Config {
 			return is_null($config) ? new $className() : new $className($config);
 		} else {
 			$key = $key ? $key : $this->cacheConfig['default_type'];
-			if (!Sr::arrayKeyExists("drivers.$key", $this->cacheConfig)) {
-				throw new Soter_Exception_500('unknown cache type [ ' . $key . ' ]');
+			if (!\Sr::arrayKeyExists("drivers.$key", $this->cacheConfig)) {
+				throw new \Soter_Exception_500('unknown cache type [ ' . $key . ' ]');
 			}
 			$config = $this->cacheConfig['drivers'][$key]['config'];
 			$className = $this->cacheConfig['drivers'][$key]['class'];
-			if (!Sr::arrayKeyExists($key, $this->cacheHandles)) {
+			if (!\Sr::arrayKeyExists($key, $this->cacheHandles)) {
 				$this->cacheHandles[$key] = is_null($config) ? new $className() : new $className($config);
 			}
 			return $this->cacheHandles[$key];
@@ -4103,11 +4103,11 @@ class Soter_Config {
 	public function setCacheConfig($cacheConfig) {
 		$this->cacheHandles = array();
 		if (is_string($cacheConfig)) {
-			$this->cacheConfig = Sr::config($cacheConfig, false);
+			$this->cacheConfig = \Sr::config($cacheConfig, false);
 		} elseif (is_array($cacheConfig)) {
 			$this->cacheConfig = $cacheConfig;
 		} else {
-			throw new Soter_Exception_500('unknown type of cache configure , it should be a string or an array .');
+			throw new \Soter_Exception_500('unknown type of cache configure , it should be a string or an array .');
 		}
 		return $this;
 	}
@@ -4122,7 +4122,7 @@ class Soter_Config {
 		if ($sessionHandle instanceof Soter_Session) {
 			$this->sessionHandle = $sessionHandle;
 		} else {
-			$this->sessionHandle = Sr::config($sessionHandle, false);
+			$this->sessionHandle = \Sr::config($sessionHandle, false);
 		}
 		return $this;
 	}
@@ -4131,7 +4131,7 @@ class Soter_Config {
 			$this->sessionConfig = array(
 			    'autostart' => false,
 			    'cookie_path' => '/',
-			    'cookie_domain' => Sr::server('HTTP_HOST'),
+			    'cookie_domain' => \Sr::server('HTTP_HOST'),
 			    'session_name' => 'SOTER',
 			    'lifetime' => 3600,
 			);
@@ -4142,7 +4142,7 @@ class Soter_Config {
 		if (is_array($sessionConfig)) {
 			$this->sessionConfig = $sessionConfig;
 		} else {
-			$this->sessionConfig = Sr::config($sessionConfig, false);
+			$this->sessionConfig = \Sr::config($sessionConfig, false);
 		}
 		return $this;
 	}
@@ -4150,12 +4150,12 @@ class Soter_Config {
 		if (empty($group)) {
 			return $this->databseConfig;
 		} else {
-			return Sr::arrayKeyExists($group, $this->databseConfig) ? $this->databseConfig[$group] : array();
+			return \Sr::arrayKeyExists($group, $this->databseConfig) ? $this->databseConfig[$group] : array();
 		}
 	}
 	public function setDatabseConfig($databseConfig) {
-		Sr::clearDbInstances();
-		$this->databseConfig = is_array($databseConfig) ? $databseConfig : Sr::config($databseConfig, false);
+		\Sr::clearDbInstances();
+		$this->databseConfig = is_array($databseConfig) ? $databseConfig : \Sr::config($databseConfig, false);
 		return $this;
 	}
 	public function getIsMaintainMode() {
@@ -4222,7 +4222,7 @@ class Soter_Config {
 		return $this->primaryApplicationDir;
 	}
 	public function setPrimaryApplicationDir($primaryApplicationDir) {
-		$this->primaryApplicationDir = Sr::realPath($primaryApplicationDir) . '/';
+		$this->primaryApplicationDir = \Sr::realPath($primaryApplicationDir) . '/';
 		return $this;
 	}
 	public function getBackendServerIpWhitelist() {
@@ -4261,7 +4261,7 @@ class Soter_Config {
 	}
 	public function addAutoloadFunctions(Array $funciontsFileNameArray) {
 		foreach ($funciontsFileNameArray as $functionsFileName) {
-			Sr::functions($functionsFileName);
+			\Sr::functions($functionsFileName);
 		}
 		return $this;
 	}
@@ -4326,7 +4326,7 @@ class Soter_Config {
 	 * @return Soter_Route
 	 */
 	public function getRoute() {
-		return empty($this->route) ? new Soter_Route() : $this->route;
+		return empty($this->route) ? new \Soter_Route() : $this->route;
 	}
 	public function setRoute($route) {
 		$this->route = $route;
@@ -4377,14 +4377,14 @@ class Soter_Config {
 		return $this->indexName;
 	}
 	public function setApplicationDir($applicationDir) {
-		$this->applicationDir = Sr::realPath($applicationDir) . '/';
+		$this->applicationDir = \Sr::realPath($applicationDir) . '/';
 		if (empty($this->primaryApplicationDir)) {
 			$this->primaryApplicationDir = $this->applicationDir;
 		}
 		return $this;
 	}
 	public function setIndexDir($indexDir) {
-		$this->indexDir = Sr::realPath($indexDir) . '/';
+		$this->indexDir = \Sr::realPath($indexDir) . '/';
 		return $this;
 	}
 	public function setIndexName($indexName) {
@@ -4407,7 +4407,7 @@ class Soter_Config {
 	}
 	public function setMethodUriSubfix($methodUriSubfix) {
 		if (!$methodUriSubfix) {
-			throw new Soter_Exception_500('"Method Uri Subfix" can not be empty.');
+			throw new \Soter_Exception_500('"Method Uri Subfix" can not be empty.');
 		}
 		$this->methodUriSubfix = $methodUriSubfix;
 		return $this;
@@ -4443,7 +4443,7 @@ class Soter_Config {
 		return $this;
 	}
 	public function addMasterPackage($packagePath) {
-		$packagePath = Sr::realPath($packagePath) . '/';
+		$packagePath = \Sr::realPath($packagePath) . '/';
 		if (!in_array($packagePath, $this->packageMasterContainer)) {
 			//注册“包”到主包容器中
 			array_push($this->packageMasterContainer, $packagePath);
@@ -4460,7 +4460,7 @@ class Soter_Config {
 		return $this;
 	}
 	public function addPackage($packagePath) {
-		$packagePath = Sr::realPath($packagePath) . '/';
+		$packagePath = \Sr::realPath($packagePath) . '/';
 		if (!in_array($packagePath, $this->packageContainer)) {
 			//注册“包”到包容器中
 			array_push($this->packageContainer, $packagePath);
@@ -4476,7 +4476,7 @@ class Soter_Config {
 	public function bootstrap() {
 		//引入“bootstrap”配置
 		if (file_exists($bootstrap = $this->getApplicationDir() . 'bootstrap.php')) {
-			Sr::includeOnce($bootstrap);
+			\Sr::includeOnce($bootstrap);
 		}
 	}
 	public function getShowError() {
@@ -4532,11 +4532,11 @@ class Soter_Logger_Writer_Dispatcher {
 	public static function initialize() {
 		if (empty(self::$instance)) {
 			//保留内存
-			self::$memReverse = str_repeat("x", Soter::getConfig()->getExceptionMemoryReserveSize());
-			self::$instance = new self();
+			self::$memReverse = str_repeat("x", \Soter::getConfig()->getExceptionMemoryReserveSize());
+			self::$instance = new \Soter_Logger_Writer_Dispatcher();
 			error_reporting(E_ALL);
 			//插件模式打开错误显示，web和命令行模式关闭错误显示
-			Sr::isPluginMode() ? ini_set('display_errors', TRUE) : ini_set('display_errors', FALSE);
+			\Sr::isPluginMode() ? ini_set('display_errors', TRUE) : ini_set('display_errors', FALSE);
 			set_exception_handler(array(self::$instance, 'handleException'));
 			set_error_handler(array(self::$instance, 'handleError'));
 			register_shutdown_function(array(self::$instance, 'handleFatal'));
@@ -4546,14 +4546,14 @@ class Soter_Logger_Writer_Dispatcher {
 		if (is_subclass_of($exception, 'Soter_Exception')) {
 			$this->dispatch($exception);
 		} else {
-			$this->dispatch(new Soter_Exception_500($exception->getMessage(), $exception->getCode(), get_class($exception), $exception->getFile(), $exception->getLine()));
+			$this->dispatch(new \Soter_Exception_500($exception->getMessage(), $exception->getCode(), get_class($exception), $exception->getFile(), $exception->getLine()));
 		}
 	}
 	final public function handleError($code, $message, $file, $line) {
 		if (0 == error_reporting()) {
 			return;
 		}
-		$this->dispatch(new Soter_Exception_500($message, $code, 'General Error', $file, $line));
+		$this->dispatch(new \Soter_Exception_500($message, $code, 'General Error', $file, $line));
 	}
 	final public function handleFatal() {
 		if (0 == error_reporting()) {
@@ -4561,15 +4561,15 @@ class Soter_Logger_Writer_Dispatcher {
 		}
 		$lastError = error_get_last();
 		$fatalError = array(1, 256, 64, 16, 4, 4096);
-		if (!Sr::arrayKeyExists("type", $lastError) || !in_array($lastError["type"], $fatalError)) {
+		if (!\Sr::arrayKeyExists("type", $lastError) || !in_array($lastError["type"], $fatalError)) {
 			return;
 		}
 		//当发生致命错误的时候，释放保留的内存，提供给下面的处理代码使用
 		self::$memReverse = null;
-		$this->dispatch(new Soter_Exception_500($lastError['message'], $lastError['type'], 'Fatal Error', $lastError['file'], $lastError['line']));
+		$this->dispatch(new \Soter_Exception_500($lastError['message'], $lastError['type'], 'Fatal Error', $lastError['file'], $lastError['line']));
 	}
 	final public function dispatch(Soter_Exception $exception) {
-		$config = Sr::config();
+		$config = \Sr::config();
 		ini_set('display_errors', TRUE);
 		$loggerWriters = $config->getLoggerWriters();
 		foreach ($loggerWriters as $loggerWriter) {
@@ -4582,7 +4582,7 @@ class Soter_Logger_Writer_Dispatcher {
 			} else {
 				$exception->render();
 			}
-		} elseif (Sr::isCli()) {
+		} elseif (\Sr::isCli()) {
 			$exception->render();
 		}
 		exit();
@@ -4592,21 +4592,21 @@ class Soter_Logger_FileWriter implements Soter_Logger_Writer {
 	private $logsDirPath, $log404;
 	public function __construct($logsDirPath, $log404 = true) {
 		$this->log404 = $log404;
-		$this->logsDirPath = Sr::realPath($logsDirPath) . '/' . date(Sr::config()->getLogsSubDirNameFormat()) . '/';
+		$this->logsDirPath = \Sr::realPath($logsDirPath) . '/' . date(\Sr::config()->getLogsSubDirNameFormat()) . '/';
 	}
 	public function write(Soter_Exception $exception) {
 		if (!$this->log404 && ($exception instanceof Soter_Exception_404)) {
 			return;
 		}
-		$content = 'Domain : ' . Sr::server('http_host') . "\n"
-			. 'ClientIP : ' . Sr::server('SERVER_ADDR') . "\n"
-			. 'ServerIP : ' . Sr::serverIp() . "\n"
-			. 'ServerHostname : ' . Sr::hostname() . "\n"
-			. (!Sr::isCli() ? 'Request Uri : ' . Sr::server('request_uri') : '') . "\n"
-			. (!Sr::isCli() ? 'Get Data : ' . json_encode(Sr::get()) : '') . "\n"
-			. (!Sr::isCli() ? 'Post Data : ' . json_encode(Sr::post()) : '') . "\n"
-			. (!Sr::isCli() ? 'Cookie Data : ' . json_encode(Sr::cookie()) : '') . "\n"
-			. (!Sr::isCli() ? 'Server Data : ' . json_encode(Sr::server()) : '') . "\n"
+		$content = 'Domain : ' . \Sr::server('http_host') . "\n"
+			. 'ClientIP : ' . \Sr::server('SERVER_ADDR') . "\n"
+			. 'ServerIP : ' . \Sr::serverIp() . "\n"
+			. 'ServerHostname : ' . \Sr::hostname() . "\n"
+			. (!\Sr::isCli() ? 'Request Uri : ' . \Sr::server('request_uri') : '') . "\n"
+			. (!\Sr::isCli() ? 'Get Data : ' . json_encode(\Sr::get()) : '') . "\n"
+			. (!\Sr::isCli() ? 'Post Data : ' . json_encode(\Sr::post()) : '') . "\n"
+			. (!\Sr::isCli() ? 'Cookie Data : ' . json_encode(\Sr::cookie()) : '') . "\n"
+			. (!\Sr::isCli() ? 'Server Data : ' . json_encode(\Sr::server()) : '') . "\n"
 			. $exception->renderCli() . "\n";
 		if (!is_dir($this->logsDirPath)) {
 			mkdir($this->logsDirPath, 0700, true);
@@ -4619,7 +4619,7 @@ class Soter_Logger_FileWriter implements Soter_Logger_Writer {
 }
 class Soter_Maintain_Handle_Default implements Soter_Maintain_Handle {
 	public function handle() {
-		if (!Sr::isCli()) {
+		if (!\Sr::isCli()) {
 			header('Content-type: text/html;charset=utf-8');
 		}
 		echo '<center><h2>server is under maintenance</h2><h3>服务器维护中</h3>' . date('Y/m/d H:i:s e') . '</center>';
@@ -4637,7 +4637,7 @@ class Soter_Exception_Handle_Default implements Soter_Exception_Handle {
 }
 class Soter_Database_SlowQuery_Handle_Default implements Soter_Database_SlowQuery_Handle {
 	public function handle($sql, $explainString, $time) {
-		$dir = Sr::config()->getStorageDirPath() . 'slow-query-debug/';
+		$dir = \Sr::config()->getStorageDirPath() . 'slow-query-debug/';
 		$file = $dir . 'slow-query-debug.php';
 		if (!is_dir($dir)) {
 			mkdir($dir, 0700, true);
@@ -4654,7 +4654,7 @@ class Soter_Database_SlowQuery_Handle_Default implements Soter_Database_SlowQuer
 }
 class Soter_Database_Index_Handle_Default implements Soter_Database_Index_Handle {
 	public function handle($sql, $explainString, $time) {
-		$dir = Sr::config()->getStorageDirPath() . 'index-debug/';
+		$dir = \Sr::config()->getStorageDirPath() . 'index-debug/';
 		$file = $dir . 'index-debug.php';
 		if (!is_dir($dir)) {
 			mkdir($dir, 0700, true);
@@ -4672,13 +4672,13 @@ class Soter_Database_Index_Handle_Default implements Soter_Database_Index_Handle
 class Soter_Cache_File implements Soter_Cache {
 	private $_cacheDirPath;
 	public function __construct($cacheDirPath = '') {
-		$cacheDirPath = empty($cacheDirPath) ? Sr::config()->getStorageDirPath() . 'cache/' : $cacheDirPath;
-		$this->_cacheDirPath = Sr::realPath($cacheDirPath) . '/';
+		$cacheDirPath = empty($cacheDirPath) ? \Sr::config()->getStorageDirPath() . 'cache/' : $cacheDirPath;
+		$this->_cacheDirPath = \Sr::realPath($cacheDirPath) . '/';
 		if (!is_dir($this->_cacheDirPath)) {
 			mkdir($this->_cacheDirPath, 0700, true);
 		}
 		if (!is_writable($this->_cacheDirPath)) {
-			throw new Soter_Exception_500('cache dir [ ' . Sr::safePath($this->_cacheDirPath) . ' ] not writable');
+			throw new \Soter_Exception_500('cache dir [ ' . \Sr::safePath($this->_cacheDirPath) . ' ] not writable');
 		}
 	}
 	private function _hashKey($key) {
@@ -4698,7 +4698,7 @@ class Soter_Cache_File implements Soter_Cache {
 	}
 	private function unpack($cacheData) {
 		$cacheData = @unserialize($cacheData);
-		if (is_array($cacheData) && Sr::arrayKeyExists('userData', $cacheData) && Sr::arrayKeyExists('expireTime', $cacheData)) {
+		if (is_array($cacheData) && \Sr::arrayKeyExists('userData', $cacheData) && \Sr::arrayKeyExists('expireTime', $cacheData)) {
 			if ($cacheData['expireTime'] == 0) {
 				return $cacheData['userData'];
 			}
@@ -4708,7 +4708,7 @@ class Soter_Cache_File implements Soter_Cache {
 		}
 	}
 	public function clean() {
-		return Sr::rmdir($this->_cacheDirPath, false);
+		return \Sr::rmdir($this->_cacheDirPath, false);
 	}
 	public function delete($key) {
 		if (empty($key)) {
@@ -4764,7 +4764,7 @@ class Soter_Cache_Memcached implements Soter_Cache {
 	}
 	private function _init() {
 		if (empty($this->handle)) {
-			$this->handle = new Memcached();
+			$this->handle = new \Memcached();
 			foreach ($this->config as $server) {
 				if ($server[2] > 0) {
 					$this->handle->addServer($server[0], $server[1], $server[2]);
@@ -4806,7 +4806,7 @@ class Soter_Cache_Memcache implements Soter_Cache {
 	}
 	private function _init() {
 		if (empty($this->handle)) {
-			$this->handle = new Memcache();
+			$this->handle = new \Memcache();
 			foreach ($this->config as $server) {
 				$this->handle->addserver($server[0], $server[1]);
 			}
@@ -4889,7 +4889,7 @@ class Soter_Cache_Redis implements Soter_Cache {
 		return $this->servers[$serverKey];
 	}
 	private function &connect($config) {
-		$redis = new Redis();
+		$redis = new \Redis();
 		if ($config['type'] == 'sock') {
 			$redis->connect($config['sock']);
 		} else {
@@ -4902,7 +4902,7 @@ class Soter_Cache_Redis implements Soter_Cache {
 			if ($config['prefix']{strlen($config['prefix']) - 1} != ':') {
 				$config['prefix'] .= ':';
 			}
-			$redis->setOption(Redis::OPT_PREFIX, $config['prefix']);
+			$redis->setOption(\Redis::OPT_PREFIX, $config['prefix']);
 		}
 		$redis->select($config['db']);
 		return $redis;
@@ -4955,9 +4955,9 @@ class Soter_Cache_Redis_Cluster implements Soter_Cache {
 	}
 	private function _init() {
 		if (empty($this->handle)) {
-			$this->handle = new RedisCluster(null, $this->config['hosts'], $this->config['timeout'], $this->config['read_timeout'], $this->config['persistent']);
+			$this->handle = new \RedisCluster(null, $this->config['hosts'], $this->config['timeout'], $this->config['read_timeout'], $this->config['persistent']);
 			if ($this->config['prefix']) {
-				$this->handle->setOption(RedisCluster::OPT_PREFIX, $this->config['prefix']);
+				$this->handle->setOption(\RedisCluster::OPT_PREFIX, $this->config['prefix']);
 			}
 		}
 	}
@@ -4966,7 +4966,7 @@ class Soter_Cache_Redis_Cluster implements Soter_Cache {
 		return $this;
 	}
 	public function clean() {
-		throw new Soter_Exception_500('clean method not supported of Soter_Cache_Redis_Cluster ');
+		throw new \Soter_Exception_500('clean method not supported of Soter_Cache_Redis_Cluster ');
 	}
 	public function delete($key) {
 		$this->_init();
@@ -4997,7 +4997,7 @@ class Soter_Cache_Redis_Cluster implements Soter_Cache {
 }
 class Soter_Generator extends Soter_Task {
 	public function execute(Soter_CliArgs $args) {
-		$config = Sr::config();
+		$config = \Sr::config();
 		$name = $args->get('name');
 		$type = $args->get('type');
 		$force = $args->get('overwrite');
@@ -5012,7 +5012,7 @@ class Soter_Generator extends Soter_Task {
 		    'controller' => array(
 			'dir' => $config->getControllerDirName(),
 			'parentClass' => 'Soter_Controller',
-			'methodName' => Sr::config()->getMethodPrefix() . 'index()',
+			'methodName' => \Sr::config()->getMethodPrefix() . 'index()',
 			'nameTip' => 'Controller'
 		    ),
 		    'business' => array(
@@ -5034,7 +5034,7 @@ class Soter_Generator extends Soter_Task {
 			'nameTip' => 'Task'
 		    )
 		);
-		if (!Sr::arrayKeyExists($type, $info)) {
+		if (!\Sr::arrayKeyExists($type, $info)) {
 			exit('[ Error ]' . "\n" . 'Type : [ ' . $type . ' ]');
 		}
 		$classname = $info[$type]['dir'] . '_' . $name;
@@ -5065,7 +5065,7 @@ class Soter_Generator extends Soter_Task {
 }
 class Soter_Generator_Mysql extends Soter_Task {
 	public function execute(Soter_CliArgs $args) {
-		$config = Sr::config();
+		$config = \Sr::config();
 		$name = $args->get('name');
 		$type = $args->get('type');
 		$force = $args->get('overwrite');
@@ -5095,7 +5095,7 @@ class Soter_Generator_Mysql extends Soter_Task {
 			'nameTip' => 'Dao'
 		    ),
 		);
-		if (!Sr::arrayKeyExists($type, $info)) {
+		if (!\Sr::arrayKeyExists($type, $info)) {
 			exit('[ Error ]' . "\n" . 'Type : [ ' . $type . ' ]');
 		}
 		$classname = $info[$type]['dir'] . '_' . $name;
@@ -5149,10 +5149,10 @@ class Soter_Generator_Mysql extends Soter_Task {
 	}
 	private static function getTableFieldsInfo($tableName, $db) {
 		if (!is_object($db)) {
-			$db = Sr::db($db);
+			$db = \Sr::db($db);
 		}
 		if (strtolower($db->getDriverType()) != 'mysql') {
-			throw new Soter_Exception_500('getTableFieldsInfo() only for mysql database');
+			throw new \Soter_Exception_500('getTableFieldsInfo() only for mysql database');
 		}
 		$info = array();
 		$result = $db->execute('SHOW FULL COLUMNS FROM ' . $db->getTablePrefix() . $tableName)->rows();
@@ -5196,7 +5196,7 @@ class Soter_Session_Mongodb extends Soter_Session {
 	private $__mongo_conn = NULL;
 	public function __construct($configFileName) {
 		parent::__construct($configFileName);
-		$cfg = Sr::config()->getSessionConfig();
+		$cfg = \Sr::config()->getSessionConfig();
 		$this->config['lifetime'] = $cfg['lifetime'];
 	}
 	public function connect() {
@@ -5214,15 +5214,15 @@ class Soter_Session_Mongodb extends Soter_Session {
 		if ($this->config['replicaSet']) {
 			$opts['replicaSet'] = $this->config['replicaSet'];
 		}
-		$class = 'MongoClient';
+		$class = '\MongoClient';
 		if (!class_exists($class)) {
-			$class = 'Mongo';
+			$class = '\Mongo';
 		}
 		$this->__mongo_conn = $object_conn = new $class($connection_string, $opts);
 		$object_mongo = $object_conn->{$this->config['database']};
 		$this->__mongo_collection = $object_mongo->{$this->config['collection']};
 		if ($this->__mongo_collection == NULL) {
-			throw new Soter_Exception_500('can not connect to mongodb server');
+			throw new \Soter_Exception_500('can not connect to mongodb server');
 		}
 	}
 	public function init() {
@@ -5297,7 +5297,7 @@ class Soter_Session_Mysql extends Soter_Session {
 	protected $dbTable;
 	public function __construct($configFileName) {
 		parent::__construct($configFileName);
-		$cfg = Sr::config()->getSessionConfig();
+		$cfg = \Sr::config()->getSessionConfig();
 		$this->config['lifetime'] = $cfg['lifetime'];
 	}
 	public function init() {
@@ -5306,16 +5306,16 @@ class Soter_Session_Mysql extends Soter_Session {
 	public function connect() {
 		$this->dbTable = $this->config['table'];
 		if ($this->config['group']) {
-			$this->dbConnection = Sr::db($this->config['group']);
+			$this->dbConnection = \Sr::db($this->config['group']);
 		} else {
-			$dbConfig = Soter_Database::getDefaultConfig();
+			$dbConfig = \Soter_Database::getDefaultConfig();
 			$dbConfig['database'] = $this->config['database'];
 			$dbConfig['tablePrefix'] = $this->config['table_prefix'];
 			$dbConfig['masters']['master01']['hostname'] = $this->config['hostname'];
 			$dbConfig['masters']['master01']['port'] = $this->config['port'];
 			$dbConfig['masters']['master01']['username'] = $this->config['username'];
 			$dbConfig['masters']['master01']['password'] = $this->config['password'];
-			$this->dbConnection = Sr::db($dbConfig);
+			$this->dbConnection = \Sr::db($dbConfig);
 		}
 	}
 	public function open($save_path, $session_name) {
