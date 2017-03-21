@@ -1,5 +1,5 @@
 <?php
-
+namespace Controller;
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -11,10 +11,12 @@
  *
  * @author pengmeng
  */
-class Controller_Test extends Soter_Controller {
+class Test extends \Soter_Controller {
 
 	public function do_m() {
-		
+		\Sr::factory('Name\Space\Test')->test();
+		echo "<br>";
+		\Sr::factory('Name\Space2\Test')->test();
 	}
 
 	public function do_wx() {

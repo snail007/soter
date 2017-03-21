@@ -374,15 +374,15 @@ abstract class Soter_Database {
 							$options[PDO::MYSQL_ATTR_INIT_COMMAND] = 'SET NAMES ' . $this->getCharset() . ' COLLATE ' . $this->getCollate();
 							$options[PDO::ATTR_EMULATE_PREPARES] = TRUE; //empty($slaves) && (count($masters) == 1);
 							$dsn = 'mysql:host=' . $config['hostname'] . ';port=' . $config['port'] . ';dbname=' . $this->getDatabase() . ';charset=' . $this->getCharset();
-							$connections[$key] = new Soter_PDO($dsn, $config['username'], $config['password'], $options);
+							$connections[$key] = new \Soter_PDO($dsn, $config['username'], $config['password'], $options);
 							$connections[$key]->exec('SET NAMES ' . $this->getCharset());
 						} elseif ($this->_isSqlite()) {
 							if (!file_exists($this->getDatabase())) {
-								throw new Soter_Exception_Database('sqlite3 database file [' . Sr::realPath($this->getDatabase()) . '] not found');
+								throw new \Soter_Exception_Database('sqlite3 database file [' . Sr::realPath($this->getDatabase()) . '] not found');
 							}
-							$connections[$key] = new Soter_PDO('sqlite:' . $this->getDatabase(), null, null, $options);
+							$connections[$key] = new \Soter_PDO('sqlite:' . $this->getDatabase(), null, null, $options);
 						} else {
-							throw new Soter_Exception_Database('unknown driverType [ ' . $this->getDriverType() . ' ]');
+							throw new \Soter_Exception_Database('unknown driverType [ ' . $this->getDriverType() . ' ]');
 						}
 					}
 				}
@@ -457,7 +457,7 @@ abstract class Soter_Database {
 			$cacheKey = empty($this->_cacheKey) ? md5($sql . var_export($values, true)) : $this->_cacheKey;
 			$cacheHandle = Sr::config()->getCacheHandle();
 			if (empty($cacheHandle)) {
-				throw new Soter_Exception_500('no cache handle found , please set cache handle');
+				throw new \Soter_Exception_500('no cache handle found , please set cache handle');
 			}
 			$return = $cacheHandle->get($cacheKey);
 			if (!is_null($return)) {
@@ -483,7 +483,7 @@ abstract class Soter_Database {
 						$this->_lastInsertId = $isWriteInsertType ? $pdo->lastInsertId() : 0;
 					} else {
 						$return = $sth->execute($values) ? $sth->fetchAll(PDO::FETCH_ASSOC) : array();
-						$return = new Soter_Database_Resultset($return);
+						$return = new \Soter_Database_Resultset($return);
 					}
 				} else {
 					$errorInfo = $pdo->errorInfo();
@@ -510,7 +510,7 @@ abstract class Soter_Database {
 						$this->_lastInsertId = $isWriteInsertType ? $pdo->lastInsertId() : 0;
 					} else {
 						$return = $sth->execute($values) ? $sth->fetchAll(PDO::FETCH_ASSOC) : array();
-						$return = new Soter_Database_Resultset($return);
+						$return = new \Soter_Database_Resultset($return);
 					}
 				} else {
 					$errorInfo = $pdo->errorInfo();
@@ -621,7 +621,7 @@ abstract class Soter_Database {
 		}
 		if ($this->getDebug() || $this->_isInTransaction) {
 			if ($message instanceof Exception) {
-				throw new Soter_Exception_Database($group . $this->_errorMsg, 500, 'Soter_Exception_Database', $message->getFile(), $message->getLine());
+				throw new \Soter_Exception_Database($group . $this->_errorMsg, 500, 'Soter_Exception_Database', $message->getFile(), $message->getLine());
 			} else {
 
 				throw new Soter_Exception_Database($group . $message . $sql, $code);
@@ -1012,7 +1012,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		$where = $this->_getWhere();
 		$having = '';
 		foreach ($this->arHaving as $w) {
-			$having.=call_user_func_array(array($this, '_compileWhere'), $w);
+			$having .= call_user_func_array(array($this, '_compileWhere'), $w);
 		}
 		$having = trim($having);
 		if ($having) {
@@ -1221,7 +1221,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 	private function _getFrom() {
 		$table = ' ' . call_user_func_array(array($this, '_compileFrom'), $this->arFrom) . ' ';
 		foreach ($this->arJoin as $join) {
-			$table.=call_user_func_array(array($this, '_compileJoin'), $join);
+			$table .= call_user_func_array(array($this, '_compileJoin'), $join);
 		}
 		return $table;
 	}
@@ -1240,7 +1240,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 			if ($hasEmptyIn) {
 				break;
 			}
-			$where.=call_user_func_array(array($this, '_compileWhere'), $w);
+			$where .= call_user_func_array(array($this, '_compileWhere'), $w);
 		}
 		if ($hasEmptyIn) {
 			return ' WHERE 0';

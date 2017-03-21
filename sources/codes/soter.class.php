@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @property Soter_Config $soterConfig
  */
@@ -13,7 +12,7 @@ class Soter {
 	 */
 	public static function classAutoloader($className) {
 		$config = self::$soterConfig;
-		$className = str_replace(array('\\','_'), '/', $className);
+		$className = str_replace(array('\\', '_'), '/', $className);
 		foreach (self::$soterConfig->getPackages() as $path) {
 			if (file_exists($filePath = $path . $config->getClassesDirName() . '/' . $className . '.php')) {
 				Sr::includeOnce($filePath);
@@ -161,7 +160,7 @@ class Soter {
 		}
 		//初始化session
 		self::initSession();
-		$controllerObject = new $class();
+		$controllerObject = Sr::factory($class);
 		if (!($controllerObject instanceof Soter_Controller)) {
 			throw new Soter_Exception_404('[ ' . $class . ' ] not a valid Soter_Controller');
 		}
@@ -440,11 +439,14 @@ class Sr {
 		if (Sr::strEndsWith(strtolower($className), '.php')) {
 			$className = substr($className, 0, strlen($className) - 4);
 		}
-		$className = str_replace('/', '_', $className);
-		if (!class_exists($className)) {
-			throw new Soter_Exception_500("class [ $className ] not found");
+		$className1 = str_replace(array('\\', '/'), '_', $className);
+		$className2 = str_replace(array('/', '_'), '\\', $className);
+		if (class_exists($className1)) {
+			return new $className1();
+		} elseif (class_exists($className2)) {
+			return new $className2();
 		}
-		return new $className();
+		throw new Soter_Exception_500("class [ $className ] not found");
 	}
 
 	/**
