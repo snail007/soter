@@ -81,7 +81,7 @@ $files = array(
     'soter.exception.php',
     'soter.tools.classes.php',
 );
-$soter = "<?php\nnamespace Soter {\n" . $header . "\n";
+$soter = "<?php\n" . $header . "\n";
 foreach ($files as $file) {
 	$content = file_get_contents(SRC_DIR . $file);
 	common_replace($content);
