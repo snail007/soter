@@ -27,18 +27,18 @@
  * @copyright     Copyright (c) 2015 - 2017, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         v1.1.31
- * @createdtime   2017-03-21 16:56:52
+ * @createdtime   2017-03-21 18:27:19
  */
  
 define("IN_SOTER", true);
 /* 引入核心 */
 require dirname(__FILE__) . '/soter.php';
 /* 项目目录路径 */
-define('SOTER_APP_PATH', Sr::realPath(dirname(__FILE__) . '/application') . '/');
+define('SOTER_APP_PATH', \Sr::realPath(dirname(__FILE__) . '/application') . '/');
 /* 项目拓展包路径 */
 define('SOTER_PACKAGES_PATH', SOTER_APP_PATH . 'packages/');
 /* 初始化系统配置 */
-Soter::initialize()
+\Soter::initialize()
 	/* 设置Soter异常管理程序保留的内存大小，单位byte */
 	->setExceptionMemoryReserveSize(512000)
 	/* 设置Soter管理异常错误 */
@@ -60,9 +60,9 @@ Soter::initialize()
 		// 'functions'
 	))
 	/* 设置运行环境 ,值就是config配置目录下面的子文件夹名称,区分大小写 */
-	->setEnvironment(($env = (($cliEnv = Sr::getOpt('env')) ? $cliEnv : Sr::arrayGet($_SERVER, 'ENVIRONMENT'))) ? $env : 'development')
+	->setEnvironment(($env = (($cliEnv = \Sr::getOpt('env')) ? $cliEnv : \Sr::arrayGet($_SERVER, 'ENVIRONMENT'))) ? $env : 'development')
 	/* 系统错误显示设置，非产品环境才显示 */
-	->setShowError(Sr::config()->getEnvironment() != 'production')
+	->setShowError(\Sr::config()->getEnvironment() != 'production')
 	/**
 	 * 下面配置中可以使用：
 	 * 1.主项目的claseses目录，主项目类库目录，主项目拓展包里面的类
@@ -78,7 +78,7 @@ Soter::initialize()
 	/* 宕机维护模式IP白名单 */
 	//->setMaintainIpWhitelist(array('127.0.0.2', '192.168.0.2/32'))
 	/* 宕机维护模式处理方法 */
-	->setMaintainModeHandle(new Soter_Maintain_Handle_Default())
+	->setMaintainModeHandle(new \Soter_Maintain_Handle_Default())
 	/**
 	 * 如果服务器是ngix之类代理转发请求到后端apache运行的PHP。
 	 * 那么这里应该设置信任的nginx所在服务器的ip。
@@ -88,16 +88,16 @@ Soter::initialize()
 	 */
 	//->setBackendServerIpWhitelist(array('192.168.2.2'))
 	/* 初始化请求 */
-	->setRequest(new Soter_Request_Default())
+	->setRequest(new \Soter_Request_Default())
 	/* 网站是否开启了nginx或者apache的url“伪静态”重写，开启了这里设置为true，
 	  这样Sr::url方法在生成url的时候就知道是否加上入口文件名称 */
 	->setIsRewrite(false)
 	/* 注册默认pathinfo路由器 */
-	->addRouter(new Soter_Router_PathInfo_Default())
+	->addRouter(new \Soter_Router_PathInfo_Default())
 	/* pathinfo路由器,注册uri重写 */
-	->setUriRewriter(new Soter_Uri_Rewriter_Default())
+	->setUriRewriter(new \Soter_Uri_Rewriter_Default())
 	/* 注册默认get路由器 */
-	->addRouter(new Soter_Router_Get_Default())
+	->addRouter(new \Soter_Router_Get_Default())
 	/* get路由器,url中的控制器的get变量名 */
 	->setRouterUrlControllerKey('c')
 	/* get路由器,url中的方法的get变量名 */
@@ -149,7 +149,7 @@ Soter::initialize()
 	->setSessionConfig(array(
 	    'autostart' => false,
 	    'cookie_path' => '/',
-	    'cookie_domain' => Sr::server('HTTP_HOST'),
+	    'cookie_domain' => \Sr::server('HTTP_HOST'),
 	    'session_name' => 'SOTER',
 	    'lifetime' => 3600,
 	    'session_save_path' => null, //Sr::config()->getStorageDirPath().'/sessions'
@@ -178,10 +178,10 @@ Soter::initialize()
 	/* 设置数据库连接信息，参数可以是配置文件名称；也可以是数据库配置信息数组，即配置文件返回的那个数组。 */
 	//->setDatabseConfig('database')
 	/* 设置自定义的错误显示控制处理类 */
-	->setExceptionHandle(new Soter_Exception_Handle_Default())
+	->setExceptionHandle(new \Soter_Exception_Handle_Default())
 	/* 错误日志记录，注释掉这行会关闭日志记录，去掉注释则开启日志文件记录,
 	 * 第一个参数是日志文件路径，第二个参数为是否记录404类型异常 */
-	//->addLoggerWriter(new Soter_Logger_FileWriter(Sr::config()->getStorageDirPath() . 'logs/', false))
+	//->addLoggerWriter(new \Soter_Logger_FileWriter(\Sr::config()->getStorageDirPath() . 'logs/', false))
 	/* 设置日志记录子目录格式，参数就是date()函数的第一个参数,默认是 Y-m-d/H */
 	->setLogsSubDirNameFormat('Y-m-d/H')
 	/*
@@ -202,9 +202,9 @@ Soter::initialize()
 	/* 设置Sr::json()输出处理回调函数，这里可以自定义json输出格式 */
 	->setOutputJsonRender(function() {
 		$args = func_get_args();
-		$code = Sr::arrayGet($args, 0, '');
-		$message = Sr::arrayGet($args, 1, '');
-		$data = Sr::arrayGet($args, 2, '');
+		$code = \Sr::arrayGet($args, 0, '');
+		$message = \Sr::arrayGet($args, 1, '');
+		$data = \Sr::arrayGet($args, 2, '');
 		return @json_encode(array('code' => $code, 'message' => $message, 'data' => $data));
 	})
 	/* 设置发生异常的时候，调用异常对象的renderJson()方法输出json的回调函数，这里可以自定义json输出格式 */
@@ -224,4 +224,4 @@ Soter::initialize()
 ;
 
 //启动，噪起来
-Soter::run();
+\Soter::run();
