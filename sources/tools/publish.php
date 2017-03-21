@@ -87,7 +87,7 @@ foreach ($files as $file) {
 	common_replace($content);
 	$soter .= $content;
 }
-file_put_contents(DIST_DIR . 'soter.php', $soter."\n}");
+file_put_contents(DIST_DIR . 'soter.php', $soter);
 file_put_contents(DIST_DIR . 'soter.min.php', "<?php\n" . $header . substr(php_strip_whitespace(DIST_DIR . 'soter.php'), 5));
 
 $index = file_get_contents(SRC_DIR . 'index.php');
