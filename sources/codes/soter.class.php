@@ -15,7 +15,7 @@ class Soter {
 		$className = str_replace(array('\\', '_'), '/', $className);
 		foreach (self::$soterConfig->getPackages() as $path) {
 			if (file_exists($filePath = $path . $config->getClassesDirName() . '/' . $className . '.php')) {
-				Sr::includeOnce($filePath);
+				\Sr::includeOnce($filePath);
 				break;
 			}
 		}
@@ -26,7 +26,7 @@ class Soter {
 	 * @return \Soter_Config
 	 */
 	public static function initialize() {
-		self::$soterConfig = new Soter_Config();
+		self::$soterConfig = new \Soter_Config();
 		//注册类自动加载
 		if (function_exists('__autoload')) {
 			spl_autoload_register('__autoload');
@@ -37,7 +37,7 @@ class Soter {
 			$stripList = array('_GET', '_POST', '_COOKIE');
 			foreach ($stripList as $val) {
 				global $$val;
-				$$val = Sr::stripSlashes($$val);
+				$$val = \Sr::stripSlashes($$val);
 			}
 		}
 		return self::$soterConfig;
@@ -55,17 +55,17 @@ class Soter {
 	 * 运行调度
 	 */
 	public static function run() {
-		if (Sr::isPluginMode()) {
+		if (\Sr::isPluginMode()) {
 			self::runPlugin();
-		} elseif (Sr::isCli()) {
+		} elseif (\Sr::isCli()) {
 			self::runCli();
 		} else {
-			$canRunWeb = !Sr::config()->getIsMaintainMode();
+			$canRunWeb = !\Sr::config()->getIsMaintainMode();
 			if (!$canRunWeb) {
-				foreach (Sr::config()->getMaintainIpWhitelist() as $ip) {
+				foreach (\Sr::config()->getMaintainIpWhitelist() as $ip) {
 					$info = explode('/', $ip);
 					$netmask = empty($info[1]) ? '32' : $info[1];
-					if (Sr::ipInfo(Sr::clientIp() . '/' . $netmask, 'netaddress') == Sr::ipInfo($info[0] . '/' . $netmask, 'netaddress')) {
+					if (\Sr::ipInfo(\Sr::clientIp() . '/' . $netmask, 'netaddress') == \Sr::ipInfo($info[0] . '/' . $netmask, 'netaddress')) {
 						$canRunWeb = true;
 						break;
 					}
@@ -74,7 +74,7 @@ class Soter {
 			if ($canRunWeb) {
 				self::runWeb();
 			} else {
-				$handle = Sr::config()->getMaintainModeHandle();
+				$handle = \Sr::config()->getMaintainModeHandle();
 				if (is_object($handle)) {
 					$handle->handle();
 				}
@@ -100,7 +100,7 @@ class Soter {
 		@ini_set('session.hash_bits_per_character', 5);
 		session_cache_limiter('nocache');
 		session_set_cookie_params(
-			$sessionConfig['lifetime'], $sessionConfig['cookie_path'], preg_match('/^[^\\.]+$/', Sr::server('HTTP_HOST')) ? null : $sessionConfig['cookie_domain']
+			$sessionConfig['lifetime'], $sessionConfig['cookie_path'], preg_match('/^[^\\.]+$/', \Sr::server('HTTP_HOST')) ? null : $sessionConfig['cookie_domain']
 		);
 		if (!empty($sessionConfig['session_save_path'])) {
 			session_save_path($sessionConfig['session_save_path']);
@@ -113,7 +113,7 @@ class Soter {
 			$sessionHandle->init();
 		}
 		if ($sessionConfig['autostart']) {
-			Sr::sessionStart();
+			\Sr::sessionStart();
 		}
 		//session初始化完毕
 	}
@@ -136,12 +136,12 @@ class Soter {
 			}
 		}
 		if (empty($route)) {
-			throw new Soter_Exception_500('none router was found in configuration');
+			throw new \Soter_Exception_500('none router was found in configuration');
 		}
-		$_route = Sr::config()->getRoute();
+		$_route = \Sr::config()->getRoute();
 		//当前域名有绑定hmvc模块,需要处理hmvc模块
-		if ($hmvcModuleName = Sr::config()->getCurrentDomainHmvcModuleNname()) {
-			if (Soter::checkHmvc($hmvcModuleName, false)) {
+		if ($hmvcModuleName = \Sr::config()->getCurrentDomainHmvcModuleNname()) {
+			if (\Soter::checkHmvc($hmvcModuleName, false)) {
 				$_route->setHmvcModuleName($hmvcModuleName);
 				$_route->setFound(true);
 			}
@@ -155,14 +155,14 @@ class Soter {
 			$_route->setMethod($method);
 		}
 		$config->setRoute($_route);
-		if (!Sr::classIsExists($class)) {
-			throw new Soter_Exception_404('Controller [ ' . $class . ' ] not found');
+		if (!\Sr::classIsExists($class)) {
+			throw new \Soter_Exception_404('Controller [ ' . $class . ' ] not found');
 		}
 		//初始化session
 		self::initSession();
-		$controllerObject = Sr::factory($class);
+		$controllerObject = \Sr::factory($class);
 		if (!($controllerObject instanceof Soter_Controller)) {
-			throw new Soter_Exception_404('[ ' . $class . ' ] not a valid Soter_Controller');
+			throw new \Soter_Exception_404('[ ' . $class . ' ] not a valid Soter_Controller');
 		}
 		//前置方法检查执行
 		if (method_exists($controllerObject, 'before')) {
@@ -170,21 +170,21 @@ class Soter {
 		}
 		//方法检测
 		if (!method_exists($controllerObject, $method)) {
-			throw new Soter_Exception_404('Method [ ' . $class . '->' . $method . '() ] not found');
+			throw new \Soter_Exception_404('Method [ ' . $class . '->' . $method . '() ] not found');
 		}
 		//方法缓存检测
-		$cacheClassName = preg_replace('/^' . Sr::config()->getControllerDirName() . '_/', '', $class);
-		$cacheMethodName = preg_replace('/^' . Sr::config()->getMethodPrefix() . '/', '', $method);
+		$cacheClassName = preg_replace('/^' . \Sr::config()->getControllerDirName() . '_/', '', $class);
+		$cacheMethodName = preg_replace('/^' . \Sr::config()->getMethodPrefix() . '/', '', $method);
 		$methodKey = $cacheClassName . '::' . $cacheMethodName;
 		$cacheMethodConfig = $config->getMethodCacheConfig();
-		if (!empty($cacheMethodConfig) && Sr::arrayKeyExists($methodKey, $cacheMethodConfig) && $cacheMethodConfig[$methodKey]['cache'] && ($cacheMethoKey = $cacheMethodConfig[$methodKey]['key']())) {
-			if (!($contents = Sr::cache()->get($cacheMethoKey))) {
+		if (!empty($cacheMethodConfig) && \Sr::arrayKeyExists($methodKey, $cacheMethodConfig) && $cacheMethodConfig[$methodKey]['cache'] && ($cacheMethoKey = $cacheMethodConfig[$methodKey]['key']())) {
+			if (!($contents = \Sr::cache()->get($cacheMethoKey))) {
 				@ob_start();
 				$response = call_user_func_array(array($controllerObject, $method), $route->getArgs());
 				$contents = @ob_get_contents();
 				@ob_end_clean();
-				$contents .= is_array($response) ? Sr::view()->set($response)->load("$cacheClassName/$cacheMethodName") : $response;
-				Sr::cache()->set($cacheMethoKey, $contents, $cacheMethodConfig[$methodKey]['time']);
+				$contents .= is_array($response) ? \Sr::view()->set($response)->load("$cacheClassName/$cacheMethodName") : $response;
+				\Sr::cache()->set($cacheMethoKey, $contents, $cacheMethodConfig[$methodKey]['time']);
 			}
 		} else {
 
@@ -194,10 +194,10 @@ class Soter {
 				$response = call_user_func_array(array($controllerObject, $method), $route->getArgs());
 				$contents = @ob_get_contents();
 				@ob_end_clean();
-				$contents .= is_array($response) ? Sr::view()->set($response)->load("$cacheClassName/$cacheMethodName") : $response;
+				$contents .= is_array($response) ? \Sr::view()->set($response)->load("$cacheClassName/$cacheMethodName") : $response;
 			} else {
 				$response = call_user_func_array(array($controllerObject, $method), $route->getArgs());
-				$contents = is_array($response) ? Sr::view()->set($response)->load("$cacheClassName/$cacheMethodName") : $response;
+				$contents = is_array($response) ? \Sr::view()->set($response)->load("$cacheClassName/$cacheMethodName") : $response;
 			}
 		}
 		//后置方法检查执行
@@ -212,8 +212,8 @@ class Soter {
 	 * 命令行模式运行
 	 */
 	private static function runCli() {
-		$task = str_replace('/', '_', Sr::getOpt('task'));
-		$hmvcModuleName = Sr::getOpt('hmvc');
+		$task = str_replace('/', '_', \Sr::getOpt('task'));
+		$hmvcModuleName = \Sr::getOpt('hmvc');
 		if (empty($task)) {
 			exit('require a task name,please use --task=<taskname>' . "\n");
 		}
@@ -223,18 +223,18 @@ class Soter {
 		if (strpos($task, 'Soter_') === 0) {
 			$taskName = $task;
 		} else {
-			$taskName = Soter::getConfig()->getTaskDirName() . '_' . $task;
+			$taskName = \Soter::getConfig()->getTaskDirName() . '_' . $task;
 		}
 		if (!class_exists($taskName)) {
-			throw new Soter_Exception_500('class [ ' . $taskName . ' ] not found');
+			throw new \Soter_Exception_500('class [ ' . $taskName . ' ] not found');
 		}
 		$taskObject = new $taskName();
 		if (!($taskObject instanceof Soter_Task)) {
-			throw new Soter_Exception_500('[ ' . $taskName . ' ] not a valid Soter_Task');
+			throw new \Soter_Exception_500('[ ' . $taskName . ' ] not a valid Soter_Task');
 		}
-		$args = Sr::getOpt();
+		$args = \Sr::getOpt();
 		$args = empty($args) ? array() : $args;
-		$taskObject->_execute(new Soter_CliArgs($args));
+		$taskObject->_execute(new \Soter_CliArgs($args));
 	}
 
 	/**
@@ -253,11 +253,11 @@ class Soter {
 	public static function checkHmvc($hmvcModuleName, $throwException = true) {
 		//hmvc检测
 		if (!empty($hmvcModuleName)) {
-			$config = Soter::getConfig();
+			$config = \Soter::getConfig();
 			$hmvcModules = $config->getHmvcModules();
 			if (empty($hmvcModules[$hmvcModuleName])) {
 				if ($throwException) {
-					throw new Soter_Exception_500('Hmvc Module [ ' . $hmvcModuleName . ' ] not found, please check your config.');
+					throw new \Soter_Exception_500('Hmvc Module [ ' . $hmvcModuleName . ' ] not found, please check your config.');
 				} else {
 					return FALSE;
 				}
@@ -265,7 +265,7 @@ class Soter {
 			//避免重复加载，提高性能
 			static $loadedModules = array();
 			$hmvcModuleDirName = $hmvcModules[$hmvcModuleName];
-			if (!Sr::arrayKeyExists($hmvcModuleName, $loadedModules)) {
+			if (!\Sr::arrayKeyExists($hmvcModuleName, $loadedModules)) {
 				$loadedModules[$hmvcModuleName] = 1;
 				//找到hmvc模块,去除hmvc模块名称，得到真正的路径
 				$hmvcModulePath = $config->getApplicationDir() . $config->getHmvcDirName() . '/' . $hmvcModuleDirName . '/';
@@ -291,7 +291,7 @@ class Sr {
 	}
 
 	static function arrayGet($array, $key, $default = null) {
-		return eval('return Sr::arrayKeyExists(\'' . $key . '\',$array)?$array' . self::parseKey($key) . ':$default;');
+		return eval('return \Sr::arrayKeyExists(\'' . $key . '\',$array)?$array' . self::parseKey($key) . ':$default;');
 	}
 
 	static function arraySet(&$array, $key, $value) {
@@ -311,7 +311,7 @@ class Sr {
 	static function includeOnce($filePath) {
 		static $includeFiles = array();
 		$key = self::realPath($filePath);
-		if (!Sr::arrayKeyExists($key, $includeFiles)) {
+		if (!\Sr::arrayKeyExists($key, $includeFiles)) {
 			include $filePath;
 			$includeFiles[$key] = 1;
 		}
@@ -369,28 +369,28 @@ class Sr {
 	}
 
 	static function business($businessName) {
-		$name = Soter::getConfig()->getBusinessDirName() . '_' . $businessName;
+		$name = \Soter::getConfig()->getBusinessDirName() . '_' . $businessName;
 		$object = self::factory($name);
 		if (!($object instanceof Soter_Business)) {
-			throw new Soter_Exception_500('[ ' . $name . ' ] not a valid Soter_Business');
+			throw new \Soter_Exception_500('[ ' . $name . ' ] not a valid Soter_Business');
 		}
 		return $object;
 	}
 
 	static function dao($daoName) {
-		$name = Soter::getConfig()->getDaoDirName() . '_' . $daoName;
+		$name = \Soter::getConfig()->getDaoDirName() . '_' . $daoName;
 		$object = self::factory($name);
 		if (!($object instanceof Soter_Dao)) {
-			throw new Soter_Exception_500('[ ' . $name . ' ] not a valid Soter_Dao');
+			throw new \Soter_Exception_500('[ ' . $name . ' ] not a valid Soter_Dao');
 		}
 		return $object;
 	}
 
 	static function model($modelName) {
-		$name = Soter::getConfig()->getModelDirName() . '_' . $modelName;
+		$name = \Soter::getConfig()->getModelDirName() . '_' . $modelName;
 		$object = self::factory($name);
 		if (!($object instanceof Soter_Model)) {
-			throw new Soter_Exception_500('[ ' . $name . ' ] not a valid Soter_Model');
+			throw new \Soter_Exception_500('[ ' . $name . ' ] not a valid Soter_Model');
 		}
 		return $object;
 	}
@@ -405,12 +405,12 @@ class Sr {
 
 	static function functions($functionFilename) {
 		static $loadedFunctionsFile = array();
-		if (Sr::arrayKeyExists($functionFilename, $loadedFunctionsFile)) {
+		if (\Sr::arrayKeyExists($functionFilename, $loadedFunctionsFile)) {
 			return;
 		} else {
 			$loadedFunctionsFile[$functionFilename] = 1;
 		}
-		$config = Soter::getConfig();
+		$config = \Soter::getConfig();
 		$found = false;
 		foreach ($config->getPackages() as $packagePath) {
 			$filePath = $packagePath . $config->getFunctionsDirName() . '/' . $functionFilename . '.php';
@@ -421,7 +421,7 @@ class Sr {
 			}
 		}
 		if (!$found) {
-			throw new Soter_Exception_500('functions file [ ' . $functionFilename . '.php ] not found');
+			throw new \Soter_Exception_500('functions file [ ' . $functionFilename . '.php ] not found');
 		}
 	}
 
@@ -432,11 +432,11 @@ class Sr {
 	 * @throws Soter_Exception_404
 	 */
 	static function factory($className, $hmvcModuleName = null) {
-		if (Sr::isPluginMode()) {
+		if (\Sr::isPluginMode()) {
 			//hmvc检测
-			Soter::checkHmvc($hmvcModuleName);
+			\Soter::checkHmvc($hmvcModuleName);
 		}
-		if (Sr::strEndsWith(strtolower($className), '.php')) {
+		if (\Sr::strEndsWith(strtolower($className), '.php')) {
 			$className = substr($className, 0, strlen($className) - 4);
 		}
 		$className1 = str_replace(array('\\', '/'), '_', $className);
@@ -446,7 +446,7 @@ class Sr {
 		} elseif (class_exists($className2)) {
 			return new $className2();
 		}
-		throw new Soter_Exception_500("class [ $className ] not found");
+		throw new \Soter_Exception_500("class [ $className ] not found");
 	}
 
 	/**
@@ -466,18 +466,18 @@ class Sr {
 	 */
 	static function &config($configName = null, $caching = true) {
 		if (empty($configName)) {
-			return Soter::getConfig();
+			return \Soter::getConfig();
 		}
 		$_info = explode('.', $configName);
 		$configFileName = current($_info);
 		static $loadedConfig = array();
 		$cfg = null;
-		if ($caching && Sr::arrayKeyExists($configFileName, $loadedConfig)) {
+		if ($caching && \Sr::arrayKeyExists($configFileName, $loadedConfig)) {
 			$cfg = $loadedConfig[$configFileName];
-		} elseif ($filePath = Soter::getConfig()->find($configFileName)) {
+		} elseif ($filePath = \Soter::getConfig()->find($configFileName)) {
 			$loadedConfig[$configFileName] = $cfg = eval('?>' . file_get_contents($filePath));
 		} else {
-			throw new Soter_Exception_500('config file [ ' . $configFileName . '.php ] not found');
+			throw new \Soter_Exception_500('config file [ ' . $configFileName . '.php ] not found');
 		}
 		if ($cfg && count($_info) > 1) {
 			$val = self::arrayGet($cfg, implode('.', array_slice($_info, 1)));
@@ -529,7 +529,7 @@ class Sr {
 				}
 			}
 		}
-		return empty($key) ? $result : (Sr::arrayKeyExists($key, $result) ? $result[$key] : null);
+		return empty($key) ? $result : (\Sr::arrayKeyExists($key, $result) ? $result[$key] : null);
 	}
 
 	static function get($key = null, $default = null, $xssClean = false) {
@@ -597,7 +597,7 @@ class Sr {
 	 * @return type
 	 */
 	static function cookie($key = null, $default = null, $xssClean = false) {
-		$key = is_null($key) ? null : Sr::config()->getCookiePrefix() . $key;
+		$key = is_null($key) ? null : \Sr::config()->getCookiePrefix() . $key;
 		$value = self::cookieRaw($key, $default, $xssClean);
 		return $xssClean ? self::xssClean($value) : $value;
 	}
@@ -613,12 +613,12 @@ class Sr {
 	 * 或者设置前缀为空那么Sr::cookie和Sr::cookieRaw效果一样。前缀默认就是空。
 	 */
 	static function setCookie($key, $value, $life = null, $path = '/', $domian = null, $http_only = false) {
-		$key = Sr::config()->getCookiePrefix() . $key;
+		$key = \Sr::config()->getCookiePrefix() . $key;
 		return self::setCookieRaw($key, $value, $life, $path, $domian, $http_only);
 	}
 
 	static function setCookieRaw($key, $value, $life = null, $path = '/', $domian = null, $httpOnly = false) {
-		if (!Sr::isCli()) {
+		if (!\Sr::isCli()) {
 			header('P3P: CP="CURa ADMa DEVa PSAo PSDo OUR BUS UNI PUR INT DEM STA PRE COM NAV OTC NOI DSP COR"');
 		}
 		if (!is_null($domian)) {
@@ -698,7 +698,7 @@ class Sr {
 	 * 服务器的ip
 	 */
 	static function serverIp() {
-		return self::isCli() ? gethostbyname(self::hostname()) : Sr::server('SERVER_ADDR');
+		return self::isCli() ? gethostbyname(self::hostname()) : \Sr::server('SERVER_ADDR');
 	}
 
 	/**
@@ -729,7 +729,7 @@ class Sr {
 		if (empty($ip)) {
 			return false;
 		}
-		$whitelist = Sr::config()->getBackendServerIpWhitelist();
+		$whitelist = \Sr::config()->getBackendServerIpWhitelist();
 		foreach ($whitelist as $okayIp) {
 			if ($okayIp == $ip) {
 				return $ip;
@@ -771,7 +771,7 @@ class Sr {
 		}
 		$ipAddr = implode('.', $ipAddrArr); //修正后的ip地址
 
-		$netbits = intval((Sr::arrayKeyExists(1, $arr) ? $arr[1] : 0));   //得到掩码位
+		$netbits = intval((\Sr::arrayKeyExists(1, $arr) ? $arr[1] : 0));   //得到掩码位
 
 		$subnetMask = long2ip(ip2long("255.255.255.255") << (32 - $netbits));
 		$ip = ip2long($ipAddr);
@@ -828,33 +828,33 @@ class Sr {
 			ksort($group);
 			$groupString = json_encode($group);
 			$key = md5($groupString);
-			if (!Sr::arrayKeyExists($key, self::$dbInstances) || $isNewInstance) {
+			if (!\Sr::arrayKeyExists($key, self::$dbInstances) || $isNewInstance) {
 				$group['group'] = $groupString;
-				self::$dbInstances[$key] = new Soter_Database_ActiveRecord($group);
+				self::$dbInstances[$key] = new \Soter_Database_ActiveRecord($group);
 			}
 			return self::$dbInstances[$key];
 		} else {
 			$config = self::config()->getDatabseConfig();
 			if (empty($config)) {
-				throw new Soter_Exception_Database('database configuration is empty , did you forget to use "->setDatabseConfig()" in index.php ?');
+				throw new \Soter_Exception_Database('database configuration is empty , did you forget to use "->setDatabseConfig()" in index.php ?');
 			}
 			if (empty($group)) {
 				$group = $config['default_group'];
 			}
-			if (!Sr::arrayKeyExists($group, self::$dbInstances) || $isNewInstance) {
+			if (!\Sr::arrayKeyExists($group, self::$dbInstances) || $isNewInstance) {
 				$config = self::config()->getDatabseConfig($group);
 				if (empty($config)) {
-					throw new Soter_Exception_Database('unknown database config group [ ' . $group . ' ]');
+					throw new \Soter_Exception_Database('unknown database config group [ ' . $group . ' ]');
 				}
 				$config['group'] = $group;
-				self::$dbInstances[$group] = new Soter_Database_ActiveRecord($config);
+				self::$dbInstances[$group] = new \Soter_Database_ActiveRecord($config);
 			}
 			return self::$dbInstances[$group];
 		}
 	}
 
 	static function createSqlite3Database($path) {
-		return new PDO('sqlite:' . $path);
+		return new \PDO('sqlite:' . $path);
 	}
 
 	/**
@@ -925,7 +925,7 @@ class Sr {
 	static function view() {
 		static $view;
 		if (!$view) {
-			$view = new Soter_View();
+			$view = new \Soter_View();
 		}
 		return $view;
 	}
@@ -939,7 +939,7 @@ class Sr {
 	 */
 	static function urlPath($subpath = null, $addSlash = true) {
 		if (self::isCli()) {
-			throw new Soter_Exception_500('urlPath() can not be used in cli mode');
+			throw new \Soter_Exception_500('urlPath() can not be used in cli mode');
 		} else {
 			$old_path = getcwd();
 			$root = str_replace(array("/", "\\"), '/', self::server('DOCUMENT_ROOT'));
@@ -960,7 +960,7 @@ class Sr {
 	 * @return string
 	 */
 	static function url($action = '', $getData = array()) {
-		$config = Sr::config();
+		$config = \Sr::config();
 		$hmvcModuleName = $config->getCurrentDomainHmvcModuleNname(); //当前域名绑定的hmvc模块名称
 		//访问的是hmvc模块且绑定了当前域名，且是DomainOnly的，就去掉开头的模块名称
 		if ($hmvcModuleName && $config->hmvcIsDomainOnly($hmvcModuleName)) {
@@ -988,9 +988,9 @@ class Sr {
 	 */
 	static function readData(Array $map, $sourceData = null) {
 		$data = array();
-		$formdata = is_null($sourceData) ? Sr::post() : $sourceData;
+		$formdata = is_null($sourceData) ? \Sr::post() : $sourceData;
 		foreach ($formdata as $formKey => $val) {
-			if (Sr::arrayKeyExists($formKey, $map)) {
+			if (\Sr::arrayKeyExists($formKey, $map)) {
 				$data[$map[$formKey]] = $val;
 			}
 		}
@@ -1002,15 +1002,15 @@ class Sr {
 		if (empty($checkRules)) {
 			$defaultRules = array(
 			    'array' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data) || !is_array($value)) {
+				    if (!\Sr::arrayKeyExists($key, $data) || !is_array($value)) {
 					    return false;
 				    }
 				    $minOkay = true;
-				    if (Sr::arrayKeyExists(0, $args)) {
+				    if (\Sr::arrayKeyExists(0, $args)) {
 					    $minOkay = count($value) >= intval($args[0]);
 				    }
 				    $maxOkay = true;
-				    if (Sr::arrayKeyExists(1, $args)) {
+				    if (\Sr::arrayKeyExists(1, $args)) {
 					    $minOkay = count($value) >= intval($args[1]);
 				    }
 				    return $minOkay && $maxOkay;
@@ -1021,7 +1021,7 @@ class Sr {
 					    $i = 0;
 					    foreach ($value as $k => $v) {
 
-						    $returnValue[$k] = empty($v) ? (Sr::arrayKeyExists($i, $args) ? $args[$i] : $args[0]) : $v;
+						    $returnValue[$k] = empty($v) ? (\Sr::arrayKeyExists($i, $args) ? $args[$i] : $args[0]) : $v;
 						    $i++;
 					    }
 				    } elseif (empty($value)) {
@@ -1032,7 +1032,7 @@ class Sr {
 				    $break = !isset($data[$key]);
 				    return true;
 			    }, 'required' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data) || empty($value)) {
+				    if (!\Sr::arrayKeyExists($key, $data) || empty($value)) {
 					    return false;
 				    }
 				    $value = (array) $value;
@@ -1046,13 +1046,13 @@ class Sr {
 				    $args[] = $key;
 				    $args = array_unique($args);
 				    foreach ($args as $k) {
-					    if (!Sr::arrayKeyExists($k, $data)) {
+					    if (!\Sr::arrayKeyExists($k, $data)) {
 						    return false;
 					    }
 				    }
 				    return true;
 			    }, 'functions' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return true;
 				    }
 				    $returnValue = $value;
@@ -1069,23 +1069,23 @@ class Sr {
 				    }
 				    return true;
 			    }, 'xss' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return true;
 				    }
-				    $returnValue = Sr::xssClean($value);
+				    $returnValue = \Sr::xssClean($value);
 				    return true;
 			    }, 'match' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data) || !Sr::arrayKeyExists(0, $args) || !Sr::arrayKeyExists($args[0], $data) || $value != $data[$args[0]]) {
+				    if (!\Sr::arrayKeyExists($key, $data) || !\Sr::arrayKeyExists(0, $args) || !\Sr::arrayKeyExists($args[0], $data) || $value != $data[$args[0]]) {
 					    return false;
 				    }
 				    return true;
 			    }, 'equal' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data) || !Sr::arrayKeyExists(0, $args) || $value != $args[0]) {
+				    if (!\Sr::arrayKeyExists($key, $data) || !\Sr::arrayKeyExists(0, $args) || $value != $args[0]) {
 					    return false;
 				    }
 				    return true;
 			    }, 'enum' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $value = (array) $value;
@@ -1097,7 +1097,7 @@ class Sr {
 				    return true;
 			    }, 'unique' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #比如unique[user.name] , unique[user.name,id:1]
-				    if (!Sr::arrayKeyExists($key, $data) || !$value || !count($args)) {
+				    if (!\Sr::arrayKeyExists($key, $data) || !$value || !count($args)) {
 					    return false;
 				    }
 				    $_info = explode('.', $args[0]);
@@ -1106,14 +1106,14 @@ class Sr {
 				    }
 				    $table = $_info[0];
 				    $col = $_info[1];
-				    if (Sr::arrayKeyExists(1, $args)) {
+				    if (\Sr::arrayKeyExists(1, $args)) {
 					    $_id_info = explode(':', $args[1]);
 					    if (count($_id_info) != 2) {
 						    return false;
 					    }
 					    $id_col = $_id_info[0];
 					    $id = $_id_info[1];
-					    $id = stripos($id, '#') === 0 ? Sr::getPost(substr($id, 1)) : $id;
+					    $id = stripos($id, '#') === 0 ? \Sr::getPost(substr($id, 1)) : $id;
 					    $where = array($col => $value, "$id_col <>" => $id);
 				    } else {
 					    $where = array($col => $value);
@@ -1121,7 +1121,7 @@ class Sr {
 				    return !$db->where($where)->from($table)->limit(0, 1)->execute()->total();
 			    }, 'exists' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #比如exists[user.name] , exists[user.name,type:1], exists[user.name,type:1,sex:#sex]
-				    if (!Sr::arrayKeyExists($key, $data) || !$value || !count($args)) {
+				    if (!\Sr::arrayKeyExists($key, $data) || !$value || !count($args)) {
 					    return false;
 				    }
 				    $_info = explode('.', $args[0]);
@@ -1139,37 +1139,37 @@ class Sr {
 						    }
 						    $id_col = $_id_info[0];
 						    $id = $_id_info[1];
-						    $id = stripos($id, '#') === 0 ? Sr::getPost(substr($id, 1)) : $id;
+						    $id = stripos($id, '#') === 0 ? \Sr::getPost(substr($id, 1)) : $id;
 						    $where[$id_col] = $id;
 					    }
 				    }
 				    return $db->where($where)->from($table)->limit(0, 1)->execute()->total();
 			    }, 'min_len' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
 				    foreach ($v as $value) {
-					    $okay = Sr::arrayKeyExists(0, $args) ? (mb_strlen($value, 'UTF-8') >= intval($args[0])) : false;
+					    $okay = \Sr::arrayKeyExists(0, $args) ? (mb_strlen($value, 'UTF-8') >= intval($args[0])) : false;
 					    if (!$okay) {
 						    return false;
 					    }
 				    }
 				    return true;
 			    }, 'max_len' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
 				    foreach ($v as $value) {
-					    $okay = Sr::arrayKeyExists(0, $args) ? (mb_strlen($value, 'UTF-8') <= intval($args[0])) : false;
+					    $okay = \Sr::arrayKeyExists(0, $args) ? (mb_strlen($value, 'UTF-8') <= intval($args[0])) : false;
 					    if (!$okay) {
 						    return false;
 					    }
 				    }
 				    return true;
 			    }, 'range_len' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
@@ -1181,43 +1181,43 @@ class Sr {
 				    }
 				    return true;
 			    }, 'len' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
 				    foreach ($v as $value) {
-					    $okay = Sr::arrayKeyExists(0, $args) ? (mb_strlen($value, 'UTF-8') == intval($args[0])) : false;
+					    $okay = \Sr::arrayKeyExists(0, $args) ? (mb_strlen($value, 'UTF-8') == intval($args[0])) : false;
 					    if (!$okay) {
 						    return false;
 					    }
 				    }
 				    return true;
 			    }, 'min' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
 				    foreach ($v as $value) {
-					    $okay = Sr::arrayKeyExists(0, $args) && is_numeric($value) ? $value >= $args[0] : false;
+					    $okay = \Sr::arrayKeyExists(0, $args) && is_numeric($value) ? $value >= $args[0] : false;
 					    if (!$okay) {
 						    return false;
 					    }
 				    }
 				    return true;
 			    }, 'max' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
 				    foreach ($v as $value) {
-					    $okay = Sr::arrayKeyExists(0, $args) && is_numeric($value) ? $value <= $args[0] : false;
+					    $okay = \Sr::arrayKeyExists(0, $args) && is_numeric($value) ? $value <= $args[0] : false;
 					    if (!$okay) {
 						    return false;
 					    }
 				    }
 				    return true;
 			    }, 'range' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
@@ -1229,7 +1229,7 @@ class Sr {
 				    }
 				    return true;
 			    }, 'alpha' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    #纯字母
@@ -1243,7 +1243,7 @@ class Sr {
 				    return true;
 			    }, 'alpha_num' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #纯字母和数字
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
@@ -1256,7 +1256,7 @@ class Sr {
 				    return true;
 			    }, 'alpha_dash' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #纯字母和数字和下划线和-
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
@@ -1269,7 +1269,7 @@ class Sr {
 				    return true;
 			    }, 'alpha_start' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #以字母开头
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
@@ -1282,7 +1282,7 @@ class Sr {
 				    return true;
 			    }, 'num' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #纯数字
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
@@ -1295,7 +1295,7 @@ class Sr {
 				    return true;
 			    }, 'int' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #整数
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
@@ -1308,7 +1308,7 @@ class Sr {
 				    return true;
 			    }, 'float' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #小数
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
@@ -1321,7 +1321,7 @@ class Sr {
 				    return true;
 			    }, 'numeric' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #数字-1，1.2，+3，4e5
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
@@ -1334,7 +1334,7 @@ class Sr {
 				    return true;
 			    }, 'natural' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #自然数0，1，2，3，12，333
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
@@ -1347,7 +1347,7 @@ class Sr {
 				    return true;
 			    }, 'natural_no_zero' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
 				    #自然数不包含0
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
@@ -1359,10 +1359,10 @@ class Sr {
 				    }
 				    return true;
 			    }, 'email' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
-				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
+				    $args[0] = \Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($value) ? preg_match('/^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/', $value) : $args[0];
@@ -1372,10 +1372,10 @@ class Sr {
 				    }
 				    return true;
 			    }, 'url' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
-				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
+				    $args[0] = \Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($value) ? preg_match('/^http[s]?:\/\/[A-Za-z0-9]+\.[A-Za-z0-9]+[\/=\?%\-&_~`@[\]\':+!]*([^<>\"])*$/', $value) : $args[0];
@@ -1385,10 +1385,10 @@ class Sr {
 				    }
 				    return true;
 			    }, 'qq' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
-				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
+				    $args[0] = \Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($value) ? preg_match('/^[1-9][0-9]{4,}$/', $value) : $args[0];
@@ -1398,10 +1398,10 @@ class Sr {
 				    }
 				    return true;
 			    }, 'phone' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
-				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
+				    $args[0] = \Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($value) ? preg_match('/^(?:\d{3}-?\d{8}|\d{4}-?\d{7})$/', $value) : $args[0];
@@ -1411,10 +1411,10 @@ class Sr {
 				    }
 				    return true;
 			    }, 'mobile' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
-				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
+				    $args[0] = \Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($value) ? preg_match('/^(((13[0-9]{1})|(15[0-9]{1})|(18[0-9]{1})|(14[0-9]{1}))+\d{8})$/', $value) : $args[0];
@@ -1424,10 +1424,10 @@ class Sr {
 				    }
 				    return true;
 			    }, 'zipcode' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
-				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
+				    $args[0] = \Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($value) ? preg_match('/^[1-9]\d{5}(?!\d)$/', $value) : $args[0];
@@ -1437,10 +1437,10 @@ class Sr {
 				    }
 				    return true;
 			    }, 'idcard' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
-				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
+				    $args[0] = \Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($value) ? preg_match('/^\d{14}(\d{4}|(\d{3}[xX])|\d{1})$/', $value) : $args[0];
@@ -1450,10 +1450,10 @@ class Sr {
 				    }
 				    return true;
 			    }, 'ip' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
-				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
+				    $args[0] = \Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($value) ? preg_match('/^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$/', $value) : $args[0];
@@ -1463,12 +1463,12 @@ class Sr {
 				    }
 				    return true;
 			    }, 'chs' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $count = implode(',', array_slice($args, 1, 2));
 				    $count = empty($count) ? '1,' : $count;
-				    $can_empty = Sr::arrayKeyExists(0, $args) && $args[0] == 'true';
+				    $can_empty = \Sr::arrayKeyExists(0, $args) && $args[0] == 'true';
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($value) ? preg_match('/^[\x{4e00}-\x{9fa5}]{' . $count . '}$/u', $value) : $can_empty;
@@ -1478,10 +1478,10 @@ class Sr {
 				    }
 				    return true;
 			    }, 'date' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
-				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
+				    $args[0] = \Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($value) ? preg_match('/^[0-9]{4}-(((0[13578]|(10|12))-(0[1-9]|[1-2][0-9]|3[0-1]))|(02-(0[1-9]|[1-2][0-9]))|((0[469]|11)-(0[1-9]|[1-2][0-9]|30)))$/', $value) : $args[0];
@@ -1491,10 +1491,10 @@ class Sr {
 				    }
 				    return true;
 			    }, 'time' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
-				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
+				    $args[0] = \Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($value) ? preg_match('/^(([0-1][0-9])|([2][0-3])):([0-5][0-9])(:([0-5][0-9]))$/', $value) : $args[0];
@@ -1504,10 +1504,10 @@ class Sr {
 				    }
 				    return true;
 			    }, 'datetime' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
-				    $args[0] = Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
+				    $args[0] = \Sr::arrayKeyExists(0, $args) && $args[0] == 'true' ? TRUE : false;
 				    $v = (array) $value;
 				    foreach ($v as $value) {
 					    $okay = !empty($value) ? preg_match('/^[0-9]{4}-(((0[13578]|(10|12))-(0[1-9]|[1-2][0-9]|3[0-1]))|(02-(0[1-9]|[1-2][0-9]))|((0[469]|11)-(0[1-9]|[1-2][0-9]|30))) (([0-1][0-9])|([2][0-3])):([0-5][0-9])(:([0-5][0-9]))$/', $value) : $args[0];
@@ -1517,7 +1517,7 @@ class Sr {
 				    }
 				    return true;
 			    }, 'reg' => function($key, $value, $data, $args, &$returnValue, &$break, &$db) {
-				    if (!Sr::arrayKeyExists($key, $data)) {
+				    if (!\Sr::arrayKeyExists($key, $data)) {
 					    return false;
 				    }
 				    $v = (array) $value;
@@ -1530,19 +1530,19 @@ class Sr {
 				    return true;
 			    }
 			);
-			$userRules = Sr::config()->getDataCheckRules();
+			$userRules = \Sr::config()->getDataCheckRules();
 			$checkRules = (is_array($userRules) && !empty($userRules)) ? array_merge($defaultRules, $userRules) : $defaultRules;
 		}
 		$getCheckRuleInfo = function($_rule) {
 			$matches = array();
 			preg_match('|([^\[]+)(?:\[(.*)\](.?))?|', $_rule, $matches);
-			$matches[1] = Sr::arrayKeyExists(1, $matches) ? $matches[1] : '';
+			$matches[1] = \Sr::arrayKeyExists(1, $matches) ? $matches[1] : '';
 			if ($matches[1] == 'reg') {
 				$matches[3] = '';
-				$matches[2] = Sr::arrayKeyExists(2, $matches) ? array($matches[2]) : array();
+				$matches[2] = \Sr::arrayKeyExists(2, $matches) ? array($matches[2]) : array();
 			} else {
 				$matches[3] = !empty($matches[3]) ? $matches[3] : ',';
-				$matches[2] = Sr::arrayKeyExists(2, $matches) ? explode($matches[3], $matches[2]) : array();
+				$matches[2] = \Sr::arrayKeyExists(2, $matches) ? explode($matches[3], $matches[2]) : array();
 			}
 
 			return $matches;
@@ -1554,11 +1554,11 @@ class Sr {
 				$_v = self::arrayGet($returnData, $key);
 				$_r = $matches[1];
 				$args = $matches[2];
-				if (!Sr::arrayKeyExists($_r, $checkRules) || !is_callable($checkRules[$_r])) {
-					throw new Soter_Exception_500('error rule [ ' . $_r . ' ]');
+				if (!\Sr::arrayKeyExists($_r, $checkRules) || !is_callable($checkRules[$_r])) {
+					throw new \Soter_Exception_500('error rule [ ' . $_r . ' ]');
 				}
 				$ruleFunction = $checkRules[$_r];
-				$db = (is_object($db) && ($db instanceof Soter_Database_ActiveRecord) ) ? $db : Sr::db();
+				$db = (is_object($db) && ($db instanceof Soter_Database_ActiveRecord) ) ? $db : \Sr::db();
 				$break = false;
 				$returnValue = null;
 				$isOkay = $ruleFunction($key, $_v, $data, $args, $returnValue, $break, $db);
@@ -1655,7 +1655,7 @@ class Sr {
 			$order = array(1, 2, 3, 4, 5, 6);
 		}
 		foreach ($order as $key) {
-			if (Sr::arrayKeyExists($key - 1, $pagination)) {
+			if (\Sr::arrayKeyExists($key - 1, $pagination)) {
 				$output[] = $pagination[$key - 1];
 			}
 		}
@@ -1664,7 +1664,7 @@ class Sr {
 
 	static function json() {
 		$args = func_get_args();
-		$handle = Sr::config()->getOutputJsonRender();
+		$handle = \Sr::config()->getOutputJsonRender();
 		if (is_callable($handle)) {
 			return call_user_func_array($handle, $args);
 		} else {
@@ -1705,19 +1705,19 @@ class Sr {
 	public static function __callStatic($name, $arguments) {
 		$methods = self::config()->getSrMethods();
 		if (empty($methods[$name])) {
-			throw new soter_exception_500($name . ' not found in ->setSrMethods() or it is empty');
+			throw new \Soter_Exception_500($name . ' not found in ->setSrMethods() or it is empty');
 		}
 		if (is_string($methods[$name])) {
 			$className = $methods[$name] . '_' . self::arrayGet($arguments, 0);
 			if ($className) {
-				return Sr::factory($className);
+				return \Sr::factory($className);
 			} else {
-				throw new soter_exception_500($methods[$name] . '() need argument of class name ');
+				throw new \Soter_Exception_500($methods[$name] . '() need argument of class name ');
 			}
 		} elseif (is_callable($methods[$name])) {
 			return call_user_func_array($methods[$name], $arguments);
 		} else {
-			throw new soter_exception_500($name . ' unknown type of method [ ' . $name . ' ]');
+			throw new Soter_Exception_500($name . ' unknown type of method [ ' . $name . ' ]');
 		}
 	}
 

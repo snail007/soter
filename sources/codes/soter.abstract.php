@@ -13,7 +13,7 @@ abstract class Soter_Dao {
 	private $db;
 
 	public function __construct() {
-		$this->db = Sr::db();
+		$this->db = \Sr::db();
 	}
 
 	/**
@@ -212,7 +212,7 @@ abstract class Soter_Dao {
 				->select($fields)
 				->limit(($page - 1) * $pagesize, $pagesize)
 				->from($this->getTable())->execute()->rows();
-		$data['page'] = Sr::page($total, $page, $pagesize, $url, $pageBarOrder, $pageBarACount);
+		$data['page'] = \Sr::page($total, $page, $pagesize, $url, $pageBarOrder, $pageBarACount);
 		return $data;
 	}
 
@@ -238,7 +238,7 @@ abstract class Soter_Dao {
 		$data['items'] = $this->getDb()
 			->execute('select ' . $fields . ' from ' . $table . (strpos(trim($cond), 'order') === 0 ? ' ' : ' where ') . $cond . ' limit ' . (($page - 1) * $pagesize) . ',' . $pagesize, $values)
 			->rows();
-		$data['page'] = Sr::page($total, $page, $pagesize, $url, $pageBarOrder, $pageBarACount);
+		$data['page'] = \Sr::page($total, $page, $pagesize, $url, $pageBarOrder, $pageBarACount);
 		return $data;
 	}
 
@@ -257,37 +257,37 @@ abstract class Soter_Task {
 	protected $debug = false, $debugError = false;
 
 	public function __construct() {
-		if (!Sr::isCli()) {
-			throw new Soter_Exception_500('Task only in cli mode');
+		if (!\Sr::isCli()) {
+			throw new \Soter_Exception_500('Task only in cli mode');
 		}
 		if (!function_exists('shell_exec')) {
-			throw new Soter_Exception_500('Function [ shell_exec ] was disabled , run task must be enabled it .');
+			throw new \Soter_Exception_500('Function [ shell_exec ] was disabled , run task must be enabled it .');
 		}
 	}
 
 	public function _execute(Soter_CliArgs $args) {
 		$this->debug = $args->get('debug');
 		$this->debugError = $args->get('debug-error');
-		$startTime = Sr::microtime();
+		$startTime = \Sr::microtime();
 		$class = get_class($this);
 		if ($this->debugError) {
 			$_startTime = date('Y-m-d H:i:s.') . substr($startTime . '', strlen($startTime . '') - 3);
 			$error = $this->execute($args);
 			if ($error) {
-				$this->_log('Task [ ' . $class . ' ] execute failed , started at [ ' . $_startTime . ' ], use time ' . (Sr::microtime() - $startTime) . ' ms , exited with error : [ ' . $error . ' ]');
+				$this->_log('Task [ ' . $class . ' ] execute failed , started at [ ' . $_startTime . ' ], use time ' . (\Sr::microtime() - $startTime) . ' ms , exited with error : [ ' . $error . ' ]');
 				$this->_log('', false);
 			}
 		} else {
 			$this->_log('Task [ ' . $class . ' ] start');
 			$this->execute($args);
-			$this->_log('Task [ ' . $class . ' ] end , use time ' . (Sr::microtime() - $startTime) . ' ms');
+			$this->_log('Task [ ' . $class . ' ] end , use time ' . (\Sr::microtime() - $startTime) . ' ms');
 			$this->_log('', false);
 		}
 	}
 
 	public function _log($msg, $time = true) {
 		if ($this->debug || $this->debugError) {
-			$nowTime = '' . Sr::microtime();
+			$nowTime = '' . \Sr::microtime();
 			echo ($time ? date('[Y-m-d H:i:s.' . substr($nowTime, strlen($nowTime) - 3) . ']') . ' [PID:' . sprintf('%- 5d', getmypid()) . '] ' : '') . $msg . "\n";
 		}
 	}
@@ -310,36 +310,36 @@ abstract class Soter_Task_Single extends Soter_Task {
 	public function _execute(Soter_CliArgs $args) {
 		$this->debug = $args->get('debug');
 		$class = get_class($this);
-		$startTime = Sr::microtime();
+		$startTime = \Sr::microtime();
 		$this->_log('Single Task [ ' . $class . ' ] start');
 		$lockFilePath = $args->get('pid');
 		if (!$lockFilePath) {
-			$tempDirPath = Sr::config()->getStorageDirPath();
-			$key = md5(Sr::config()->getApplicationDir() .
-				Sr::config()->getClassesDirName() . '/'
-				. Sr::config()->getTaskDirName() . '/'
+			$tempDirPath = \Sr::config()->getStorageDirPath();
+			$key = md5(\Sr::config()->getApplicationDir() .
+				\Sr::config()->getClassesDirName() . '/'
+				. \Sr::config()->getTaskDirName() . '/'
 				. str_replace('_', '/', get_class($this)) . '.php');
-			$lockFilePath = Sr::realPath($tempDirPath) . '/' . $key . '.pid';
+			$lockFilePath = \Sr::realPath($tempDirPath) . '/' . $key . '.pid';
 		}
 		if (file_exists($lockFilePath)) {
 			$pid = file_get_contents($lockFilePath);
 			//lockfile进程pid存在，直接返回
 			if ($this->pidIsExists($pid)) {
 				$this->_log('Single Task [ ' . $class . ' ] is running with pid ' . $pid . ' , now exiting...');
-				$this->_log('Single Task [ ' . $class . ' ] end , use time ' . (Sr::microtime() - $startTime) . ' ms');
+				$this->_log('Single Task [ ' . $class . ' ] end , use time ' . (\Sr::microtime() - $startTime) . ' ms');
 				$this->_log('', false);
 				return;
 			}
 		}
 		//写入进程pid到lockfile
 		if (file_put_contents($lockFilePath, getmypid()) === false) {
-			throw new Soter_Exception_500('can not create file : [ ' . $lockFilePath . ' ]');
+			throw new \Soter_Exception_500('can not create file : [ ' . $lockFilePath . ' ]');
 		}
 		$this->_log('update pid file [ ' . $lockFilePath . ' ]');
 		$this->execute($args);
 		@unlink($lockFilePath);
 		$this->_log('clean pid file [ ' . $lockFilePath . ' ]');
-		$this->_log('Single Task [ ' . $class . ' ] end , use time ' . (Sr::microtime() - $startTime) . ' ms');
+		$this->_log('Single Task [ ' . $class . ' ] end , use time ' . (\Sr::microtime() - $startTime) . ' ms');
 		$this->_log('', false);
 	}
 
@@ -352,16 +352,16 @@ abstract class Soter_Task_Multiple extends Soter_Task {
 	public function _execute(Soter_CliArgs $args) {
 		$this->debug = $args->get('debug');
 		$class = get_class($this);
-		$startTime = Sr::microtime();
+		$startTime = \Sr::microtime();
 		$this->_log('Multiple Task [ ' . $class . ' ] start');
 		$lockFilePath = $args->get('pid');
 		if (!$lockFilePath) {
-			$tempDirPath = Sr::config()->getStorageDirPath();
-			$key = md5(Sr::config()->getApplicationDir() .
-				Sr::config()->getClassesDirName() . '/'
-				. Sr::config()->getTaskDirName() . '/'
+			$tempDirPath = \Sr::config()->getStorageDirPath();
+			$key = md5(\Sr::config()->getApplicationDir() .
+				\Sr::config()->getClassesDirName() . '/'
+				. \Sr::config()->getTaskDirName() . '/'
 				. str_replace('_', '/', get_class($this)) . '.php');
-			$lockFilePath = Sr::realPath($tempDirPath) . '/' . $key . '.pid';
+			$lockFilePath = \Sr::realPath($tempDirPath) . '/' . $key . '.pid';
 		}
 		$alivedPids = array();
 		if (file_exists($lockFilePath)) {
@@ -374,7 +374,7 @@ abstract class Soter_Task_Multiple extends Soter_Task {
 						if (++$count > $this->getMaxCount() - 1) {
 							//进程数达到最大值，直接返回
 							$this->_log('Multiple Task [ ' . $class . ' ] reach max count : ' . $this->getMaxCount() . ' , now exiting...');
-							$this->_log('Multiple Task [ ' . $class . ' ] end , use time ' . (Sr::microtime() - $startTime) . ' ms');
+							$this->_log('Multiple Task [ ' . $class . ' ] end , use time ' . (\Sr::microtime() - $startTime) . ' ms');
 							$this->_log('', false);
 							return;
 						}
@@ -385,12 +385,12 @@ abstract class Soter_Task_Multiple extends Soter_Task {
 		$alivedPids[] = getmypid();
 		//写入存活进程pid到lockfile
 		if (file_put_contents($lockFilePath, implode("\n", $alivedPids)) === false) {
-			throw new Soter_Exception_500('can not create file : [ ' . $lockFilePath . ' ]');
+			throw new \Soter_Exception_500('can not create file : [ ' . $lockFilePath . ' ]');
 		}
 		$this->_log('update pid file [ ' . $lockFilePath . ' ]');
 		$this->execute($args);
 		$this->_log('clean pid file [ ' . $lockFilePath . ' ]');
-		$this->_log('Multiple Task [ ' . $class . ' ] end , use time ' . (Sr::microtime() - $startTime) . ' ms');
+		$this->_log('Multiple Task [ ' . $class . ' ] end , use time ' . (\Sr::microtime() - $startTime) . ' ms');
 		$this->_log('', false);
 	}
 
@@ -404,7 +404,7 @@ abstract class Soter_Router {
 	protected $route;
 
 	public function __construct() {
-		$this->route = new Soter_Route();
+		$this->route = new \Soter_Route();
 	}
 
 	/**
@@ -430,7 +430,7 @@ abstract class Soter_Exception extends Exception {
 		$this->errorMessage = $errorMessage;
 		$this->errorCode = $errorCode;
 		$this->errorType = $errorType;
-		$this->errorFile = Sr::realPath($errorFile);
+		$this->errorFile = \Sr::realPath($errorFile);
 		$this->errorLine = $errorLine;
 		$this->trace = debug_backtrace(false);
 	}
@@ -481,12 +481,12 @@ abstract class Soter_Exception extends Exception {
 	}
 
 	public function getEnvironment() {
-		return Sr::config()->getEnvironment();
+		return \Sr::config()->getEnvironment();
 	}
 
 	public function getErrorFile($safePath = FALSE) {
 		$file = $this->errorFile ? $this->errorFile : $this->getFile();
-		return $safePath ? Sr::safePath($file) : $file;
+		return $safePath ? \Sr::safePath($file) : $file;
 	}
 
 	public function getErrorLine() {
@@ -500,7 +500,7 @@ abstract class Soter_Exception extends Exception {
 	public function render($isJson = FALSE, $return = FALSE) {
 		if ($isJson) {
 			$string = $this->renderJson();
-		} elseif (Sr::isCli()) {
+		} elseif (\Sr::isCli()) {
 			$string = $this->renderCli();
 		} else {
 			$string = str_replace('</body>', $this->getTraceString(FALSE) . '</body>', $this->renderHtml());
@@ -528,8 +528,8 @@ abstract class Soter_Exception extends Exception {
 		}
 		$i = 1;
 		foreach ($trace as $e) {
-			$file = Sr::safePath(Sr::arrayGet($e, 'file'));
-			$line = Sr::arrayGet($e, 'line');
+			$file = \Sr::safePath(Sr::arrayGet($e, 'file'));
+			$line = \Sr::arrayGet($e, 'line');
 			$func = (!empty($e['class']) ? "{$e['class']}{$e['type']}{$e['function']}()" : "{$e['function']}()");
 			$str.="&rarr; " . ($i++) . ".{$func} " . ($line ? "[ line:{$line} {$file} ]" : '') . ($isCli ? "\n" : '<br/>');
 		}
@@ -557,7 +557,7 @@ abstract class Soter_Exception extends Exception {
 	}
 
 	public function renderJson() {
-		$render = soter::getConfig()->getExceptionJsonRender();
+		$render = \Soter::getConfig()->getExceptionJsonRender();
 		if (is_callable($render)) {
 			return $render($this);
 		}
@@ -565,7 +565,7 @@ abstract class Soter_Exception extends Exception {
 	}
 
 	public function setHttpHeader() {
-		if (!Sr::isCli()) {
+		if (!\Sr::isCli()) {
 			header($this->httpStatusLine);
 		}
 		return $this;
@@ -585,7 +585,7 @@ abstract class Soter_Session {
 		if (is_array($configFileName)) {
 			$this->config = $configFileName;
 		} else {
-			$this->config = Sr::config($configFileName);
+			$this->config = \Sr::config($configFileName);
 		}
 	}
 

@@ -367,18 +367,18 @@ abstract class Soter_Database {
 				$configGroup = $this->{$group[0]}();
 				$connections = &$this->{$group[1]};
 				foreach ($configGroup as $key => $config) {
-					if (!Sr::arrayKeyExists($key, $connections)) {
-						$options[PDO::ATTR_ERRMODE] = PDO::ERRMODE_EXCEPTION;
-						$options[PDO::ATTR_PERSISTENT] = $this->getPconnect();
+					if (!\Sr::arrayKeyExists($key, $connections)) {
+						$options[\PDO::ATTR_ERRMODE] = \PDO::ERRMODE_EXCEPTION;
+						$options[\PDO::ATTR_PERSISTENT] = $this->getPconnect();
 						if ($this->_isMysql()) {
-							$options[PDO::MYSQL_ATTR_INIT_COMMAND] = 'SET NAMES ' . $this->getCharset() . ' COLLATE ' . $this->getCollate();
-							$options[PDO::ATTR_EMULATE_PREPARES] = TRUE; //empty($slaves) && (count($masters) == 1);
+							$options[\PDO::MYSQL_ATTR_INIT_COMMAND] = 'SET NAMES ' . $this->getCharset() . ' COLLATE ' . $this->getCollate();
+							$options[\PDO::ATTR_EMULATE_PREPARES] = TRUE; //empty($slaves) && (count($masters) == 1);
 							$dsn = 'mysql:host=' . $config['hostname'] . ';port=' . $config['port'] . ';dbname=' . $this->getDatabase() . ';charset=' . $this->getCharset();
 							$connections[$key] = new \Soter_PDO($dsn, $config['username'], $config['password'], $options);
 							$connections[$key]->exec('SET NAMES ' . $this->getCharset());
 						} elseif ($this->_isSqlite()) {
 							if (!file_exists($this->getDatabase())) {
-								throw new \Soter_Exception_Database('sqlite3 database file [' . Sr::realPath($this->getDatabase()) . '] not found');
+								throw new \Soter_Exception_Database('sqlite3 database file [' . \Sr::realPath($this->getDatabase()) . '] not found');
 							}
 							$connections[$key] = new \Soter_PDO('sqlite:' . $this->getDatabase(), null, null, $options);
 						} else {
@@ -445,7 +445,7 @@ abstract class Soter_Database {
 			return FALSE;
 		}
 
-		$startTime = Sr::microtime();
+		$startTime = \Sr::microtime();
 		$sql = $sql ? $this->_checkPrefixIdentifier($sql) : $this->getSql();
 		$this->_lastSql = $sql;
 		$values = !empty($values) ? $values : $this->_getValues();
@@ -455,7 +455,7 @@ abstract class Soter_Database {
 		$cacheKey = '';
 		if ($this->_cacheTime) {
 			$cacheKey = empty($this->_cacheKey) ? md5($sql . var_export($values, true)) : $this->_cacheKey;
-			$cacheHandle = Sr::config()->getCacheHandle();
+			$cacheHandle = \Sr::config()->getCacheHandle();
 			if (empty($cacheHandle)) {
 				throw new \Soter_Exception_500('no cache handle found , please set cache handle');
 			}
@@ -482,7 +482,7 @@ abstract class Soter_Database {
 						$return = $isWritetRowsType ? $sth->rowCount() : $status;
 						$this->_lastInsertId = $isWriteInsertType ? $pdo->lastInsertId() : 0;
 					} else {
-						$return = $sth->execute($values) ? $sth->fetchAll(PDO::FETCH_ASSOC) : array();
+						$return = $sth->execute($values) ? $sth->fetchAll(\PDO::FETCH_ASSOC) : array();
 						$return = new \Soter_Database_Resultset($return);
 					}
 				} else {
@@ -509,7 +509,7 @@ abstract class Soter_Database {
 						$return = $isWritetRowsType ? $sth->rowCount() : $status;
 						$this->_lastInsertId = $isWriteInsertType ? $pdo->lastInsertId() : 0;
 					} else {
-						$return = $sth->execute($values) ? $sth->fetchAll(PDO::FETCH_ASSOC) : array();
+						$return = $sth->execute($values) ? $sth->fetchAll(\PDO::FETCH_ASSOC) : array();
 						$return = new \Soter_Database_Resultset($return);
 					}
 				} else {
@@ -518,7 +518,7 @@ abstract class Soter_Database {
 				}
 			}
 			//查询消耗的时间
-			$usingTime = (Sr::microtime() - $startTime) . '';
+			$usingTime = (\Sr::microtime() - $startTime) . '';
 
 			//explain查询
 			$explainRows = array();
@@ -526,7 +526,7 @@ abstract class Soter_Database {
 				reset($this->connectionMasters);
 				$sth = $this->connectionMasters[key($this->connectionMasters)]->prepare('EXPLAIN ' . $sql);
 				$sth->execute($this->_getValues());
-				$explainRows = $sth->fetchAll(PDO::FETCH_ASSOC);
+				$explainRows = $sth->fetchAll(\PDO::FETCH_ASSOC);
 			}
 			//慢查询记录
 			if ($this->slowQueryDebug && ($usingTime >= $this->getSlowQueryTime())) {
@@ -544,7 +544,7 @@ abstract class Soter_Database {
 					    'index_subquery' => 9, 'range' => 10, 'index' => 11, 'all' => 12,
 					);
 					foreach ($explainRows as $row) {
-						if (Sr::arrayKeyExists(strtolower($row['type']), $order) && Sr::arrayKeyExists(strtolower($this->getMinIndexType()), $order)) {
+						if (\Sr::arrayKeyExists(strtolower($row['type']), $order) && \Sr::arrayKeyExists(strtolower($this->getMinIndexType()), $order)) {
 							$key = $order[strtolower($row['type'])];
 							$minKey = $order[strtolower($this->getMinIndexType())];
 							if ($key > $minKey) {
@@ -624,7 +624,7 @@ abstract class Soter_Database {
 				throw new \Soter_Exception_Database($group . $this->_errorMsg, 500, 'Soter_Exception_Database', $message->getFile(), $message->getLine());
 			} else {
 
-				throw new Soter_Exception_Database($group . $message . $sql, $code);
+				throw new \Soter_Exception_Database($group . $message . $sql, $code);
 			}
 		}
 	}
@@ -850,7 +850,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 
 	private function _compileUpdateBatch() {
 		list($values, $index) = $this->arUpdateBatch;
-		if (count($values) && Sr::arrayKeyExists("0.$index", $values)) {
+		if (count($values) && \Sr::arrayKeyExists("0.$index", $values)) {
 			$ids = array();
 			$final = array();
 			$_values = array();
@@ -1202,7 +1202,7 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 		}
 		$prefix = $this->getTablePrefix();
 		if ($prefix && strpos($str, $prefix) === FALSE) {
-			if (!Sr::arrayKeyExists($str, $this->_asTable)) {
+			if (!\Sr::arrayKeyExists($str, $this->_asTable)) {
 				return $prefix . $str;
 			}
 		}
@@ -1315,7 +1315,7 @@ class Soter_Database_Resultset {
 	}
 
 	public function row($index = null, $isAssoc = true) {
-		if (!is_null($index) && Sr::arrayKeyExists($index, $this->_resultSet)) {
+		if (!is_null($index) && \Sr::arrayKeyExists($index, $this->_resultSet)) {
 			return $isAssoc ? $this->_resultSet[$index] : array_values($this->_resultSet[$index]);
 		} else {
 			$row = current($this->_resultSet);
@@ -1324,14 +1324,14 @@ class Soter_Database_Resultset {
 	}
 
 	public function object($beanClassName, $index = null) {
-		$beanDirName = Sr::config()->getBeanDirName();
+		$beanDirName = \Sr::config()->getBeanDirName();
 		if (stripos($beanClassName, $beanDirName . '_') === false) {
 			$beanClassName = $beanDirName . '_' . $beanClassName;
 		}
 
 		$object = new $beanClassName();
 		if (!($object instanceof Soter_Bean)) {
-			throw new Soter_Exception_500('error class [ ' . $beanClassName . ' ] , need instanceof Soter_Bean');
+			throw new \Soter_Exception_500('error class [ ' . $beanClassName . ' ] , need instanceof Soter_Bean');
 		}
 		$row = $this->row($index);
 		foreach ($row as $key => $value) {
@@ -1344,13 +1344,13 @@ class Soter_Database_Resultset {
 	public function objects($beanClassName) {
 		$rowsKey = $this->_rowsKey;
 		$this->_rowsKey = '';
-		$beanDirName = Sr::config()->getBeanDirName();
+		$beanDirName = \Sr::config()->getBeanDirName();
 		if (stripos($beanClassName, $beanDirName . '_') === false) {
 			$beanClassName = $beanDirName . '_' . $beanClassName;
 		}
 		$object = new $beanClassName();
 		if (!($object instanceof Soter_Bean)) {
-			throw new Soter_Exception_500('error class [ ' . $beanClassName . ' ] , need instanceof Soter_Bean');
+			throw new \Soter_Exception_500('error class [ ' . $beanClassName . ' ] , need instanceof Soter_Bean');
 		}
 		$objects = array();
 		$rows = $this->rows();
@@ -1372,7 +1372,7 @@ class Soter_Database_Resultset {
 	public function values($columnName) {
 		$columns = array();
 		foreach ($this->_resultSet as $row) {
-			if (Sr::arrayKeyExists($columnName, $row)) {
+			if (\Sr::arrayKeyExists($columnName, $row)) {
 				$columns[] = $row[$columnName];
 			} else {
 				return array();
@@ -1383,7 +1383,7 @@ class Soter_Database_Resultset {
 
 	public function value($columnName, $default = null, $index = null) {
 		$row = $this->row($index);
-		return ($columnName && Sr::arrayKeyExists($columnName, $row)) ? $row[$columnName] : $default;
+		return ($columnName && \Sr::arrayKeyExists($columnName, $row)) ? $row[$columnName] : $default;
 	}
 
 	public function key($columnName) {
