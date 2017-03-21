@@ -48,17 +48,20 @@ class testDbMysql extends UnitTestCase {
 		$aSql = 'CREATE TABLE `test_a` (`id` int(11) NOT NULL AUTO_INCREMENT,`name` varchar(10) NOT NULL,`gid` int(11) NOT NULL,PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8';
 		$bSql = 'CREATE TABLE `test_b` (`id` int(11) NOT NULL AUTO_INCREMENT,`gname` varchar(10) NOT NULL,`cid` int(11) NOT NULL,PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8';
 		$cSql = 'CREATE TABLE `test_c` (`id` int(11) NOT NULL AUTO_INCREMENT,`cname` varchar(10) NOT NULL,PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8';
+		$dSql = 'CREATE TABLE `test_d` (`id` varchar(10) NOT NULL,`name` varchar(10) NOT NULL,`gid` int(11) NOT NULL,PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8';
 
 		$this->clean();
 		$this->assertTrue($this->db->execute($aSql));
 		$this->assertTrue($this->db->execute($bSql));
 		$this->assertTrue($this->db->execute($cSql));
+		$this->assertTrue($this->db->execute($dSql));
 	}
 
 	public function clean() {
 		$this->assertTrue($this->db->execute('DROP TABLE IF EXISTS test_a'));
 		$this->assertTrue($this->db->execute('DROP TABLE IF EXISTS test_b'));
 		$this->assertTrue($this->db->execute('DROP TABLE IF EXISTS test_c'));
+		$this->assertTrue($this->db->execute('DROP TABLE IF EXISTS test_d'));
 	}
 
 	public function testCreate() {
@@ -166,6 +169,21 @@ class testDbMysql extends UnitTestCase {
 		$this->assertEqual($rows[0]['gid'], 11);
 		$this->assertEqual($rows[1]['gid'], 22);
 		$this->assertEqual($rows[2]['gid'], 33);
+		$this->clean();
+	}
+
+	public function testUpdateBatchVarChar() {
+		$this->init();
+		$data[] = array('id' => 'id1', 'name' => 'name1', 'gid' => rand(1000, 10000));
+		$data[] = array('id' => 'id2', 'name' => 'name2', 'gid' => rand(1000, 10000));
+		$data[] = array('id' => 'id3', 'name' => 'name3', 'gid' => rand(1000, 10000));
+		$this->db->insertBatch('d', $data);
+		$this->assertEqual($this->db->execute(), 3);
+		$updata[] = array('id' => 'id1', 'name' => 'name111', 'gid' => 111);
+		$updata[] = array('id' => 'id2', 'name' => 'name222', 'gid' => 222);
+		$updata[] = array('id' => 'id3', 'name' => 'name333', 'gid' => 333);
+		$this->db->updateBatch('d', $updata, 'id');
+		$this->assertEqual($this->db->execute(), 3);
 		$this->clean();
 	}
 

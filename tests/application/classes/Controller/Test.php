@@ -14,13 +14,7 @@ namespace Controller;
 class Test extends \Soter_Controller {
 
 	public function do_m() {
-		\Sr::factory('Name\Space\Test')->test();
-		echo "<br>";
-		\Sr::factory('Name\Space2\Test')->test();
-		echo "<br>";
-		(new \Name\Space\Test())->test();
-		echo "<br>";
-		(new \Name\Space2\Test())->test();
+
 	}
 
 	public function do_wx() {
@@ -34,14 +28,11 @@ class Test extends \Soter_Controller {
 		var_dump( \Sr::business('TestBusiness0'));
 	}
 
-	private function isExists($title, $pubdate, $source, $prefix) {
-		$where = array(
-		    'title' => $title,
-		    'pubdate' => $pubdate,
-		    'source' => $source,
+	public function do_index1() {
+		$data=array(
+		    array('id'=>'a1','name'=>'a1111'),
+		    array('id'=>'a2','name'=>'a2222'),
 		);
-		$total = \Sr::db()->from($prefix . 'archives')->where($where)->limit(0, 1)->execute()->total();
-		return $total;
 	}
 
 	public function do_test() {

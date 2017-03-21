@@ -862,10 +862,13 @@ class Soter_Database_ActiveRecord extends Soter_Database {
 							$_column = explode(' ', key($val[$field]));
 							$column = $this->_protectIdentifier($_column[0]);
 							$op = isset($_column[1]) ? $_column[1] : '';
-							$final[$field][] = 'WHEN ' . $this->_protectIdentifier($index) . ' = ' . $val[$index] . ' THEN ' . $column . ' ' . $op . ' ' . "?";
+							$final[$field][] = 'WHEN ' . $this->_protectIdentifier($index) . ' = ? THEN ' . $column . ' ' . $op . ' ' . "?";
+							$_values[$field][] =$val[$index] ;
 							$_values[$field][] = current($val[$field]);
+							
 						} else {
-							$final[$field][] = 'WHEN ' . $this->_protectIdentifier($index) . ' = ' . $val[$index] . ' THEN ' . "?";
+							$final[$field][] = 'WHEN ' . $this->_protectIdentifier($index) . ' = ? THEN ' . "?";
+							$_values[$field][] = $val[$index];
 							$_values[$field][] = $val[$field];
 						}
 					}

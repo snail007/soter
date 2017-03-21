@@ -5623,3 +5623,2963 @@ Explain : array (
 )
 UsingTime : 0 ms
 Time : 2017-03-21 15:13:35
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 15:41:04
+
+SQL : 
+ SELECT `cname`
+ FROM  `test_c` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 15:41:05
+
+SQL : 
+ SELECT `cname`
+ FROM  `test_c` 
+ LIMIT 0 , 1
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 15:41:05
+
+SQL : 
+ SELECT count(`id`) as total,`id`
+ FROM  `test_c` 
+ GROUP BY `cname`
+ HAVING `total` >= ?
+ ORDER BY `total` DESC
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '4',
+    'Extra' => 'Using temporary; Using filesort',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 15:41:05
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 15:41:07
+
+SQL : 
+ SELECT *
+ FROM  `test_c` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 15:41:08
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 15:41:09
+
+SQL : 
+ SELECT *
+ FROM  `test_c` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 15:41:09
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 15:41:10
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 15:41:11
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 15:41:11
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 15:41:12
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 15:41:13
+
+SQL : select * from test_a where name like '%?%'
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => 'Using where',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 15:41:14
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 15:41:34
+
+SQL : 
+ SELECT `cname`
+ FROM  `test_c` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 15:41:35
+
+SQL : 
+ SELECT `cname`
+ FROM  `test_c` 
+ LIMIT 0 , 1
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 15:41:35
+
+SQL : 
+ SELECT count(`id`) as total,`id`
+ FROM  `test_c` 
+ GROUP BY `cname`
+ HAVING `total` >= ?
+ ORDER BY `total` DESC
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '4',
+    'Extra' => 'Using temporary; Using filesort',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 15:41:35
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 15:41:36
+
+SQL : 
+ SELECT *
+ FROM  `test_c` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 15:41:37
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 15:41:38
+
+SQL : 
+ SELECT *
+ FROM  `test_c` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 15:41:38
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 15:41:40
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 15:41:41
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 15:41:41
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 15:41:41
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 15:41:42
+
+SQL : select * from test_a where name like '%?%'
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => 'Using where',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 15:41:43
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 15:42:36
+
+SQL : 
+ SELECT `cname`
+ FROM  `test_c` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 15:42:38
+
+SQL : 
+ SELECT `cname`
+ FROM  `test_c` 
+ LIMIT 0 , 1
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 15:42:38
+
+SQL : 
+ SELECT count(`id`) as total,`id`
+ FROM  `test_c` 
+ GROUP BY `cname`
+ HAVING `total` >= ?
+ ORDER BY `total` DESC
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '4',
+    'Extra' => 'Using temporary; Using filesort',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 15:42:38
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 15:42:39
+
+SQL : 
+ SELECT *
+ FROM  `test_c` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 15:42:40
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 15:42:41
+
+SQL : 
+ SELECT *
+ FROM  `test_c` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 15:42:41
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 15:42:42
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 15:42:43
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 15:42:43
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 15:42:44
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 15:42:45
+
+SQL : select * from test_a where name like '%?%'
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => 'Using where',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 15:42:46
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:14:00
+
+SQL : 
+ SELECT `cname`
+ FROM  `test_c` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 16:14:01
+
+SQL : 
+ SELECT `cname`
+ FROM  `test_c` 
+ LIMIT 0 , 1
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:14:01
+
+SQL : 
+ SELECT count(`id`) as total,`id`
+ FROM  `test_c` 
+ GROUP BY `cname`
+ HAVING `total` >= ?
+ ORDER BY `total` DESC
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '4',
+    'Extra' => 'Using temporary; Using filesort',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:14:01
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:14:02
+
+SQL : 
+ SELECT *
+ FROM  `test_c` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:14:03
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:14:04
+
+SQL : 
+ SELECT *
+ FROM  `test_c` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 16:14:04
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 16:14:05
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 16:14:06
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:14:06
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 16:14:07
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 16:14:09
+
+SQL : select * from test_a where name like '%?%'
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => 'Using where',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:14:09
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:15:06
+
+SQL : 
+ SELECT `cname`
+ FROM  `test_c` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:15:06
+
+SQL : 
+ SELECT `cname`
+ FROM  `test_c` 
+ LIMIT 0 , 1
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:15:06
+
+SQL : 
+ SELECT count(`id`) as total,`id`
+ FROM  `test_c` 
+ GROUP BY `cname`
+ HAVING `total` >= ?
+ ORDER BY `total` DESC
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '4',
+    'Extra' => 'Using temporary; Using filesort',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 16:15:06
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:15:08
+
+SQL : 
+ SELECT *
+ FROM  `test_c` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 16:15:09
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:15:10
+
+SQL : 
+ SELECT *
+ FROM  `test_c` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 16:15:10
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:15:10
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:15:11
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:15:11
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:15:12
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:15:13
+
+SQL : select * from test_a where name like '%?%'
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => 'Using where',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 16:15:14
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:16:08
+
+SQL : 
+ SELECT `cname`
+ FROM  `test_c` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:16:10
+
+SQL : 
+ SELECT `cname`
+ FROM  `test_c` 
+ LIMIT 0 , 1
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:16:10
+
+SQL : 
+ SELECT count(`id`) as total,`id`
+ FROM  `test_c` 
+ GROUP BY `cname`
+ HAVING `total` >= ?
+ ORDER BY `total` DESC
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '4',
+    'Extra' => 'Using temporary; Using filesort',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:16:10
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:16:11
+
+SQL : 
+ SELECT *
+ FROM  `test_c` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:16:12
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:16:13
+
+SQL : 
+ SELECT *
+ FROM  `test_c` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:16:13
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:16:14
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:16:15
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:16:15
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 16:16:16
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:16:17
+
+SQL : select * from test_a where name like '%?%'
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => 'Using where',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:16:18
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:16:40
+
+SQL : 
+ SELECT `cname`
+ FROM  `test_c` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:16:41
+
+SQL : 
+ SELECT `cname`
+ FROM  `test_c` 
+ LIMIT 0 , 1
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:16:41
+
+SQL : 
+ SELECT count(`id`) as total,`id`
+ FROM  `test_c` 
+ GROUP BY `cname`
+ HAVING `total` >= ?
+ ORDER BY `total` DESC
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '4',
+    'Extra' => 'Using temporary; Using filesort',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:16:41
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:16:42
+
+SQL : 
+ SELECT *
+ FROM  `test_c` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:16:43
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:16:44
+
+SQL : 
+ SELECT *
+ FROM  `test_c` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:16:44
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:16:45
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:16:46
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:16:46
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:16:47
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:16:48
+
+SQL : select * from test_a where name like '%?%'
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => 'Using where',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:16:49
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:19:43
+
+SQL : 
+ SELECT `cname`
+ FROM  `test_c` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:19:44
+
+SQL : 
+ SELECT `cname`
+ FROM  `test_c` 
+ LIMIT 0 , 1
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 16:19:44
+
+SQL : 
+ SELECT count(`id`) as total,`id`
+ FROM  `test_c` 
+ GROUP BY `cname`
+ HAVING `total` >= ?
+ ORDER BY `total` DESC
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '4',
+    'Extra' => 'Using temporary; Using filesort',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 16:19:44
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:19:45
+
+SQL : 
+ SELECT *
+ FROM  `test_c` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 16:19:46
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:19:46
+
+SQL : 
+ SELECT *
+ FROM  `test_c` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:19:46
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:19:48
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:19:49
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:19:49
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:19:50
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:19:51
+
+SQL : select * from test_a where name like '%?%'
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => 'Using where',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:19:52
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 16:32:36
+
+SQL : 
+ SELECT `cname`
+ FROM  `test_c` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:32:37
+
+SQL : 
+ SELECT `cname`
+ FROM  `test_c` 
+ LIMIT 0 , 1
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:32:37
+
+SQL : 
+ SELECT count(`id`) as total,`id`
+ FROM  `test_c` 
+ GROUP BY `cname`
+ HAVING `total` >= ?
+ ORDER BY `total` DESC
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '4',
+    'Extra' => 'Using temporary; Using filesort',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:32:37
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:32:38
+
+SQL : 
+ SELECT *
+ FROM  `test_c` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:32:39
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 16:32:40
+
+SQL : 
+ SELECT *
+ FROM  `test_c` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:32:40
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:32:41
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 16:32:42
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:32:42
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 16:32:43
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:32:44
+
+SQL : select * from test_a where name like '%?%'
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => 'Using where',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:32:45
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 16:33:23
+
+SQL : 
+ SELECT `cname`
+ FROM  `test_c` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 16:33:23
+
+SQL : 
+ SELECT `cname`
+ FROM  `test_c` 
+ LIMIT 0 , 1
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:33:23
+
+SQL : 
+ SELECT count(`id`) as total,`id`
+ FROM  `test_c` 
+ GROUP BY `cname`
+ HAVING `total` >= ?
+ ORDER BY `total` DESC
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '4',
+    'Extra' => 'Using temporary; Using filesort',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 16:33:23
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:33:24
+
+SQL : 
+ SELECT *
+ FROM  `test_c` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:33:25
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 16:33:26
+
+SQL : 
+ SELECT *
+ FROM  `test_c` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_c',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '3',
+    'Extra' => '',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 16:33:26
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:33:27
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 1 ms
+Time : 2017-03-21 16:33:29
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:33:29
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:33:29
+
+SQL : 
+ SELECT *
+ FROM  `test_a` 
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => '',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:33:31
+
+SQL : select * from test_a where name like '%?%'
+Explain : array (
+  0 => 
+  array (
+    'id' => '1',
+    'select_type' => 'SIMPLE',
+    'table' => 'test_a',
+    'type' => 'ALL',
+    'possible_keys' => NULL,
+    'key' => NULL,
+    'key_len' => NULL,
+    'ref' => NULL,
+    'rows' => '1',
+    'Extra' => 'Using where',
+  ),
+)
+UsingTime : 0 ms
+Time : 2017-03-21 16:33:32
