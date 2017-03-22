@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @property Soter_Config $soterConfig
  */
@@ -441,10 +442,10 @@ class Sr {
 		}
 		$className1 = str_replace(array('\\', '/'), '_', $className);
 		$className2 = str_replace(array('/', '_'), '\\', $className);
-		if (class_exists($className1)) {
-			return new $className1();
-		} elseif (class_exists($className2)) {
-			return new $className2();
+		$args = func_get_args();
+		$class = class_exists($className1) ? new ReflectionClass($className1) : (class_exists($className2) ? new ReflectionClass($className2) : '');
+		if ($class) {
+			return $class->newInstanceArgs(array_slice($args, 2));
 		}
 		throw new \Soter_Exception_500("class [ $className ] not found");
 	}
@@ -1717,7 +1718,7 @@ class Sr {
 		} elseif (is_callable($methods[$name])) {
 			return call_user_func_array($methods[$name], $arguments);
 		} else {
-			throw new Soter_Exception_500($name . ' unknown type of method [ ' . $name . ' ]');
+			throw new \Soter_Exception_500($name . ' unknown type of method [ ' . $name . ' ]');
 		}
 	}
 
@@ -1742,7 +1743,7 @@ class Sr {
 	private static function getEncryptKey($key, $attachKey) {
 		$_key = $key ? $key : self::config()->getEncryptKey();
 		if (!$key && !$_key) {
-			throw new Soter_Exception_500('encrypt key can not empty or you can set it in index.php : ->setEncryptKey()');
+			throw new \Soter_Exception_500('encrypt key can not empty or you can set it in index.php : ->setEncryptKey()');
 		}
 		return substr(md5($_key . $attachKey), 0, 8);
 	}

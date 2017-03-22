@@ -55,7 +55,7 @@ define('SOTER_PACKAGES_PATH', SOTER_APP_PATH . 'packages/');
 	 * 那么这里应该设置信任的nginx所在服务器的ip。
 	 * nginx里面应该设置 X_FORWARDED_FOR server变量来表示真实的客户端IP。
 	 * 不然通过Sr::clientIp()是获取不到真实的客户端IP的。
-	 * 参数是数组，有多个ip放入数组即可。
+	 * 参数是数组，有多个ip放入数组即可,ip也支持网段写法,比如网段192.168.1.0/24。
 	 */
 	//->setBackendServerIpWhitelist(array('192.168.2.2'))
 	/* 初始化请求 */

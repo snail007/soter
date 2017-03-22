@@ -1,18 +1,20 @@
 <?php
-namespace Name\Space;
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
 
+namespace Name\Space;
+
 /**
- * Description of Test
+ * Description of Args
  *
  * @author pengmeng
  */
-class Test {
-	public function test() {
-		echo __CLASS__;
+class Args {
+	public function __construct($param) {
+		echo $param;
 	}
 }

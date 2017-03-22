@@ -1,5 +1,7 @@
 <?php
+
 namespace Controller;
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -14,7 +16,7 @@ namespace Controller;
 class Test extends \Soter_Controller {
 
 	public function do_m() {
-
+		var_dump(\Sr::factory('\Name\Space\Args',null,'bbb'));
 	}
 
 	public function do_wx() {
@@ -24,21 +26,21 @@ class Test extends \Soter_Controller {
 	}
 
 	public function do_index() {
-		var_dump( \Sr::business('TestBusiness'));
-		var_dump( \Sr::business('TestBusiness0'));
+		var_dump(\Sr::business('TestBusiness'));
+		var_dump(\Sr::business('TestBusiness0'));
 	}
 
 	public function do_index1() {
-		$data=array(
-		    array('id'=>'a1','name'=>'a1111'),
-		    array('id'=>'a2','name'=>'a2222'),
+		$data = array(
+		    array('id' => 'a1', 'name' => 'a1111'),
+		    array('id' => 'a2', 'name' => 'a2222'),
 		);
 	}
 
 	public function do_test() {
-		$a =array();
-		for(;;){
-			$a[]=  str_repeat("xxxx", 1000);
+		$a = array();
+		for (;;) {
+			$a[] = str_repeat("xxxx", 1000);
 		}
 	}
 
