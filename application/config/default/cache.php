@@ -8,34 +8,34 @@ return array(
     'drivers' => array(
 	//自定义缓存示例
 //	'my_cache' => array(
-//	    'class' => 'Cache_MyCache', //缓存类名称
+//	    'class' => '\Cache_MyCache', //缓存类名称
 //	    'config' => null//需要传递给缓存类构造方法的第一个参数，一般是配置信息数组，不需要就保持null
 //	),
 	'file' => array(
-	    'class' => 'Soter_Cache_File',
+	    'class' => '\Soter_Cache_File',
 	    //缓存文件保存路径
-	    'config' => Sr::config()->getStorageDirPath() . 'cache/'
+	    'config' => \Sr::config()->getStorageDirPath() . 'cache/'
 	),
 	'memcache' => array(
-	    'class' => 'Soter_Cache_Memcache',
+	    'class' => '\Soter_Cache_Memcache',
 	    'config' => array(//memcache服务器信息，支持多个
 		array("127.0.0.1", 11211),
 	    //array("new.host.ip",11211),
 	    )
 	),
 	'memcached' => array(
-	    'class' => 'Soter_Cache_Memcached',
+	    'class' => '\Soter_Cache_Memcached',
 	    'config' => array(//memcached服务器信息，支持多个
 		array("127.0.0.1", 11211),
 	    //array("new.host.ip",11211),
 	    )
 	),
 	'apc' => array(
-	    'class' => 'Soter_Cache_Apc',
+	    'class' => '\Soter_Cache_Apc',
 	    'config' => NULL//apc缓存不需要配置信息，保持null即可
 	),
 	'redis_cluster' => array(
-	    'class' => 'Soter_Cache_Redis_Cluster',
+	    'class' => '\Soter_Cache_Redis_Cluster',
 	    'config' => array(
 		'hosts'=>array(//集群中所有master主机信息
 		    //'127.0.0.1:7001',
@@ -50,7 +50,7 @@ return array(
 	    )
 	),
 	'redis' => array(
-	    'class' => 'Soter_Cache_Redis',
+	    'class' => '\Soter_Cache_Redis',
 	    'config' =>
 	    array(
 		//redis服务器信息，支持集群。

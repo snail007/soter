@@ -12,7 +12,7 @@ return array(
 	'key' => function() {
 		//根据具体的业务逻辑，返回缓存key，
 		//返回的key如果为空，则不使用缓存
-		return 'userId:' . Sr::get('userId');
+		return 'userId:' . \Sr::get('userId');
 	}
     )
 );
