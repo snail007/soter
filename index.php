@@ -26,8 +26,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2017, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.1.31
- * @createdtime   2017-03-21 18:27:19
+ * @since         v1.1.32
+ * @createdtime   2017-03-24 11:16:32
  */
  
 define("IN_SOTER", true);
@@ -84,7 +84,7 @@ define('SOTER_PACKAGES_PATH', SOTER_APP_PATH . 'packages/');
 	 * 那么这里应该设置信任的nginx所在服务器的ip。
 	 * nginx里面应该设置 X_FORWARDED_FOR server变量来表示真实的客户端IP。
 	 * 不然通过Sr::clientIp()是获取不到真实的客户端IP的。
-	 * 参数是数组，有多个ip放入数组即可。
+	 * 参数是数组，有多个ip放入数组即可,ip也支持网段写法,比如网段192.168.1.0/24。
 	 */
 	//->setBackendServerIpWhitelist(array('192.168.2.2'))
 	/* 初始化请求 */
@@ -177,6 +177,8 @@ define('SOTER_PACKAGES_PATH', SOTER_APP_PATH . 'packages/');
 	//->setCacheConfig('cache')
 	/* 设置数据库连接信息，参数可以是配置文件名称；也可以是数据库配置信息数组，即配置文件返回的那个数组。 */
 	//->setDatabseConfig('database')
+	/* 设置错误级别,也就是error_reporting()的参数,只有此级别的错误才会触发下面的错误显示控制处理类 */
+	->setExceptionLevel(E_ALL)
 	/* 设置自定义的错误显示控制处理类 */
 	->setExceptionHandle(new \Soter_Exception_Handle_Default())
 	/* 错误日志记录，注释掉这行会关闭日志记录，去掉注释则开启日志文件记录,
