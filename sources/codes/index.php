@@ -12,6 +12,8 @@ define('SOTER_PACKAGES_PATH', SOTER_APP_PATH . 'packages/');
 \Soter::initialize()
 	/* 设置Soter异常管理程序保留的内存大小，单位byte */
 	->setExceptionMemoryReserveSize(512000)
+	/* 设置错误级别,也就是error_reporting()的参数,只有此级别的错误才会触发下面的错误显示控制处理类 */
+	->setExceptionLevel(E_ALL ^ E_DEPRECATED)
 	/* 设置Soter管理异常错误 */
 	->setExceptionControl(true)
 	/* 时区设置 */
@@ -148,8 +150,6 @@ define('SOTER_PACKAGES_PATH', SOTER_APP_PATH . 'packages/');
 	//->setCacheConfig('cache')
 	/* 设置数据库连接信息，参数可以是配置文件名称；也可以是数据库配置信息数组，即配置文件返回的那个数组。 */
 	//->setDatabseConfig('database')
-	/* 设置错误级别,也就是error_reporting()的参数,只有此级别的错误才会触发下面的错误显示控制处理类 */
-	->setExceptionLevel(E_ALL)
 	/* 设置自定义的错误显示控制处理类 */
 	->setExceptionHandle(new \Soter_Exception_Handle_Default())
 	/* 错误日志记录，注释掉这行会关闭日志记录，去掉注释则开启日志文件记录,

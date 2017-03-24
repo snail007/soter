@@ -15,6 +15,7 @@ class User{
 }
 那么669和jack就会作为$id和$name传递给User类的构造方法,如果要传递更多参数
 在调用Sr::factory('\Bean\User', null,669,'jack')的时候,后面依次写上即可.
+
 2.入口文件增加了配置->setExceptionLevel(E_ALL),设置错误级别,也就是error_reporting()的参数,
 只有此级别的错误才会触发配置的错误显示控制处理类.
 
@@ -23,13 +24,12 @@ class User{
 1、修复了数据库驱动的updateBatch方法,当更新的条件字段不是数字时会报错的bug.
 
 升级提示:
-1.在入口文件配置项->setExceptionHandle->setExceptionHandle(new \Soter_Exception_Handle_Default())上面
+1.在入口文件配置项->setExceptionControl(true)上面
 增加如下配置:
-
 	/* 设置错误级别,也就是error_reporting()的参数,只有此级别的错误才会触发下面的错误显示控制处理类 */
 	->setExceptionLevel(E_ALL)
-	/* 设置自定义的错误显示控制处理类 */
-	->setExceptionHandle(new \Soter_Exception_Handle_Default())
+	/* 设置Soter管理异常错误 */
+	->setExceptionControl(true)
 
 
 ============v1.1.31[2017-03-21]===========

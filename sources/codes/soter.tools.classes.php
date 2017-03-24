@@ -375,7 +375,6 @@ class Soter_Config {
 		$packageContainer = array(),
 		$loggerWriterContainer = array(),
 		$uriRewriter,
-		$exceptionLevel=E_ALL,
 		$exceptionHandle,
 		$route,
 		$environment = 'development',
@@ -921,12 +920,8 @@ class Soter_Config {
 		return $this;
 	}
 
-	function getExceptionLevel() {
-		return $this->exceptionLevel;
-	}
-
 	function setExceptionLevel($exceptionLevel) {
-		$this->exceptionLevel = $exceptionLevel;
+		error_reporting($exceptionLevel);
 		return $this;
 	}
 
@@ -1135,7 +1130,6 @@ class Soter_Logger_Writer_Dispatcher {
 			//保留内存
 			self::$memReverse = str_repeat("x", \Soter::getConfig()->getExceptionMemoryReserveSize());
 			self::$instance = new \Soter_Logger_Writer_Dispatcher();
-			error_reporting(\Sr::config()->getExceptionLevel());
 			//插件模式打开错误显示，web和命令行模式关闭错误显示
 			\Sr::isPluginMode() ? ini_set('display_errors', TRUE) : ini_set('display_errors', FALSE);
 			set_exception_handler(array(self::$instance, 'handleException'));
