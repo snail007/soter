@@ -12,30 +12,30 @@ echo "backup location : $tmp\n";
 
 //src
 chdir($rootDir);
-shell_exec('git add . >/dev/null');
-shell_exec('git commit -a -m release'.$ver." >/dev/null");
-shell_exec('git checkout master >/dev/null');
-shell_exec('git merge dev >/dev/null');
-shell_exec("rm -rf  $rootDir/tests $rootDir/sources >/dev/null");
-shell_exec('git add .  >/dev/null');
-shell_exec("git commit -a  -m release$ver  >/dev/null");
-shell_exec("git tag -d $ver  >/dev/null");
-shell_exec("git tag -a $ver -m $vers  >/dev/null");
-shell_exec("git push origin :refs/tags/$ver  >/dev/null");
-shell_exec("git push origin dev  >/dev/null");
-shell_exec("git push origin master  >/dev/null");
+shell_exec('git add . >/dev/null 2>&1');
+shell_exec('git commit -a -m release'.$ver." >/dev/null 2>&1");
+shell_exec('git checkout master >/dev/null 2>&1');
+shell_exec('git merge dev >/dev/null 2>&1');
+shell_exec("rm -rf  $rootDir/tests $rootDir/sources >/dev/null 2>&1");
+shell_exec('git add .  >/dev/null 2>&1');
+shell_exec("git commit -a  -m release$ver  >/dev/null 2>&1");
+shell_exec("git tag -d $ver  >/dev/null 2>&1");
+shell_exec("git tag -a $ver -m $ver  >/dev/null 2>&1");
+shell_exec("git push origin :refs/tags/$ver  >/dev/null 2>&1");
+shell_exec("git push origin dev  >/dev/null 2>&1");
+shell_exec("git push origin master  >/dev/null 2>&1");
 shell_exec("git push origin $ver");
-shell_exec('git checkout dev  >/dev/null');
+shell_exec('git checkout dev  >/dev/null 2>&1');
 
 //docs
 echo "$rootDir/../soter-docs\n";
 chdir("$rootDir/../soter-docs");
-shell_exec("git add . >/dev/null");
-shell_exec("git commit -a -m release$ver >/dev/null");
-shell_exec("git tag -d $ver >/dev/null");
-shell_exec("git tag -a $ver -m $ver >/dev/null");
+shell_exec("git add . >/dev/null 2>&1");
+shell_exec("git commit -a -m release$ver >/dev/null 2>&1");
+shell_exec("git tag -d $ver >/dev/null 2>&1");
+shell_exec("git tag -a $ver -m $ver >/dev/null 2>&1");
 shell_exec("git push origin :refs/tags/$ver");
-shell_exec("git push origin master >/dev/null");
+shell_exec("git push origin master >/dev/null 2>&1");
 shell_exec("git push origin $ver");
 
 //src
