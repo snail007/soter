@@ -28,13 +28,12 @@ shell_exec("git push origin $ver");
 shell_exec('git checkout dev  >/dev/null 2>&1');
 
 //docs
-echo "$rootDir/../soter-docs\n";
 chdir("$rootDir/../soter-docs");
 shell_exec("git add . >/dev/null 2>&1");
 shell_exec("git commit -a -m release$ver >/dev/null 2>&1");
 shell_exec("git tag -d $ver >/dev/null 2>&1");
 shell_exec("git tag -a $ver -m $ver >/dev/null 2>&1");
-shell_exec("git push origin :refs/tags/$ver");
+shell_exec("git push origin :refs/tags/$ver  >/dev/null 2>&1");
 shell_exec("git push origin master >/dev/null 2>&1");
 shell_exec("git push origin $ver");
 
