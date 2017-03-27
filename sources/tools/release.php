@@ -15,7 +15,7 @@ shell_exec('git commit -a -m release'.$ver);
 shell_exec('git checkout master');
 shell_exec("rm -rf  $rootDir/tests $rootDir/sources");
 shell_exec('git add .');
-shell_exec("git commit -A .  -m release$ver");
+shell_exec("git commit -a  -m release$ver");
 shell_exec("git tag -d $ver");
 shell_exec("git tag -a $ver -m $ver");
 shell_exec("git push origin :refs/tags/$ver");
