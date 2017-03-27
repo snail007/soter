@@ -26,7 +26,7 @@
  * @copyright     Copyright (c) 2015 - 2017, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
  * @since         v1.1.32
- * @createdtime   2017-03-24 11:16:32
+ * @createdtime   2017-03-27 14:45:49
  */
  
 
@@ -3911,7 +3911,6 @@ class Soter_Config {
 		$packageContainer = array(),
 		$loggerWriterContainer = array(),
 		$uriRewriter,
-		$exceptionLevel=E_ALL,
 		$exceptionHandle,
 		$route,
 		$environment = 'development',
@@ -4370,11 +4369,8 @@ class Soter_Config {
 		$this->exceptionHandle = $exceptionHandle;
 		return $this;
 	}
-	function getExceptionLevel() {
-		return $this->exceptionLevel;
-	}
 	function setExceptionLevel($exceptionLevel) {
-		$this->exceptionLevel = $exceptionLevel;
+		error_reporting($exceptionLevel);
 		return $this;
 	}
 	public function getApplicationDir() {
