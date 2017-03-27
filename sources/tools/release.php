@@ -24,7 +24,7 @@ shell_exec("git tag -a $ver -m $ver  >/dev/null 2>&1");
 shell_exec("git push origin :refs/tags/$ver  >/dev/null 2>&1");
 shell_exec("git push origin dev  >/dev/null 2>&1");
 shell_exec("git push origin master  >/dev/null 2>&1");
-shell_exec("git push origin $ver");
+shell_exec("git push origin --tags");
 shell_exec('git checkout dev  >/dev/null 2>&1');
 
 //docs
@@ -35,7 +35,7 @@ shell_exec("git tag -d $ver >/dev/null 2>&1");
 shell_exec("git tag -a $ver -m $ver >/dev/null 2>&1");
 shell_exec("git push origin :refs/tags/$ver  >/dev/null 2>&1");
 shell_exec("git push origin master >/dev/null 2>&1");
-shell_exec("git push origin $ver");
+shell_exec("git push origin --tags");
 
 //src
 chdir($rootDir);
