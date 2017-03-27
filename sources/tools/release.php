@@ -2,6 +2,7 @@
 if(empty($argv[1])){
 	exit('argument version missing,php '.$argv[0].' <version>');
 }
+
 $ver=$argv[1];
 $rootDir= dirname(dirname(dirname(__FILE__)));
 $tmp= '/tmp/'.uniqid('.soter');
@@ -26,7 +27,7 @@ shell_exec("git push origin --tags");
 shell_exec('git checkout dev');
 echo shell_exec('git status');
 echo "\n======================\n!!! delete backup($tmp)?[y/N]:";
-$confirm = fgets(STDIN);
+$confirm = trim(fgets(STDIN),"\n");
 if(strtolower($confirm)=='y'){
 	shell_exec("rm -rf  $tmp");
 	echo "$tmp deleted";
