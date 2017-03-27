@@ -36,7 +36,7 @@ shell_exec("git tag -d $ver >/dev/null");
 shell_exec("git tag -a $ver -m $ver >/dev/null");
 shell_exec("git push origin :refs/tags/$ver");
 shell_exec("git push origin master >/dev/null");
-shell_exec("git push origin --tags >/dev/nul");
+shell_exec("git push origin --tags >/dev/null");
 
 //src
 chdir($rootDir);
