@@ -15,12 +15,12 @@
  * retry_interval:15 整数，失败重试间隔单位秒
  * 
  */
-//return new Soter_Session_Memcache(array('path' => 'tcp://127.0.0.1:11211?persistent=0&timeout=3'));
+//return new \Soter_Session_Memcache(array('path' => 'tcp://127.0.0.1:11211?persistent=0&timeout=3'));
 /**
  * Memcached托管
  * 用法和Memcache一样，只是前面不带tcp://
  */
-//return new Soter_Session_Memcached(array('path' => '127.0.0.1:11211?persistent=0&timeout=3'));
+//return new \Soter_Session_Memcached(array('path' => '127.0.0.1:11211?persistent=0&timeout=3'));
 /**
  * Redis托管
  * 套接字写法（多个redis可以使用英文半角逗号分隔）：
@@ -35,12 +35,12 @@
  * auth：字符串，认证密码，避免特殊字符影响可以需要使用urlencode()处理一下
  * database：0 整数，数据库号
  */
-//return new Soter_Session_Redis(array('path' => 'tcp://127.0.0.1:6379?timeout=3&persistent=0'));
+//return new \Soter_Session_Redis(array('path' => 'tcp://127.0.0.1:6379?timeout=3&persistent=0'));
 /**
  * Mongodb托管
  */
 /* 
-return new Soter_Session_Mongodb(array(
+return new \Soter_Session_Mongodb(array(
     'host' => '127.0.0.1', //mongodb主机地址
     'port' => 27017, //端口
     'user' => 'root',
@@ -67,7 +67,7 @@ KEY `timestamp` (`timestamp`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
  */
 /* 
-return new Soter_Session_Mysql(array(
+return new \Soter_Session_Mysql(array(
     //如果使用数据库配置里面的组信息，这里可以设置group组名称，没有就留空
     //设置group组名称后，下面连接的配置不再起作用，group优先级大于下面的连接信息
     'group' => '',

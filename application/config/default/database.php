@@ -22,7 +22,7 @@ return
 		//是否开启慢查询记录
 		'slowQueryDebug' => false,
 		'slowQueryTime' => 3000, //慢查询最小时间,单位毫秒，1秒=1000毫秒
-		'slowQueryHandle' => new Soter_Database_SlowQuery_Handle_Default(),
+		'slowQueryHandle' => new \Soter_Database_SlowQuery_Handle_Default(),
 		/**
 		 * 是否开启没有满足设置的索引类型的查询记录
 		 */
@@ -36,7 +36,7 @@ return
 		 * 避免ALL即全表扫描
 		 */
 		'minIndexType' => 'index',
-		'indexHandle' => new Soter_Database_Index_Handle_Default(),
+		'indexHandle' => new \Soter_Database_Index_Handle_Default(),
 		'masters' => array(
 		    'master01' => array(
 			'hostname' => '127.0.0.1',
@@ -65,7 +65,7 @@ return
 		//是否开启慢查询记录
 		'slowQueryDebug' => false,
 		'slowQueryTime' => 3000, //单位毫秒，1秒=1000毫秒
-		'slowQueryHandle' => new Soter_Database_SlowQuery_Handle_Default()
+		'slowQueryHandle' => new \Soter_Database_SlowQuery_Handle_Default()
 	    )
 	)
 ;

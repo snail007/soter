@@ -1,3 +1,37 @@
+============v1.1.32[2017-03-27]===========
+增加了:
+1.超级工厂方法Sr::factory($className, $hmvcModuleName = null,...)增加了传递参数给类的构造方法的支持.
+第三个参数开始的参数Soter会按着参数顺序传递给你要实例化的类的构造方法.
+比如:执行了Sr::factory('\Bean\User', null,669,'jack')
+同时User类如下:
+<?php
+namespace Bean;
+class User{
+	private $id=0,$name='';
+	public function __construct($id,$name){
+		this.id=$id;
+		this.name=$name;
+	}
+}
+那么669和jack就会作为$id和$name传递给User类的构造方法,如果要传递更多参数
+在调用Sr::factory('\Bean\User', null,669,'jack')的时候,后面依次写上即可.
+
+2.入口文件增加了配置->setExceptionLevel(E_ALL ^ E_DEPRECATED),设置错误级别,也就是error_reporting()的参数,
+只有此级别的错误才会触发配置的错误显示控制处理类.
+
+
+修复了：
+1、修复了数据库驱动的updateBatch方法,当更新的条件字段不是数字时会报错的bug.
+
+升级提示:
+1.在入口文件配置项->setExceptionControl(true)上面
+增加如下配置:
+	/* 设置错误级别,也就是error_reporting()的参数,只有此级别的错误才会触发下面的错误显示控制处理类 */
+	->setExceptionLevel(E_ALL ^ E_DEPRECATED)
+	/* 设置Soter管理异常错误 */
+	->setExceptionControl(true)
+
+
 ============v1.1.31[2017-03-21]===========
 增加了:
 1.增加了PSR-4命名的支持,详情见"手册代码规范部分".

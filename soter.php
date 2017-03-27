@@ -25,8 +25,8 @@
  * @email         672308444@163.com
  * @copyright     Copyright (c) 2015 - 2017, 狂奔的蜗牛, Inc.
  * @link          http://git.oschina.net/snail/soter
- * @since         v1.1.31
- * @createdtime   2017-03-21 18:27:19
+ * @since         v1.1.32
+ * @createdtime   2017-03-27 14:45:49
  */
  
 
@@ -444,10 +444,10 @@ class Sr {
 		}
 		$className1 = str_replace(array('\\', '/'), '_', $className);
 		$className2 = str_replace(array('/', '_'), '\\', $className);
-		if (class_exists($className1)) {
-			return new $className1();
-		} elseif (class_exists($className2)) {
-			return new $className2();
+		$args = func_get_args();
+		$class = class_exists($className1) ? new ReflectionClass($className1) : (class_exists($className2) ? new ReflectionClass($className2) : '');
+		if ($class) {
+			return $class->newInstanceArgs(array_slice($args, 2));
 		}
 		throw new \Soter_Exception_500("class [ $className ] not found");
 	}
@@ -1664,7 +1664,7 @@ class Sr {
 		} elseif (is_callable($methods[$name])) {
 			return call_user_func_array($methods[$name], $arguments);
 		} else {
-			throw new Soter_Exception_500($name . ' unknown type of method [ ' . $name . ' ]');
+			throw new \Soter_Exception_500($name . ' unknown type of method [ ' . $name . ' ]');
 		}
 	}
 	static function arrayKeyExists($key, $array) {
@@ -1687,7 +1687,7 @@ class Sr {
 	private static function getEncryptKey($key, $attachKey) {
 		$_key = $key ? $key : self::config()->getEncryptKey();
 		if (!$key && !$_key) {
-			throw new Soter_Exception_500('encrypt key can not empty or you can set it in index.php : ->setEncryptKey()');
+			throw new \Soter_Exception_500('encrypt key can not empty or you can set it in index.php : ->setEncryptKey()');
 		}
 		return substr(md5($_key . $attachKey), 0, 8);
 	}
@@ -3911,7 +3911,9 @@ class Soter_Config {
 		$packageContainer = array(),
 		$loggerWriterContainer = array(),
 		$uriRewriter,
-		$exceptionHandle, $route, $environment = 'development',
+		$exceptionHandle,
+		$route,
+		$environment = 'development',
 		$hmvcModules = array(),
 		$isMaintainMode = false,
 		$maintainIpWhitelist = array(),
@@ -4367,6 +4369,10 @@ class Soter_Config {
 		$this->exceptionHandle = $exceptionHandle;
 		return $this;
 	}
+	function setExceptionLevel($exceptionLevel) {
+		error_reporting($exceptionLevel);
+		return $this;
+	}
 	public function getApplicationDir() {
 		return $this->applicationDir;
 	}
@@ -4534,7 +4540,6 @@ class Soter_Logger_Writer_Dispatcher {
 			//保留内存
 			self::$memReverse = str_repeat("x", \Soter::getConfig()->getExceptionMemoryReserveSize());
 			self::$instance = new \Soter_Logger_Writer_Dispatcher();
-			error_reporting(E_ALL);
 			//插件模式打开错误显示，web和命令行模式关闭错误显示
 			\Sr::isPluginMode() ? ini_set('display_errors', TRUE) : ini_set('display_errors', FALSE);
 			set_exception_handler(array(self::$instance, 'handleException'));

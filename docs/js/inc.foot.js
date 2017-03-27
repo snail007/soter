@@ -25,7 +25,6 @@ $(function () {
 		if (lis.length) {
 			$('legend').after('<div><a name="top"></a><h2 class="title_h2">目录</h2><ol>' + lis.join('') + '</ol></div>');
 		}
-
 		$(".anchor").each(function () {
 			var link = $(this);
 			var href = link.attr("href");
