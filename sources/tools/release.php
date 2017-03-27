@@ -28,6 +28,7 @@ shell_exec("git push origin --tags");
 shell_exec('git checkout dev');
 
 //docs
+echo "$rootDir/../soter-docs\n";
 chdir("$rootDir/../soter-docs");
 shell_exec("git add . >/dev/null");
 shell_exec("git commit -a -m release$ver >/dev/null");
