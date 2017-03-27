@@ -1,4 +1,4 @@
-============v1.1.32[2017-03-22]===========
+============v1.1.32[2017-03-27]===========
 增加了:
 1.超级工厂方法Sr::factory($className, $hmvcModuleName = null,...)增加了传递参数给类的构造方法的支持.
 第三个参数开始的参数Soter会按着参数顺序传递给你要实例化的类的构造方法.
@@ -27,7 +27,7 @@ class User{
 1.在入口文件配置项->setExceptionControl(true)上面
 增加如下配置:
 	/* 设置错误级别,也就是error_reporting()的参数,只有此级别的错误才会触发下面的错误显示控制处理类 */
-	->setExceptionLevel(E_ALL)
+	->setExceptionLevel(E_ALL ^ E_DEPRECATED)
 	/* 设置Soter管理异常错误 */
 	->setExceptionControl(true)
 
