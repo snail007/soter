@@ -16,7 +16,7 @@ class User{
 那么669和jack就会作为$id和$name传递给User类的构造方法,如果要传递更多参数
 在调用Sr::factory('\Bean\User', null,669,'jack')的时候,后面依次写上即可.
 
-2.入口文件增加了配置->setExceptionLevel(E_ALL),设置错误级别,也就是error_reporting()的参数,
+2.入口文件增加了配置->setExceptionLevel(E_ALL ^ E_DEPRECATED),设置错误级别,也就是error_reporting()的参数,
 只有此级别的错误才会触发配置的错误显示控制处理类.
 
 
