@@ -30,6 +30,6 @@ echo "\n======================\n!!! delete backup($tmp)?[y/N]:";
 $confirm = trim(fgets(STDIN),"\n");
 if(strtolower($confirm)=='y'){
 	shell_exec("rm -rf  $tmp");
-	echo "$tmp deleted";
+	echo "$tmp deleted\n";
 }
 echo "done\n";
