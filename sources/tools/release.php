@@ -25,7 +25,7 @@ shell_exec(" git push origin master");
 shell_exec("git push origin --tags");
 shell_exec('git checkout dev');
 echo shell_exec('git status');
-echo "!!! delete backup?[y/N] ";
+echo "\n======================\n!!! delete backup?[y/N] ";
 $confirm = fgets(STDIN);
 if(strtolower($confirm)=='y'){
 	echo shell_exec("rm -rf  $tmp");
