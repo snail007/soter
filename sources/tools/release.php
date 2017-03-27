@@ -13,6 +13,7 @@ chdir($rootDir);
 shell_exec('git add .');
 shell_exec('git commit -a -m release'.$ver);
 shell_exec('git checkout master');
+shell_exec('git merge dev');
 shell_exec("rm -rf  $rootDir/tests $rootDir/sources");
 shell_exec('git add .');
 shell_exec("git commit -a  -m release$ver");
