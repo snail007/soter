@@ -14,5 +14,13 @@ http://git.oschina.net/snail/soter-extension-cron
 
 # 捐赠  
 如果项目对您有帮助，请捐赠以表支持，谢谢!  
-<img src="http://www.soter.tk/public/static/images/alipay.jpg" width="300px"/>
-<img src="http://www.soter.tk/public/static/images/wxpay.jpg" width="300px"/>
+<table>
+<tr>
+	<td>
+		<img src="http://www.soter.tk/public/static/images/alipay.jpg" width="300px"/>
+	</td>
+	<td>
+		<img src="http://www.soter.tk/public/static/images/wxpay.jpg" width="300px"/>
+	</td>
+</tr>
+</table>
