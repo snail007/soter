@@ -17,7 +17,7 @@ http://git.oschina.net/snail/soter-extension-cron
 <table>
 <tr>
 	<td>
-		<img src="http://www.soter.tk/public/static/images/alipay.jpg" width="300px"/>
+		<img src="http://www.soter.tk/public/static/images/alipay.jpg?rnd=1" width="300px"/>
 	</td>
 	<td>
 		<img src="http://www.soter.tk/public/static/images/wxpay.jpg" width="300px"/>
